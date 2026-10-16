@@ -1,6 +1,198 @@
-.panel,.option-card,button,.dropzone{transition:background .15s,border-color .15s,box-shadow .15s,transform .12s}
-.option-card:active{transform:scale(.98)}button:active{transform:translateY(1px)}
-.dropzone.drag{transform:scale(1.01)}
-@keyframes novaFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-#app>*{animation:novaFade .25s ease both}
-@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* Nova Tools — page-specific art direction. Shared interaction language, different moods per task. */
+:root{
+  --glow-blue:rgba(94,151,255,.22);
+  --glow-violet:rgba(146,115,255,.20);
+  --glow-peach:rgba(255,184,145,.20);
+  --surface-glass:rgba(255,255,255,.76);
+}
+
+/* Shared micro-interactions: precise, quick and quiet rather than noisy. */
+.primary,.secondary,.soft-btn,.ghost-btn,.danger-btn,.icon-btn,.chip,.tab,.side-link,.nav a,.tool-card,.quick-link,.option-card,.prompt-card,.stat-card{
+  -webkit-tap-highlight-color:transparent;
+}
+.primary::after,.tool-card::after,.quick-link::after,.stat-card::after,.option-card::after,.prompt-card::after{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:0;
+  background:radial-gradient(210px circle at var(--pointer-x,50%) var(--pointer-y,50%),rgba(255,255,255,.22),transparent 68%);
+  transition:opacity .22s ease;border-radius:inherit;
+}
+.primary:hover::after,.tool-card:hover::after,.quick-link:hover::after,.stat-card:hover::after,.option-card:hover::after,.prompt-card:hover::after{opacity:1}
+.nav a,.side-link{transition:background .2s ease,color .2s ease,transform .24s cubic-bezier(.2,.8,.2,1),box-shadow .24s ease}
+.nav a:hover,.side-link:hover{transform:translateX(1px)}
+.page-title h1{text-wrap:balance}
+.page-title p{max-width:720px}
+.topbar{background:rgba(248,251,255,.78);box-shadow:0 10px 30px rgba(33,57,104,.025)}
+.topbar::after{content:"";position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(112,149,235,.34),rgba(244,186,160,.32),transparent);pointer-events:none}
+
+/* 01 Home: deep-space signature with a restrained sunrise rim light. */
+body[data-page="home"] .hero{
+  background:
+    radial-gradient(ellipse at 83% 2%,rgba(255,177,135,.23),transparent 29%),
+    radial-gradient(ellipse at 65% 45%,rgba(67,111,221,.33),transparent 38%),
+    radial-gradient(ellipse at 10% 100%,rgba(42,192,219,.13),transparent 32%),
+    linear-gradient(123deg,#081329 0%,#0c1d43 49%,#22214c 100%);
+  border-color:rgba(133,166,255,.35);
+  box-shadow:0 26px 80px rgba(17,36,86,.20),inset 0 1px rgba(255,255,255,.12);
+}
+body[data-page="home"] .hero::before{background:radial-gradient(ellipse at 80% 82%,rgba(255,192,150,.12),transparent 32%),linear-gradient(120deg,transparent 33%,rgba(124,163,255,.09) 58%,transparent 78%)}
+body[data-page="home"] .hero .searchbar{box-shadow:0 0 0 1px rgba(126,165,255,.26),0 14px 38px rgba(1,10,30,.25),inset 0 1px white}
+body[data-page="home"] .cosmos-core{box-shadow:0 0 22px rgba(97,167,255,.65),0 0 72px rgba(110,91,245,.35),inset 0 0 28px rgba(255,255,255,.17)}
+body[data-page="home"] .quick-link{background:linear-gradient(145deg,rgba(255,255,255,.95),rgba(242,246,255,.80));}
+
+/* 02 Tools: a calm catalog. Each category has a different accent and card response. */
+body[data-page="tools"] .page{background:radial-gradient(ellipse at 100% 12%,rgba(175,169,255,.13),transparent 28%),radial-gradient(ellipse at 0% 48%,rgba(119,208,225,.10),transparent 26%)}
+body[data-page="tools"] .tool-library .tool-card:nth-child(4n+1){--card-accent:#5f8bff}
+body[data-page="tools"] .tool-library .tool-card:nth-child(4n+2){--card-accent:#27bda0}
+body[data-page="tools"] .tool-library .tool-card:nth-child(4n+3){--card-accent:#9471ec}
+body[data-page="tools"] .tool-library .tool-card:nth-child(4n){--card-accent:#e99b75}
+body[data-page="tools"] .tool-library .tool-card{border-color:color-mix(in srgb,var(--card-accent) 16%,#e4eaf5);background:linear-gradient(145deg,#fff, color-mix(in srgb,var(--card-accent) 4%,#fff))}
+body[data-page="tools"] .tool-library .tool-card:hover{box-shadow:0 20px 42px color-mix(in srgb,var(--card-accent) 17%,transparent);border-color:color-mix(in srgb,var(--card-accent) 44%,#dfe7f5)}
+body[data-page="tools"] #toolSearch:focus{outline:none}
+body[data-page="tools"] .chips .chip.active{box-shadow:0 5px 16px rgba(69,103,213,.14)}
+
+/* 03 AI studio: a darker, immersive conversation space contrasted with a bright command rail. */
+body[data-page="ai"] .page-title{align-items:center}
+body[data-page="ai"] .page-title h1{letter-spacing:-.06em}
+body[data-page="ai"] .chat-window{
+  color:#e5edff;background:radial-gradient(ellipse at 83% 0%,rgba(112,94,223,.20),transparent 34%),linear-gradient(165deg,#0b1732,#101f43 60%,#15254b);
+  border:1px solid rgba(94,126,196,.43);box-shadow:0 24px 64px rgba(22,38,85,.16),inset 0 1px rgba(255,255,255,.07);
+}
+body[data-page="ai"] .chat-window .chat-header{background:linear-gradient(90deg,rgba(255,255,255,.035),rgba(125,145,242,.08));border-bottom-color:rgba(139,164,219,.18)}
+body[data-page="ai"] .chat-window .chat-header strong{color:#eff4ff!important}
+body[data-page="ai"] .chat-window .chat-header .muted{color:#9dafd4}
+body[data-page="ai"] .chat-window .chat-header .icon-btn{background:rgba(255,255,255,.07);border-color:rgba(159,180,236,.22);color:#c6d5fa}
+body[data-page="ai"] .chat-window .chat-messages{background:radial-gradient(circle at 40% 12%,rgba(84,123,229,.09),transparent 45%)}
+body[data-page="ai"] .chat-window .bubble-avatar{background:linear-gradient(145deg,#4f81eb,#9774ef);border-color:rgba(255,255,255,.25);color:#fff;box-shadow:0 5px 17px rgba(88,119,235,.25)}
+body[data-page="ai"] .chat-window .bubble{background:rgba(230,238,255,.075);border-color:rgba(154,180,235,.18);color:#c4d0ea;box-shadow:inset 0 1px rgba(255,255,255,.04)}
+body[data-page="ai"] .chat-window .bubble h4{color:#f1f5ff}
+body[data-page="ai"] .chat-window .message.user .bubble{background:linear-gradient(135deg,rgba(66,111,240,.48),rgba(118,81,218,.42));border-color:rgba(131,163,255,.4);color:#f3f6ff}
+body[data-page="ai"] .chat-window .bubble .chip{background:rgba(255,255,255,.06);border-color:rgba(174,192,241,.20);color:#d7e2fb}
+body[data-page="ai"] .chat-window .bubble .chip:hover{background:rgba(107,143,255,.2)}
+body[data-page="ai"] .chat-window .chat-compose{background:rgba(5,14,33,.52);border-top-color:rgba(139,164,219,.18)}
+body[data-page="ai"] .chat-window .compose-box{background:rgba(231,239,255,.08);border-color:rgba(169,190,246,.22);box-shadow:0 0 0 1px rgba(255,255,255,.02)}
+body[data-page="ai"] .chat-window .compose-box:focus-within{border-color:#829eff;box-shadow:0 0 0 4px rgba(97,131,245,.18),0 12px 32px rgba(0,0,0,.12)}
+body[data-page="ai"] .chat-window .compose-box textarea{color:#f2f6ff}
+body[data-page="ai"] .chat-window .compose-box textarea::placeholder{color:#7f91b9}
+body[data-page="ai"] .chat-window .compose-box .icon-btn{background:rgba(255,255,255,.07);border-color:rgba(169,190,246,.18);color:#b4c5ef}
+body[data-page="ai"] .chat-window .compose-foot{color:#8193b9}
+body[data-page="ai"] .chat-layout>aside{background:linear-gradient(165deg,rgba(255,255,255,.95),rgba(242,245,255,.91));border-color:#e0e7f4}
+body[data-page="ai"] .chat-layout>aside .prompt-card{transition:transform .22s,background .22s,border-color .22s,box-shadow .22s}
+body[data-page="ai"] .chat-layout>aside .prompt-card:hover{transform:translateX(3px);border-color:#c8d4ff;box-shadow:0 12px 26px rgba(65,91,173,.10)}
+
+/* 04 File workbench: warm desk tone + precise operational states. */
+body[data-page="workspace"] .workgrid>.panel:first-child{background:linear-gradient(155deg,#fffefa,#f7fbff 68%,#f5f2ff);border-color:#e8e7ef}
+body[data-page="workspace"] .dropzone{position:relative;isolation:isolate;background:radial-gradient(circle at 50% 22%,rgba(255,218,177,.55),transparent 34%),linear-gradient(140deg,#fffaf1,#f3f7ff 54%,#f2efff);border:1px dashed #a5b7e6;box-shadow:inset 0 0 0 5px rgba(255,255,255,.42)}
+body[data-page="workspace"] .dropzone::after{content:"";position:absolute;z-index:-1;inset:10px;border-radius:13px;background-image:radial-gradient(rgba(90,122,201,.17) .8px,transparent .8px);background-size:13px 13px;mask-image:linear-gradient(180deg,black,transparent)}
+body[data-page="workspace"] .dropzone.drag{border-style:solid;background:radial-gradient(circle at 50% 22%,rgba(255,199,143,.7),transparent 35%),linear-gradient(140deg,#fff5e5,#edf3ff 54%,#eee8ff);box-shadow:0 0 0 4px rgba(101,135,232,.12),0 18px 38px rgba(77,104,172,.12)}
+body[data-page="workspace"] .tabs .tab.active{background:linear-gradient(135deg,#fff3e5,#e9efff);border-color:#d6dff7;color:#435fb3}
+body[data-page="workspace"] .recent-row{transition:background .18s,border-color .18s,transform .18s}
+body[data-page="workspace"] .recent-row:hover{background:#f8faff;border-color:#dbe4fb;transform:translateX(2px)}
+
+/* 05 Analytics: structured observatory, readable charts with more intentional depth. */
+body[data-page="analytics"] .metric-grid .stat-card:nth-child(1){background:linear-gradient(145deg,#fff,#f3f7ff)}
+body[data-page="analytics"] .metric-grid .stat-card:nth-child(2){background:linear-gradient(145deg,#fff,#effaf7)}
+body[data-page="analytics"] .metric-grid .stat-card:nth-child(3){background:linear-gradient(145deg,#fff,#f6f2ff)}
+body[data-page="analytics"] .metric-grid .stat-card:nth-child(4){background:linear-gradient(145deg,#fff,#fff5ed)}
+body[data-page="analytics"] .chart-card{background:linear-gradient(155deg,#fff,rgba(246,249,255,.94));border-color:#dfe7f6}
+body[data-page="analytics"] .chart-card .chart-area{border-radius:15px;background:linear-gradient(180deg,rgba(239,245,255,.78),rgba(255,255,255,.2));padding:8px 6px 0}
+body[data-page="analytics"] .chart-card .chart-grid{stroke:#dbe5f5;stroke-dasharray:2 5}
+body[data-page="analytics"] .chart-card .chart-line{stroke-width:2.8;filter:drop-shadow(0 3px 4px rgba(70,112,239,.19))}
+
+/* 06 Workflows: a technical canvas with connected steps, distinct from dashboards. */
+body[data-page="workflows"] .ai-banner{background:radial-gradient(ellipse at 80% 30%,rgba(105,133,244,.34),transparent 32%),linear-gradient(115deg,#0b1834,#162b57 57%,#28234f);border-color:#314777;color:#f4f7ff;box-shadow:0 22px 52px rgba(21,37,83,.15)}
+body[data-page="workflows"] .ai-banner h3{font-size:21px;letter-spacing:-.035em;color:#f5f7ff}
+body[data-page="workflows"] .ai-banner p{color:#b5c5e5}
+body[data-page="workflows"] .ai-banner .eyebrow{color:#9bc8ff!important}
+body[data-page="workflows"] .ai-banner .secondary{background:rgba(255,255,255,.09);border-color:rgba(197,211,255,.25);color:#e9efff}
+body[data-page="workflows"] .panel:has(.workflow){background:radial-gradient(ellipse at 50% 0%,rgba(105,136,244,.07),transparent 48%),#fff}
+body[data-page="workflows"] .workflow-step .step-icon{border-radius:16px;box-shadow:0 0 0 5px #f5f7ff,0 0 0 6px #dce5ff,0 9px 20px rgba(62,88,165,.1)}
+
+/* 07 Personal space: warmer and more human, without losing the product's precision. */
+body[data-page="profile"] .split>.panel:first-child{background:radial-gradient(ellipse at 100% 0,rgba(255,209,180,.27),transparent 30%),linear-gradient(150deg,#fffdf9,#fff 58%,#f4f4ff);border-color:#eee7e2}
+body[data-page="profile"] .split>.panel:nth-child(2){background:linear-gradient(150deg,#fff,rgba(243,247,255,.92));}
+body[data-page="profile"] .avatar{box-shadow:0 0 0 5px rgba(255,224,202,.34),0 7px 18px rgba(37,58,102,.10)}
+
+/* 08 Mobile showcase: app-like frame with subtle colored glass and tactile previews. */
+body[data-page="mobile"] .phone-frame:nth-child(1){transform:rotate(-1.2deg);border-color:#bfcff6}
+body[data-page="mobile"] .phone-frame:nth-child(2){transform:translateY(16px);border-color:#cfc6f4}
+body[data-page="mobile"] .phone-frame:nth-child(3){transform:rotate(1.2deg);border-color:#f0cdbb}
+body[data-page="mobile"] .phone-frame:hover{transform:translateY(-5px) rotate(0);box-shadow:0 32px 70px rgba(49,75,138,.2)}
+body[data-page="mobile"] .phone-screen{background:radial-gradient(ellipse at 78% 0,rgba(255,207,173,.36),transparent 27%),linear-gradient(180deg,#e8f2ff,#fff 38%,#f2edff)}
+
+/* 09 Authentication: quiet focus, soft dusk atmosphere. */
+body[data-page="login"] .login-wrap{background:radial-gradient(ellipse at 76% 18%,rgba(111,140,240,.20),transparent 34%),radial-gradient(ellipse at 20% 78%,rgba(255,188,150,.23),transparent 30%),linear-gradient(135deg,#f8faff,#eff2ff 55%,#fff4e9)}
+body[data-page="login"] .login-card{box-shadow:0 30px 90px rgba(36,57,108,.14),0 0 0 1px rgba(255,255,255,.8),inset 0 1px #fff}
+body[data-page="login"] .login-mark{background:radial-gradient(circle at 35% 20%,#fff,#97dcff 25%,#8a78f4 65%,#526be9);box-shadow:0 10px 25px rgba(89,117,227,.24)}
+
+/* 10 Tool detail: a clean conversion studio with warmer precision accents. */
+body[data-page="detail"] .converter-options .option-card{min-height:100px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+body[data-page="detail"] .converter-options .option-card:nth-child(4n+1){background:linear-gradient(145deg,#fff,#f3f6ff)}
+body[data-page="detail"] .converter-options .option-card:nth-child(4n+2){background:linear-gradient(145deg,#fff,#effaf7)}
+body[data-page="detail"] .converter-options .option-card:nth-child(4n+3){background:linear-gradient(145deg,#fff,#f5f0ff)}
+body[data-page="detail"] .converter-options .option-card:nth-child(4n){background:linear-gradient(145deg,#fff,#fff3eb)}
+body[data-page="detail"] .converter-options .option-card.selected{box-shadow:0 0 0 3px rgba(88,120,232,.13),0 14px 30px rgba(70,95,164,.1)}
+
+/* 11 Help: editorial layout with an easy scanning rhythm. */
+body[data-page="help"] .split>.panel:first-child{background:linear-gradient(155deg,#fff,#fbfcff 65%,#f3f8ff)}
+body[data-page="help"] .faq-item{padding:18px 2px;border-bottom-color:#edf0f6}
+body[data-page="help"] .faq-item[open]{padding:18px 12px;background:linear-gradient(110deg,#f7f9ff,#fff);border-radius:13px}
+body[data-page="help"] .faq-item p{max-width:720px;font-size:12px}
+
+/* Admin: one information architecture, varied information densities by job. */
+body.is-admin .admin-content{background:radial-gradient(ellipse at 92% 0,rgba(185,194,255,.12),transparent 30%),linear-gradient(180deg,#f9fbff,#f3f6fb)}
+body.is-admin[data-admin-page="index"] .metric-grid .stat-card{background:linear-gradient(145deg,#fff,#f2f6ff);box-shadow:0 13px 32px rgba(41,71,137,.07)}
+body.is-admin[data-admin-page="index"] .chart-card{background:linear-gradient(145deg,#fff,#f2f5ff)}
+body.is-admin[data-admin-page="users"] .table-card{box-shadow:0 12px 38px rgba(29,52,99,.055)}
+body.is-admin[data-admin-page="users"] table tbody tr:hover{background:#f3f7ff}
+body.is-admin[data-admin-page="users"] table tbody td:first-child{font-weight:650}
+body.is-admin[data-admin-page="tools"] .table-card{background:linear-gradient(145deg,#fff,#f7f8ff)}
+body.is-admin[data-admin-page="tools"] .switch.on{box-shadow:0 0 0 3px rgba(78,116,238,.12),0 2px 10px rgba(78,116,238,.2)}
+body.is-admin[data-admin-page="analytics"] .chart-card{background:linear-gradient(145deg,#fff,#f3f7ff);border-color:#dbe4f6}
+body.is-admin[data-admin-page="analytics"] .metric-grid .stat-card:nth-child(2){background:linear-gradient(145deg,#fff,#f0faf7)}
+body.is-admin[data-admin-page="content"] .table-card{background:linear-gradient(145deg,#fff,#fffdfa);border-color:#eae6df}
+body.is-admin[data-admin-page="roles"] .tool-card{background:linear-gradient(145deg,#fff,#f4f5ff);border-color:#e0e3f4}
+body.is-admin[data-admin-page="logs"] .table-card{background:linear-gradient(145deg,#fff,#f8faff)}
+body.is-admin[data-admin-page="logs"] table tbody td:first-child{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#7182a3}
+body.is-admin[data-admin-page="logs"] table tbody tr:nth-child(odd){background:rgba(244,247,253,.62)}
+body.is-admin[data-admin-page="exports"] .option-card{min-height:118px;background:linear-gradient(145deg,#fff,#f3f7ff)}
+body.is-admin[data-admin-page="notifications"] .settings-row{padding:17px 12px;border-radius:13px;transition:background .2s}
+body.is-admin[data-admin-page="notifications"] .settings-row:hover{background:#f7f9ff}
+body.is-admin[data-admin-page="settings"] .settings-panel{box-shadow:0 18px 45px rgba(36,57,107,.07)}
+body.is-admin[data-admin-page="settings"] .settings-nav button.active{box-shadow:inset 0 0 0 1px rgba(103,133,230,.1),0 4px 12px rgba(72,95,168,.06)}
+
+/* Motion respects accessibility preferences and stays intentionally subtle. */
+@keyframes novaGlow{0%,100%{opacity:.52;transform:scale(.98)}50%{opacity:.88;transform:scale(1.03)}}
+@keyframes softLift{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+body[data-page="home"] .hero .cosmos::before{animation:novaGlow 7s ease-in-out infinite}
+body[data-page="home"] .hero .orbit{animation-duration:24s}
+body[data-page="ai"] .ai-avatar{animation:novaGlow 5s ease-in-out infinite}
+@media(max-width:900px){body[data-page="mobile"] .phone-frame:nth-child(1),body[data-page="mobile"] .phone-frame:nth-child(2),body[data-page="mobile"] .phone-frame:nth-child(3){transform:none}}
+@media(prefers-reduced-motion:reduce){body[data-page="home"] .hero .cosmos::before,body[data-page="home"] .hero .orbit,body[data-page="ai"] .ai-avatar{animation:none!important}}
+
+/* Context-aware overlays: same interaction contract, different visual personalities. */
+.primary,.tool-card,.quick-link,.stat-card,.option-card,.prompt-card{position:relative;isolation:isolate}
+.primary::after,.tool-card::after,.quick-link::after,.stat-card::after,.option-card::after,.prompt-card::after{z-index:-1}
+.modal[data-modal-kind="model-picker"]{background:radial-gradient(ellipse at 88% 0%,rgba(107,112,245,.25),transparent 34%),linear-gradient(150deg,#101c3a,#172951 74%,#292554);border-color:rgba(146,171,246,.42);color:#eaf0ff;box-shadow:0 36px 110px rgba(4,12,32,.46),inset 0 1px rgba(255,255,255,.08)}
+.modal[data-modal-kind="model-picker"] .modal-head{background:rgba(12,23,49,.78);border-bottom-color:rgba(158,180,234,.16)}
+.modal[data-modal-kind="model-picker"] .modal-head h2{color:#f4f7ff}
+.modal[data-modal-kind="model-picker"] .modal-head p,.modal[data-modal-kind="model-picker"] .muted{color:#a9b9dc}
+.modal[data-modal-kind="model-picker"] .modal-content{color:#dbe5fb}
+.modal[data-modal-kind="model-picker"] .option-card{background:rgba(255,255,255,.055);border-color:rgba(169,190,241,.17);color:#e8efff}
+.modal[data-modal-kind="model-picker"] .option-card:hover,.modal[data-modal-kind="model-picker"] .option-card.selected{background:rgba(101,132,242,.16);border-color:#849dff;box-shadow:0 0 0 3px rgba(101,132,242,.12)}
+.modal[data-modal-kind="model-picker"] .option-card span{color:#aabce1}
+.modal[data-modal-kind="model-picker"] .modal-close{color:#b7c6e6;background:rgba(255,255,255,.07);border-color:rgba(175,191,236,.17)}
+.modal[data-modal-kind="model-picker"] .modal-footer{border-top-color:rgba(158,180,234,.16)}
+.modal[data-modal-kind="model-picker"] .secondary{background:rgba(255,255,255,.08);border-color:rgba(174,192,241,.20);color:#dbe5fb}
+.modal[data-modal-kind="new-workflow"]{background:radial-gradient(ellipse at 95% 0%,rgba(144,116,246,.15),transparent 35%),linear-gradient(145deg,#fff,#f7f8ff 64%,#fff5ee)}
+.modal[data-modal-kind="request-tool"]{background:radial-gradient(ellipse at 100% 0%,rgba(255,210,178,.20),transparent 34%),linear-gradient(145deg,#fffdf9,#fff 60%,#f4f6ff)}
+.modal[data-modal-kind="date-range"] .modal-head{background:linear-gradient(90deg,#fff,#f2f6ff)}
+.modal[data-modal-kind="notifications"] .modal-head{background:linear-gradient(90deg,#fff,#fbf3ff)}
+.modal[data-modal-kind="add-user"] .modal-head{background:linear-gradient(90deg,#fff,#effaf7)}
+.modal[data-modal-kind="log-filters"] .modal-head{background:linear-gradient(90deg,#fff,#f2f5fb)}
+.modal-backdrop{background:rgba(8,18,42,.48);backdrop-filter:blur(16px) saturate(1.12)}
+.modal{transition:transform .32s cubic-bezier(.16,1,.3,1),box-shadow .28s ease}
+.modal-backdrop.open .modal{box-shadow:0 36px 100px rgba(8,20,52,.23),inset 0 1px #fff}
+.dropdown a,.dropdown button{transition:background .17s ease,transform .17s ease,color .17s ease}
+.dropdown a:hover,.dropdown button:hover{transform:translateX(2px)}
+.toast{border:1px solid rgba(255,255,255,.85);box-shadow:0 15px 45px rgba(18,38,81,.16),inset 0 1px #fff}
+.tool-card,.quick-link,.stat-card,.option-card,.prompt-card{overflow:hidden}
+@media(max-width:580px){body[data-page="ai"] .chat-window{min-height:520px}body[data-page="ai"] .chat-window .chat-messages{max-height:48vh}}
