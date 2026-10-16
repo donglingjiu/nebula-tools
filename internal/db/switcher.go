@@ -1,6 +1,7 @@
 package db
 
 import (
+	"github.com/glebarez/sqlite"
 	"fmt"
 	"os"
 	"sync/atomic"
