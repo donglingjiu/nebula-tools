@@ -215,7 +215,7 @@ function toast(message='操作已完成',kind='success'){let stack=$('.toast-sta
 function commandPalette(){let overlay=$('#commandPalette');if(!overlay){overlay=document.createElement('div');overlay.id='commandPalette';overlay.className='modal-backdrop';overlay.innerHTML=`<section class="modal command-modal" role="dialog" aria-modal="true" aria-label="快速搜索"><div class="command-search">${icon('search',18)}<input id="commandInput" placeholder="搜索页面、工具或操作…"><span class="kbd">ESC</span></div><div class="command-items" id="commandItems"></div><div class="command-footer"><span>↑↓ 选择</span><span>Enter 打开</span><span>Esc 关闭</span><span style="margin-left:auto">Nova Quick Switch</span></div></section>`;document.body.appendChild(overlay);overlay.addEventListener('click',e=>{if(e.target===overlay)closeModal(overlay)});$('#commandInput',overlay).addEventListener('input',renderCommandItems);$('#commandInput',overlay).addEventListener('keydown',e=>{let items=$$('.command-item',overlay);let i=items.findIndex(x=>x.classList.contains('active'));if(e.key==='ArrowDown'){e.preventDefault();items.forEach(x=>x.classList.remove('active'));items[(i+1+items.length)%items.length]?.classList.add('active')}if(e.key==='ArrowUp'){e.preventDefault();items.forEach(x=>x.classList.remove('active'));items[(i-1+items.length)%items.length]?.classList.add('active')}if(e.key==='Enter'){e.preventDefault();items.find(x=>x.classList.contains('active'))?.click()}})}renderCommandItems();requestAnimationFrame(()=>overlay.classList.add('open'));document.body.style.overflow='hidden';setTimeout(()=>$('#commandInput',overlay)?.focus(),50)}
 function renderCommandItems(){const root=$('#commandItems');if(!root)return;const input=$('#commandInput');const q=(input?.value||'').toLowerCase().trim();const all=[...routes,...adminRoutes].filter(r=>(r.label+' '+r.desc).toLowerCase().includes(q));root.innerHTML=all.map((r,i)=>`<a class="command-item ${i===0?'active':''}" href="${href(r.href)}"><span class="tool-icon">${icon(r.icon,17)}</span><span><strong>${r.label}</strong><small>${r.desc}</small></span><kbd class="kbd">↵</kbd></a>`).join('')||'<div class="empty-search">没有找到匹配的页面或工具。</div>';$$('.command-item',root).forEach(a=>a.addEventListener('click',()=>{closeModal($('#commandPalette'))}))}
 function exportCSV(){const rows=[['日期','工具','调用量','完成率'],['2026-04-16','PDF 转 Word','12836','98.8%'],['2026-04-16','Excel 数据洞察','8421','97.9%'],['2026-04-16','AI 需求分析','15672','99.1%']];const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='nova-demo-report.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('演示 CSV 已生成并下载')}
-function processFileList(files){const list=$('#uploadedFiles');if(!list)return;const empty=$('.empty-state',list);empty?.remove();[...files].forEach(f=>{const ext=(f.name.split('.').pop()||'FILE').toUpperCase().slice(0,5);const type=/pdf/i.test(ext)?'pdf':/xls|csv/i.test(ext)?'xls':/png|jpg|webp/i.test(ext)?'img':'';const row=document.createElement('div');row.className='recent-row';row.dataset.localFile=f.name;row.innerHTML=`<div class="file-icon ${type}">${esc(ext)}</div><div class="file-meta"><strong>${esc(f.name)}</strong><span>${(f.size/1024).toFixed(1)} KB · 已添加到本地工作区</span></div><span class="status">就绪</span><button class="icon-btn" style="width:30px;height:30px" data-remove-file aria-label="移除文件">${icon('close',13)}</button>`;list.prepend(row)});toast(`已添加 ${files.length} 个文件；当前仅保存在本地页面（演示）`)}
+function processFileList(files){const list=$('#uploadedFiles');if(!list)return;window.__novaFiles=[...(window.__novaFiles||[]),...files];const empty=$('.empty-state',list);empty?.remove();[...files].forEach(f=>{const ext=(f.name.split('.').pop()||'FILE').toUpperCase().slice(0,5);const type=/pdf/i.test(ext)?'pdf':/xls|csv/i.test(ext)?'xls':/png|jpg|webp/i.test(ext)?'img':'';const row=document.createElement('div');row.className='recent-row';row.dataset.localFile=f.name;row.innerHTML=`<div class="file-icon ${type}">${esc(ext)}</div><div class="file-meta"><strong>${esc(f.name)}</strong><span>${(f.size/1024).toFixed(1)} KB · 已添加到本地工作区</span></div><span class="status">就绪</span><button class="icon-btn" style="width:30px;height:30px" data-remove-file aria-label="移除文件">${icon('close',13)}</button>`;list.prepend(row)});toast(`已添加 ${files.length} 个文件，点击「开始处理」上传`)}
 function simulateAI(value){const messages=$('#chatMessages');if(!messages)return;const user=document.createElement('div');user.className='message user';user.innerHTML=`<div class="bubble-avatar">N</div><div class="bubble"></div>`;$('.bubble',user).textContent=value;messages.appendChild(user);const answer=document.createElement('div');answer.className='message';answer.innerHTML=`<div class="bubble-avatar">N</div><div class="bubble"><span class="muted">正在梳理目标、上下文和可执行步骤…</span><div class="thinking-dots" style="display:flex;gap:5px;margin-top:8px"><i class="mini-pulse"></i><i class="mini-pulse"></i><i class="mini-pulse"></i></div></div>`;messages.appendChild(answer);messages.scrollTop=messages.scrollHeight;setTimeout(()=>{const b=$('.bubble',answer);b.innerHTML=`<h4>我建议先这样推进</h4><p>我把你的输入整理为一份可执行的初步方案。以下为前端演示回复，真实模型尚未接入。</p><div class="prompt-card" style="margin:10px 0"><span class="prompt-icon">${icon('target',16)}</span><div><strong>目标与成功标准</strong><p>明确预期产出、目标对象以及如何判断任务已经完成。</p></div></div><ol style="padding-left:18px;margin:8px 0"><li style="padding:4px 0">整理现有材料与约束条件。</li><li style="padding:4px 0">拆分任务阶段，并定义每步输出。</li><li style="padding:4px 0">检查遗漏、风险和需确认的信息。</li></ol><p>接下来可以补充输出格式、目标用户或截止时间，我会继续细化。</p><div class="bubble-actions"><button class="soft-btn btn-sm" data-copy-text="目标澄清：明确产出和成功标准；信息整理：汇总材料与约束；执行路径：拆分阶段、输出和检查项。">${icon('copy',13)} 复制摘要</button><button class="secondary btn-sm" data-open-modal="new-workflow">${icon('workflow',13)} 转为工作流</button><button class="ghost-btn btn-sm" data-toast="已记录为收藏项（演示）">${icon('star',13)} 收藏</button></div>`;messages.scrollTop=messages.scrollHeight},750)}
 function routeToAI(prompt){const target=href('ai.html');if(sessionSet('novaPrompt',prompt)){location.href=target}else{location.href=target+'?prompt='+encodeURIComponent(prompt)}}
 function init(){
@@ -298,3 +298,68 @@ function attachEvents(){document.addEventListener('input',e=>{if(e.target.id==='
 }
 init();
 })();
+/* ===== REAL PIPELINE v1：工作台/详情页接真后端 + 登录真实化（捕获期拦截，不依赖演示处理器） ===== */
+(function(){
+  const EP={'detail-Word':'/api/fx/pdf-to-docx','detail-Excel':'/api/fx/pdf-to-xlsx','work-Word':'/api/fx/pdf-to-docx','work-Excel':'/api/fx/pdf-to-xlsx','work-PDF':'/api/fx/pdf-merge'};
+  const FB={'/api/fx/pdf-to-docx':'converted.docx','/api/fx/pdf-to-xlsx':'converted.xlsx','/api/fx/pdf-merge':'merged.pdf'};
+  function stat(n,t){const row=[...document.querySelectorAll('#uploadedFiles [data-local-file]')].find(r=>r.dataset.localFile===n);const s=row&&row.querySelector('.status');if(s)s.textContent=t}
+  function dl(b,name){const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+  function outName(cd,fb){if(cd){const m1=/filename\*=utf-8''([^;]+)/i.exec(cd);if(m1){try{return decodeURIComponent(m1[1])}catch(e){}}const m2=/filename="?([^";]+)"?/i.exec(cd);if(m2)return m2[1]}return fb}
+  async function runOne(fd,ep,fb,label){
+    const res=await fetch(ep,{method:'POST',body:fd});
+    if(res.status===401){toast('请先登录后再处理文件');setTimeout(()=>location.href='login.html',600);return false}
+    if(!res.ok){let m='处理失败';try{const j=await res.json();m=j.error||m}catch(e){};toast(label+'：'+m);return false}
+    dl(await res.blob(),outName(res.headers.get('Content-Disposition'),fb));return true;
+  }
+  document.addEventListener('submit',e=>{
+    const f=e.target;if(!(f&&f.id==='loginForm'))return;
+    e.preventDefault();e.stopPropagation();
+    const un=(f.querySelector('#email')||f.querySelector('input:not([type=password])'))?.value.trim();
+    const pw=f.querySelector('input[type=password]')?.value||'';
+    if(!un||!pw){toast('请输入用户名和密码');return}
+    fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:un,password:pw})}).then(async res=>{
+      const d=await res.json().catch(()=>({}));
+      if(!res.ok){toast(d.error||'登录失败：用户名或密码错误');return}
+      toast('欢迎回来，'+(d.username||un));setTimeout(()=>location.href='index.html',500);
+    }).catch(()=>toast('网络错误，请重试'));
+  },true);
+  document.addEventListener('click',e=>{
+    const rm=e.target.closest('[data-remove-file]');
+    if(rm){const row=rm.closest('[data-local-file]');const n=row&&row.dataset.localFile;
+      if(n&&window.__novaFiles){const i=window.__novaFiles.findIndex(f=>f.name===n);if(i>-1)window.__novaFiles.splice(i,1)}return}
+    const btn=e.target.closest('[data-process-files]');
+    if(!btn)return;
+    e.preventDefault();e.stopPropagation();
+    const files=(window.__novaFiles&&window.__novaFiles.length)?window.__novaFiles.slice():[...($('#fileInput')?.files||[])];
+    if(!files.length){toast('请先添加文件到队列');return}
+    const detail=document.querySelector('[data-detail-format].selected');
+    let key=null;
+    if(detail)key='detail-'+detail.dataset.detailFormat;
+    else{const opt=document.querySelector('.converter-options .option-card.selected');if(opt)key='work-'+opt.dataset.output}
+    const ep=EP[key];
+    if(!ep){toast('该转换类型即将上线；当前已支持：PDF→Word、PDF→Excel、合并/拆分/压缩 PDF');return}
+    const pdfs=files.filter(f=>/\.pdf$/i.test(f.name));
+    if(!pdfs.length){toast('请先添加 PDF 文件');return}
+    if(ep==='/api/fx/pdf-merge'){
+      if(pdfs.length<2){toast('合并至少需要两个 PDF 文件');return}
+      const fd=new FormData();pdfs.forEach(f=>fd.append('files',f));
+      const sws=document.querySelectorAll('.settings-row .switch');
+      if(sws[2]&&sws[2].getAttribute('aria-checked')==='true')fd.append('opts',JSON.stringify({compress:'true'}));
+      pdfs.forEach(f=>stat(f.name,'处理中…'));
+      runOne(fd,ep,FB[ep],'合并').then(ok=>{if(ok){pdfs.forEach(f=>stat(f.name,'已合并'));toast('合并完成，已开始下载')}});
+      return;
+    }
+    (async()=>{let okc=0;
+      for(const f of pdfs){
+        stat(f.name,'处理中…');
+        const fd=new FormData();fd.append('files',f);
+        const ext=ep.slice(-4)==='docx'?'.docx':'.xlsx';
+        const ok=await runOne(fd,ep,f.name.replace(/\.pdf$/i,'')+ext,key.indexOf('Word')>-1?'PDF→Word':'PDF→Excel');
+        stat(f.name,ok?'完成':'失败');if(ok)okc++;
+      }
+      if(okc)toast(okc+' 个文件转换完成，已开始下载');
+    })();
+  },true);
+})();
+
+
