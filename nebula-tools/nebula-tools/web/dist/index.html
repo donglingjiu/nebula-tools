@@ -161,7 +161,7 @@ window.addEventListener('hashchange',route);
 const CAT={dev:'🛠️ 开发工具',file:'📁 文件处理',data:'📊 数据分析',home:'🏠 效率'};
 function renderHome(q){
   q=(q||'').trim().toLowerCase();
-  const list=q?MODS.filter(m=>(m.name+' '+m.id).toLowerCase().includes(q)):MODS;
+  const list=q?MODS.filter(m=>(m.name+' '+m.id).toLowerCase().includes(q)):MODS.filter(m=>m.id!=="home.search");
   const g={};list.forEach(m=>{(g[m.category]=g[m.category]||[]).push(m)});
   let html='';
   for(const c of Object.keys(CAT)){

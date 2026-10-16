@@ -1,0 +1,41 @@
+-- Nebula Tools MySQL 初始化
+-- 说明：应用启动时会 AutoMigrate 自动建表，此文件用于外部预建库（Docker mysql 镜像 / DBA 流程）
+CREATE DATABASE IF NOT EXISTS nebula CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE nebula;
+
+CREATE TABLE IF NOT EXISTS users (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(64) NOT NULL UNIQUE,
+  password_hash VARCHAR(128) NOT NULL,
+  role INT NOT NULL DEFAULT 1,
+  pay_tier VARCHAR(16) NOT NULL DEFAULT 'free',
+  last_login DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS usage_logs (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  path VARCHAR(128) NOT NULL,
+  status INT NOT NULL DEFAULT 0,
+  latency_ms BIGINT NOT NULL DEFAULT 0,
+  uid BIGINT UNSIGNED NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_ul_path (path),
+  INDEX idx_ul_created (created_at)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS alarms (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  rule_id VARCHAR(32) NOT NULL,
+  severity VARCHAR(16) NOT NULL,
+  message VARCHAR(256) NOT NULL,
+  `read` TINYINT(1) NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_al_rule (rule_id),
+  INDEX idx_al_created (created_at)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS settings (
+  `key` VARCHAR(64) PRIMARY KEY,
+  `value` TEXT
+) ENGINE=InnoDB;
