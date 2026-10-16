@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 700" fill="none">
+ <defs>
+  <radialGradient id="aura"><stop offset="0" stop-color="#a9dfff" stop-opacity=".38"/><stop offset=".42" stop-color="#8d7bff" stop-opacity=".2"/><stop offset="1" stop-color="#7da7ff" stop-opacity="0"/></radialGradient>
+  <linearGradient id="crystalA" x1="270" y1="155" x2="520" y2="510" gradientUnits="userSpaceOnUse"><stop stop-color="#f7ffff"/><stop offset=".16" stop-color="#b2eaff"/><stop offset=".4" stop-color="#7298ff"/><stop offset=".68" stop-color="#a49aff"/><stop offset="1" stop-color="#eff3ff"/></linearGradient>
+  <linearGradient id="facetB" x1="285" y1="180" x2="390" y2="450" gradientUnits="userSpaceOnUse"><stop stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#68bfff" stop-opacity=".12"/></linearGradient>
+  <linearGradient id="facetC" x1="515" y1="226" x2="370" y2="482" gradientUnits="userSpaceOnUse"><stop stop-color="#e6dbff" stop-opacity=".9"/><stop offset="1" stop-color="#4f63dc" stop-opacity=".12"/></linearGradient>
+  <linearGradient id="facetD" x1="375" y1="290" x2="375" y2="526" gradientUnits="userSpaceOnUse"><stop stop-color="#61d7ff" stop-opacity=".22"/><stop offset=".52" stop-color="#6b74f5" stop-opacity=".5"/><stop offset="1" stop-color="#f3dfff" stop-opacity=".8"/></linearGradient>
+  <linearGradient id="horizon" x1="380" y1="505" x2="380" y2="700" gradientUnits="userSpaceOnUse"><stop stop-color="#647cce" stop-opacity=".07"/><stop offset="1" stop-color="#050e31" stop-opacity=".94"/></linearGradient>
+  <filter id="blur30" x="100" y="50" width="560" height="570" filterUnits="userSpaceOnUse"><feGaussianBlur stdDeviation="30"/></filter>
+  <filter id="glow" x="170" y="75" width="420" height="520" filterUnits="userSpaceOnUse"><feGaussianBlur stdDeviation="12" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <pattern id="stars" width="97" height="91" patternUnits="userSpaceOnUse"><circle cx="11" cy="21" r=".9" fill="#d9f5ff"/><circle cx="56" cy="7" r=".65" fill="#a9b9ff"/><circle cx="83" cy="51" r="1" fill="#fff"/><circle cx="26" cy="72" r=".65" fill="#9fb8ff"/><circle cx="68" cy="84" r=".6" fill="#ffd9ef"/></pattern>
+ </defs>
+ <rect width="760" height="700" fill="url(#stars)" opacity=".72"/>
+ <ellipse cx="380" cy="320" rx="240" ry="270" fill="url(#aura)" filter="url(#blur30)"/>
+ <!-- faint aurora plumes -->
+ <path d="M95 295C155 208 217 204 272 226S389 286 473 221 601 194 672 273" stroke="#6faeff" stroke-opacity=".17" stroke-width="2"/>
+ <path d="M75 350C158 286 222 331 273 363S395 406 488 335 608 300 691 359" stroke="#c09dff" stroke-opacity=".15" stroke-width="2"/>
+ <!-- luminous crystalline core -->
+ <g filter="url(#glow)">
+   <path d="M381 142 488 221 516 352 448 468 380 526 292 465 241 349 274 226Z" fill="url(#crystalA)" fill-opacity=".87" stroke="#e6f7ff" stroke-opacity=".88" stroke-width="2"/>
+   <path d="M381 142 381 293 274 226Z" fill="url(#facetB)"/>
+   <path d="M381 142 488 221 381 293Z" fill="#dff7ff" fill-opacity=".7"/>
+   <path d="M488 221 516 352 381 293Z" fill="url(#facetC)"/>
+   <path d="M516 352 448 468 381 293Z" fill="#8b9fff" fill-opacity=".54"/>
+   <path d="M448 468 380 526 381 293Z" fill="url(#facetD)"/>
+   <path d="M380 526 292 465 381 293Z" fill="#7de3ff" fill-opacity=".38"/>
+   <path d="M292 465 241 349 381 293Z" fill="#93a9ff" fill-opacity=".64"/>
+   <path d="M241 349 274 226 381 293Z" fill="#f0efff" fill-opacity=".68"/>
+   <path d="M381 142 381 526M274 226 448 468M488 221 292 465M241 349 516 352" stroke="#f5fdff" stroke-opacity=".54" stroke-width="1.2"/>
+   <path d="M319 205 381 174 438 214 407 273 347 265Z" fill="#fff" fill-opacity=".14"/>
+   <path d="M381 142 488 221 516 352 448 468 380 526 292 465 241 349 274 226Z" stroke="#c7f4ff" stroke-width="3" stroke-opacity=".45"/>
+ </g>
+ <!-- pedestal and atmospheric horizon -->
+ <ellipse cx="380" cy="550" rx="175" ry="27" fill="#8c98ff" fill-opacity=".12"/>
+ <ellipse cx="380" cy="548" rx="126" ry="13" stroke="#9fdcff" stroke-opacity=".65" stroke-width="2"/>
+ <ellipse cx="380" cy="550" rx="83" ry="7" stroke="#d9c5ff" stroke-opacity=".8"/>
+ <path d="M0 601 52 565 91 590 147 541 198 574 241 557 282 583 327 549 380 567 426 544 465 578 508 549 565 588 611 557 672 590 760 552V700H0Z" fill="url(#horizon)"/>
+ <!-- horizon city silhouettes -->
+ <g fill="#0d1b47" fill-opacity=".8">
+  <path d="M40 650V613H55V592H65V613H79V650ZM102 650V627H119V602H127V627H145V650ZM583 650V619H597V594H607V619H620V650ZM646 650V625H661V584H669V625H681V650ZM700 650V614H713V597H720V614H734V650Z"/>
+  <path d="M0 660 35 638 70 654 111 628 154 650 198 636 233 658 277 642 317 657 363 643 410 658 452 636 493 659 531 640 574 659 616 634 663 654 708 638 760 654V700H0Z" fill="#080f2e"/>
+ </g>
+ <!-- tiny light trails -->
+ <g stroke-linecap="round"><path d="M95 168h52" stroke="#83dfff" stroke-opacity=".68"/><path d="M111 174h23" stroke="#c5a8ff" stroke-width="2"/><path d="M562 154h65" stroke="#9fbaff" stroke-opacity=".8"/><path d="M588 160h28" stroke="#f4d0ff" stroke-width="2"/><path d="M82 438h38" stroke="#6acbff" stroke-opacity=".58"/><path d="M612 420h54" stroke="#b2b8ff" stroke-opacity=".65"/></g>
+ <!-- orbit sparks -->
+ <g fill="#fff"><circle cx="240" cy="229" r="3"/><circle cx="520" cy="354" r="3"/><circle cx="298" cy="461" r="2.5"/><circle cx="489" cy="222" r="2.5"/></g>
+ <g fill="#95eaff"><circle cx="240" cy="229" r="7" fill-opacity=".18"/><circle cx="520" cy="354" r="8" fill-opacity=".2"/><circle cx="298" cy="461" r="6" fill-opacity=".2"/></g>
+</svg>

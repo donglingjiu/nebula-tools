@@ -15,7 +15,18 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod   # 版本跟着 go.mod 走；若报版本错误，改成 go-version: '1.22'
+          go-version: '1.24.x'
+
+      - name: Pin dependencies & build
+        run: |
+          go get github.com/pdfcpu/pdfcpu@v0.9.1
+          go get github.com/xuri/excelize/v2@v2.8.1
+          go get github.com/ledongthuc/pdf@latest
+          go mod tidy
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+          go build -ldflags "-s -w -X main.Version=v2.2.1-${GITHUB_RUN_NUMBER}" \
+          -o nova-server-linux-amd64 .
+
 
       - name: Build static linux binary
         run: |

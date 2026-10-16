@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 780" fill="none">
+ <defs>
+  <linearGradient id="sky" x1="800" y1="0" x2="800" y2="780" gradientUnits="userSpaceOnUse"><stop stop-color="#b7d8ff" stop-opacity=".52"/><stop offset=".48" stop-color="#fff3f3" stop-opacity=".42"/><stop offset=".75" stop-color="#d7e8ff" stop-opacity=".3"/><stop offset="1" stop-color="#e4f2ff" stop-opacity="0"/></linearGradient>
+  <radialGradient id="sun"><stop stop-color="#fff7da" stop-opacity=".92"/><stop offset=".3" stop-color="#ffddbb" stop-opacity=".42"/><stop offset="1" stop-color="#ffdcbb" stop-opacity="0"/></radialGradient>
+  <linearGradient id="water" x1="800" y1="510" x2="800" y2="780" gradientUnits="userSpaceOnUse"><stop stop-color="#94cfff" stop-opacity=".16"/><stop offset="1" stop-color="#7cb6e8" stop-opacity=".32"/></linearGradient>
+  <linearGradient id="island" x1="1000" y1="170" x2="1180" y2="380" gradientUnits="userSpaceOnUse"><stop stop-color="#fff4df"/><stop offset=".45" stop-color="#bbdafd"/><stop offset="1" stop-color="#89b1e6"/></linearGradient>
+  <filter id="soft"><feGaussianBlur stdDeviation="18"/></filter>
+ </defs>
+ <rect width="1600" height="780" fill="url(#sky)"/>
+ <ellipse cx="1130" cy="165" rx="390" ry="220" fill="url(#sun)"/>
+ <circle cx="1110" cy="165" r="112" fill="#fff7e9" fill-opacity=".13"/>
+ <!-- fine cloud banks -->
+ <g fill="#fff" fill-opacity=".42" filter="url(#soft)"><ellipse cx="180" cy="170" rx="250" ry="62"/><ellipse cx="450" cy="245" rx="290" ry="54"/><ellipse cx="1280" cy="270" rx="360" ry="74"/><ellipse cx="930" cy="355" rx="420" ry="54"/></g>
+ <g stroke="#fff" stroke-opacity=".42" stroke-width="3"><path d="M0 235c90-42 146-37 222-3s142 20 212-13 131-38 203-6 129 24 204-3 140-10 208 20 142 11 222-25 198-21 329 18"/><path d="M0 278c124-35 194-8 275 22s158 16 239-14 150-17 229 9 159 23 238-4 144-25 226-2 213 5 393-29"/></g>
+ <!-- distant floating architecture -->
+ <g opacity=".55">
+  <path d="M1040 306 1122 246 1209 306 1190 354 1060 354Z" fill="url(#island)"/>
+  <path d="M1063 301 1118 272 1188 301" stroke="#fff" stroke-opacity=".8" stroke-width="2"/>
+  <path d="M1082 354v-54h9v54m18 0v-64h9v64m19 0v-48h9v48m16 0v-58h9v58" stroke="#fff" stroke-opacity=".7" stroke-width="3"/>
+  <path d="M1065 355 1044 395 1174 395 1190 355" fill="#91bae7" fill-opacity=".35"/>
+  <path d="M200 372 252 332 308 372 295 400 213 400Z" fill="#d5e6fb"/><path d="M225 372v-26h7v26m18 0v-33h7v33m18 0v-22h7v22" stroke="#fff" stroke-opacity=".7" stroke-width="2"/>
+ </g>
+ <!-- ringed planet -->
+ <g transform="translate(1280 115) rotate(-18)"><ellipse rx="94" ry="28" stroke="#dcbcff" stroke-opacity=".55" stroke-width="7"/><ellipse rx="94" ry="28" stroke="#fff" stroke-opacity=".82" stroke-width="2"/><circle r="43" fill="#c4baff" fill-opacity=".75"/><circle r="38" fill="#8cbcfb" fill-opacity=".54"/><path d="M-25-24C-1-45 34-20 34 4 32 25 9 42-12 32-35 21-43-4-25-24Z" fill="#fff" fill-opacity=".28"/></g>
+ <!-- horizon sea -->
+ <path d="M0 510c154-24 296-4 425 8s256-27 402-4 241 25 379-7 259-10 394 1V780H0Z" fill="url(#water)"/>
+ <g stroke="#fff" stroke-opacity=".44" stroke-linecap="round"><path d="M0 526h250m36 10h180m45-8h255m80 12h190m40-8h170m70 8h210"/><path d="M120 578h170m38 11h125m60-7h242m71 14h175m60-8h210"/><path d="M0 642h210m95 8h200m85-8h175m70 12h270m95-6h200"/></g>
+ <!-- foreground mist -->
+ <ellipse cx="820" cy="720" rx="760" ry="85" fill="#f6fbff" fill-opacity=".32" filter="url(#soft)"/>
+</svg>
