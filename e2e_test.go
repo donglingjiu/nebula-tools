@@ -56,7 +56,33 @@ func (tc *TC) doC(c *http.Client, method, path string, body any) (int, map[strin
 	}
 	return resp.StatusCode, m
 }
+
+// doArrC：响应体是 JSON 数组时专用（tools/favs/history/workflows/notices 等）
+func (tc *TC) doArrC(c *http.Client, method, path string, body any) (int, []any) {
+	tc.t.Helper()
+	var rd io.Reader
+	if body != nil {
+		b, _ := json.Marshal(body)
+		rd = bytes.NewReader(b)
+	}
+	req, _ := http.NewRequest(method, tc.ts.URL+path, rd)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := c.Do(req)
+	if err != nil {
+		tc.t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	raw, _ := io.ReadAll(resp.Body)
+	var arr []any
+	json.Unmarshal(raw, &arr)
+	if arr == nil {
+		arr = []any{}
+	}
+	return resp.StatusCode, arr
+}
+
 func (tc *TC) do(m, p string, b any) (int, map[string]any) { return tc.doC(tc.c, m, p, b) }
+
 func (tc *TC) okC(c *http.Client, m, p string, b any) map[string]any {
 	code, r := tc.doC(c, m, p, b)
 	if code != 200 || r["ok"] == false {
@@ -65,6 +91,14 @@ func (tc *TC) okC(c *http.Client, m, p string, b any) map[string]any {
 	return r
 }
 func (tc *TC) ok(m, p string, b any) map[string]any { return tc.okC(tc.c, m, p, b) }
+
+func (tc *TC) okArr(m, p string) []any {
+	code, arr := tc.doArrC(tc.c, m, p, nil)
+	if code != 200 {
+		tc.t.Fatalf("%s %s → %d", m, p, code)
+	}
+	return arr
+}
 
 func (tc *TC) upC(c *http.Client, path, name, content string) (int, map[string]any) {
 	tc.t.Helper()
@@ -131,10 +165,10 @@ func TestFullJourney(t *testing.T) {
 	if m["role"] != "admin" {
 		t.Fatalf("首个用户应为 admin: %v", m)
 	}
-	// 04 工具列表 16 个且全开
-	_, tools := tc.ok("GET", "/api/tools", nil)
-	if len(tools.([]any)) != 16 {
-		t.Fatalf("应 16 个工具: %d", len(tools.([]any)))
+	// 04 工具列表 16 个（数组端点 → okArr）
+	tools := tc.okArr("GET", "/api/tools")
+	if len(tools) != 16 {
+		t.Fatalf("应 16 个工具: %d", len(tools))
 	}
 	// 05 十一个文本工具逐个真实运行并校验输出特征
 	runs := map[string]struct {
@@ -181,19 +215,24 @@ func TestFullJourney(t *testing.T) {
 	if code != 200 || !strings.HasPrefix(fmt.Sprint(m["output"]), "data:image/") {
 		t.Fatalf("img: %d %v", code, m)
 	}
-	// 08 收藏 → 列表回显
+	// 08 收藏 → 列表回显（数组）
 	tc.ok("POST", "/api/fav/dev.json", nil)
-	if _, f := tc.ok("GET", "/api/favs", nil); !strings.Contains(fmt.Sprint(f), "dev.json") {
-		t.Fatalf("收藏: %v", f)
+	favs := tc.okArr("GET", "/api/favs")
+	if !strings.Contains(fmt.Sprint(favs), "dev.json") {
+		t.Fatalf("收藏: %v", favs)
 	}
-	// 09 历史已记录（文本+文件）
-	if _, h := tc.ok("GET", "/api/history", nil); !strings.Contains(fmt.Sprint(h), "dev.json") {
-		t.Fatalf("历史: %v", h)
+	// 09 历史已记录（数组）
+	hist := tc.okArr("GET", "/api/history")
+	if !strings.Contains(fmt.Sprint(hist), "dev.json") {
+		t.Fatalf("历史: %v", hist)
 	}
-	// 10 工作流：保存 → 运行 → 两步轨迹
+	// 10 工作流：保存 → 运行 → 两步轨迹（数组）
 	tc.ok("POST", "/api/workflows", map[string]any{"name": "清洗", "steps": []string{"dev.json", "dev.encode"}})
-	_, wfs := tc.ok("GET", "/api/workflows", nil)
-	wf := wfs.([]any)[0].(map[string]any)
+	wfs := tc.okArr("GET", "/api/workflows")
+	if len(wfs) == 0 {
+		t.Fatal("工作流未保存")
+	}
+	wf := wfs[0].(map[string]any)
 	m = tc.ok("POST", "/api/workflows/"+fmt.Sprint(int64(wf["id"].(float64)))+"/run", map[string]any{"input": `{"b":1}`})
 	if len(m["trace"].([]any)) != 2 {
 		t.Fatalf("轨迹应 2 步: %v", m)
@@ -224,8 +263,9 @@ func TestFullJourney(t *testing.T) {
 	tc.ok("POST", "/api/admin/users/bob/role", map[string]string{"role": "admin"})
 	tc.ok("POST", "/api/admin/users/bob/reset", map[string]string{"password": "bob99999"})
 	tc.ok("POST", "/api/admin/notices", map[string]string{"title": "上线", "body": "v2.2.1"})
-	if _, n := tc.ok("GET", "/api/notices", nil); !strings.Contains(fmt.Sprint(n), "上线") {
-		t.Fatal("公告未发布")
+	notices := tc.okArr("GET", "/api/notices")
+	if !strings.Contains(fmt.Sprint(notices), "上线") {
+		t.Fatalf("公告未发布: %v", notices)
 	}
 	tc.ok("GET", "/api/admin/logs", nil)
 	tc.ok("GET", "/api/admin/analytics", nil)
