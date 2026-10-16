@@ -1,0 +1,7 @@
+{
+  "version": "dev",
+  "go": "unknown",
+  "node_build": "unknown",
+  "bundled": { "mysql": "none", "python": "none", "redis": "none" },
+  "build_at": "1970-01-01T00:00:00Z"
+}
