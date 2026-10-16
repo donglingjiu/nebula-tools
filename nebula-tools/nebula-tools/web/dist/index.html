@@ -1,6 +1,408 @@
-<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8"><title>Nebula Tools</title></head>
-<body style="font-family:sans-serif;text-align:center;padding-top:15vh;color:#334155">
-<h1>🪐 Nebula Tools</h1>
-<p>前端完整版在后续批次交付，当前为占位页（API 已全部可用）。</p>
-<p><a href="/api/about">/api/about</a> · <a href="/api/modules">/api/modules</a> · <a href="/api/health">/api/health</a></p>
-</body></html>
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nebula Tools</title>
+<style>
+:root{--p:#4f6ef7;--bg:#f6f7fb;--line:#e2e8f0;--tx:#1e293b;--mut:#64748b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--tx)}
+header{background:#fff;border-bottom:1px solid var(--line);padding:12px 20px;display:flex;
+  align-items:center;gap:12px;position:sticky;top:0;z-index:9;flex-wrap:wrap}
+header .logo{font-size:17px;font-weight:700;white-space:nowrap}
+header .logo a{color:inherit;text-decoration:none}
+#q{flex:1;min-width:160px;border:1px solid #cbd5e1;border-radius:99px;padding:8px 14px;font-size:13px;outline:none}
+#q:focus{border-color:var(--p)}
+.badge{font-size:11px;color:var(--mut);background:#f1f5f9;border-radius:99px;padding:3px 10px;white-space:nowrap}
+#bell{font-size:16px;cursor:default}
+#bell.on{filter:drop-shadow(0 0 5px #ef4444)}
+header a.adminlink{font-size:13px;color:var(--p);text-decoration:none;white-space:nowrap}
+main{max-width:960px;margin:0 auto;padding:22px 16px 60px}
+.cat{font-size:13px;color:var(--mut);margin:22px 0 10px;font-weight:600}
+.cat:first-child{margin-top:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 12px;text-align:center;
+  cursor:pointer;transition:.15s}
+.card:hover{border-color:var(--p);transform:translateY(-2px);box-shadow:0 6px 16px rgba(79,110,247,.12)}
+.card .ic{font-size:26px}.card .nm{margin-top:8px;font-size:13px;font-weight:600}
+.panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:16px}
+.panel h2{font-size:16px;margin-bottom:4px}
+.backlink{font-size:13px;color:var(--p);text-decoration:none;display:inline-block;margin-bottom:8px}
+textarea{width:100%;height:130px;border:1px solid #cbd5e1;border-radius:8px;padding:10px;
+  font-family:ui-monospace,SFMono-Regular,monospace;font-size:13px;resize:vertical;outline:none}
+textarea:focus{border-color:var(--p)}
+.row{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap;align-items:center}
+button{background:var(--p);color:#fff;border:0;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer}
+button.ghost{background:#eef2ff;color:var(--p)}
+button.warn{background:#fee2e2;color:#dc2626}
+button:hover{opacity:.9}
+.pre{background:#0f172a;color:#e2e8f0;border-radius:8px;padding:14px;font-size:12.5px;
+  overflow:auto;white-space:pre-wrap;word-break:break-all;min-height:42px;margin-top:10px}
+.htmlbox{background:#fff;color:var(--tx);border:1px solid var(--line)}
+.svgbox{background:#fff;color:var(--tx);text-align:center}
+.err{color:#dc2626;font-size:13px;margin-top:8px}
+.mut{color:var(--mut);font-size:13px}
+label.f{font-size:12px;color:var(--mut);display:flex;flex-direction:column;gap:4px}
+label.f input,select{border:1px solid #cbd5e1;border-radius:8px;padding:7px 9px;font-size:13px;width:150px}
+footer{text-align:center;font-size:11px;color:#94a3b8;padding:18px;border-top:1px solid var(--line);line-height:1.8}
+table{width:100%;font-size:13px;border-collapse:collapse}
+th{ text-align:left;color:var(--mut);font-weight:600;font-size:12px;padding:6px 4px;border-bottom:1px solid var(--line)}
+td{padding:9px 4px;border-top:1px solid #f1f5f9;vertical-align:middle}
+.tscroll{overflow-x:auto}
+.switch{width:38px;height:20px;border-radius:99px;background:#cbd5e1;position:relative;cursor:pointer;flex:none}
+.switch.on{background:#22c55e}
+.switch::after{content:"";position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;
+  top:2px;left:2px;transition:.15s}
+.switch.on::after{left:20px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tabs button{background:#f1f5f9;color:var(--mut)}
+.tabs button.act{background:var(--p);color:#fff}
+.cards5{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.cards5 .kpi{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:12px}
+.kpi .n{font-size:22px;font-weight:800}
+.kpi .t{font-size:11px;color:var(--mut);margin-top:2px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.dot.critical{background:#ef4444}.dot.warning{background:#f59e0b}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;
+  border-radius:99px;padding:9px 18px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:99}
+#toast.show{opacity:.95}
+#loginBox{max-width:340px;margin:40px auto}
+#loginBox input{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:10px;font-size:14px;margin:10px 0}
+h3.sec{font-size:14px;margin:18px 0 8px;color:var(--tx)}
+@media(max-width:720px){
+  main{padding:14px 10px 50px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
+  header{padding:10px 12px}
+  textarea{height:110px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><a href="#/">🪐 Nebula Tools</a></div>
+  <input id="q" placeholder="搜索工具…">
+  <span id="bell" title="实时告警">🔔</span>
+  <span id="ver" class="badge">…</span>
+  <a class="adminlink" href="#/admin">⚙️ 管理</a>
+</header>
+
+<main>
+  <!-- 前台：宫格 -->
+  <section id="v-home"></section>
+
+  <!-- 前台：工具页 -->
+  <section id="v-tool" style="display:none">
+    <a class="backlink" href="#/">← 返回工具列表</a>
+    <div class="panel">
+      <h2 id="tName"></h2>
+      <div id="tBody"></div>
+      <div class="row" id="ops"></div>
+      <div class="row"><button onclick="runTool()">执行</button></div>
+      <div id="out" class="pre" style="display:none"></div>
+      <div id="err" class="err"></div>
+    </div>
+  </section>
+
+  <!-- 后台 -->
+  <section id="v-admin" style="display:none">
+    <div id="loginBox" class="panel">
+      <h2>管理员登录</h2>
+      <p class="mut">默认账号 admin / admin123</p>
+      <input id="pw" type="password" placeholder="密码" onkeydown="if(event.key==='Enter')doLogin()">
+      <button onclick="doLogin()">登录</button>
+      <div id="loginErr" class="err"></div>
+    </div>
+    <div id="adminBox" style="display:none">
+      <div class="tabs" id="admTabs"></div>
+      <div class="panel" id="pane"><p class="mut">加载中…</p></div>
+    </div>
+  </section>
+</main>
+
+<footer id="foot">🪐 Nebula Tools</footer>
+<div id="toast"></div>
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+let token=localStorage.getItem('nb_token')||'';
+let MODS=[],CUR=null,es=null;
+
+/* ───── 基础 ───── */
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');
+  clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2600)}
+async function api(p,opt={}){
+  const r=await fetch(p,{...opt,headers:{'Content-Type':'application/json',
+    ...(token?{Authorization:'Bearer '+token}:{})}});
+  const t=await r.text();let j;try{j=JSON.parse(t)}catch(e){throw new Error('HTTP '+r.status)}
+  if(!r.ok)throw new Error(j.error||('HTTP '+r.status));return j;}
+async function apiFile(p,fd){
+  const r=await fetch(p,{method:'POST',body:fd,
+    headers:(token?{Authorization:'Bearer '+token}:{})});
+  if(!r.ok){const j=await r.json().catch(()=>({}));throw new Error(j.error||('HTTP '+r.status))}
+  const ct=r.headers.get('Content-Type')||'';
+  if(ct.includes('application/json'))return{type:'json',j:await r.json()};
+  return{type:'blob',blob:await r.blob(),cd:r.headers.get('Content-Disposition')||''};}
+const fmt=v=>(!v||v==='none'||v==='unknown')?'—':v;
+
+/* ───── 路由 ───── */
+function route(){
+  const h=location.hash||'#/';
+  $('#v-home').style.display=h.startsWith('#/tool/')||h.startsWith('#/admin')?'none':'block';
+  $('#v-tool').style.display=h.startsWith('#/tool/')?'block':'none';
+  $('#v-admin').style.display=h.startsWith('#/admin')?'block':'none';
+  if(h.startsWith('#/tool/'))renderTool(decodeURIComponent(h.slice(7)));
+  else if(h.startsWith('#/admin'))renderAdmin();
+}
+window.addEventListener('hashchange',route);
+
+/* ───── 前台 ───── */
+const CAT={dev:'🛠️ 开发工具',file:'📁 文件处理',data:'📊 数据分析',home:'🏠 效率'};
+function renderHome(q){
+  q=(q||'').trim().toLowerCase();
+  const list=q?MODS.filter(m=>(m.name+' '+m.id).toLowerCase().includes(q)):MODS;
+  const g={};list.forEach(m=>{(g[m.category]=g[m.category]||[]).push(m)});
+  let html='';
+  for(const c of Object.keys(CAT)){
+    if(!g[c])continue;
+    html+=`<h3 class="cat">${CAT[c]}</h3><div class="grid">`+
+      g[c].map(m=>`<div class="card" onclick="location.hash='#/tool/${m.id}'">
+        <div class="ic">${m.icon}</div><div class="nm">${m.name}</div></div>`).join('')+`</div>`;
+  }
+  $('#v-home').innerHTML=html||'<p class="mut" style="padding:40px 0;text-align:center">没有匹配的工具</p>';
+}
+
+const OPS={
+ 'dev.json':[['格式化','format']],
+ 'dev.md':[['渲染 HTML','render']],
+ 'dev.encode':[['Base64编码','base64enc'],['Base64解码','base64dec'],['URL编码','urlenc'],
+   ['URL解码','urldec'],['Hex编码','hexenc'],['Hex解码','hexdec']],
+ 'dev.hash':[['计算三哈希','hash']],
+ 'dev.sql':[['格式化','format']],
+ 'file.pdf':[['提取文本','run']],'file.excel':[['转 CSV','run']],
+ 'file.word':[['提取文本','run']],'file.image':[['压缩','run']],
+ 'data.chart':[['生成图表','run']],'data.stat':[['统计词频','run']]};
+const EP={'dev.json':'/api/dev/json/format','dev.md':'/api/dev/md/render',
+ 'dev.encode':'/api/dev/encode','dev.hash':'/api/dev/hash','dev.sql':'/api/dev/sql/format',
+ 'data.stat':'/api/data/stat/analyze'};
+const FILE_EP={'file.pdf':'/api/file/pdf/to-text','file.excel':'/api/file/excel/to-csv',
+ 'file.word':'/api/file/word/to-text','file.image':'/api/file/image/resize'};
+
+function renderTool(id){
+  const m=MODS.find(x=>x.id===id);
+  if(!m){location.hash='#/';return}
+  CUR={...m,op:(OPS[id]||[['执行','run']])[0][1]};
+  $('#tName').textContent=m.icon+' '+m.name;
+  let h='';
+  if(id==='data.chart'){
+    h=`<div class="row">
+      <label class="f">图表类型<select id="ctype"><option value="bar">柱状图</option><option value="line">折线图</option></select></label>
+      <label class="f">标题<input id="ctitle" placeholder="示例：本周访问量"></label></div>
+      <div class="row">
+      <label class="f">标签(逗号分隔)<input id="clabels" style="width:260px" placeholder="周一,周二,周三"></label>
+      <label class="f">数值(逗号分隔)<input id="cvals" style="width:260px" placeholder="120,90,200"></label></div>`;
+  }else if(FILE_EP[id]){
+    h=`<div class="row"><label class="f">选择文件<input type="file" id="fin"></label></div>`+
+      (id==='file.image'?`<div class="row">
+        <label class="f">目标宽度(px)<input id="fwidth" type="number" value="800"></label>
+        <label class="f">JPEG质量(1-100)<input id="fquality" type="number" value="80"></label></div>`:'');
+  }else{
+    h=`<textarea id="in" placeholder="在此输入内容…"></textarea>`;
+  }
+  $('#tBody').innerHTML=h;
+  $('#ops').innerHTML=(OPS[id]||[]).map(([l,o])=>
+    `<button class="ghost" onclick="setOp('${o}')">${l}</button>`).join('');
+  const out=$('#out');out.style.display='none';out.innerHTML='';out.className='pre';
+  $('#err').textContent='';
+}
+function setOp(o){if(CUR){CUR.op=o;runTool()}}
+const pretty=o=>JSON.stringify(o,null,2);
+
+async function runTool(){
+  if(!CUR)return;
+  const id=CUR.id,op=CUR.op,err=$('#err'),out=$('#out');
+  err.textContent='';out.style.display='block';out.className='pre';out.textContent='处理中…';
+  try{
+    if(id==='data.chart'){
+      const vals=$('#cvals').value.split(',').map(Number).filter(n=>!isNaN(n));
+      const r=await api('/api/data/chart/svg',{method:'POST',body:JSON.stringify({
+        type:$('#ctype').value,title:$('#ctitle').value,
+        labels:$('#clabels').value.split(',').map(s=>s.trim()).filter(Boolean),values:vals})});
+      out.className='pre svgbox';out.innerHTML=r.result;return;
+    }
+    if(FILE_EP[id]){
+      const f=$('#fin').files[0];
+      if(!f){throw new Error('请先选择文件')}
+      const fd=new FormData();fd.append('file',f);
+      if(id==='file.image'){fd.append('width',$('#fwidth').value||800);
+        fd.append('quality',$('#fquality').value||80)}
+      const r=await apiFile(FILE_EP[id],fd);
+      if(r.type==='json'){out.textContent=r.j.result}
+      else{
+        const name=(r.cd.match(/filename="?([^";]+)"?/)||[])[1]||'download.bin';
+        const url=URL.createObjectURL(r.blob);
+        out.innerHTML=`<p style="padding:6px 0">✅ 处理完成（${(r.blob.size/1024).toFixed(1)} KB）
+          <br><a href="${url}" download="${name}" style="color:var(--p)">⬇️ 点击保存 ${name}</a></p>`;
+      }
+      return;
+    }
+    const t=$('#in').value;
+    let body;
+    if(id==='dev.json')body={json:t};
+    else if(id==='dev.md')body={md:t};
+    else if(id==='dev.encode')body={text:t,op};
+    else if(id==='dev.hash')body={text:t};
+    else if(id==='dev.sql')body={sql:t};
+    else if(id==='data.stat')body={text:t,topn:25};
+    const r=await api(EP[id],{method:'POST',body:JSON.stringify(body)});
+    if(id==='dev.md'){out.className='pre htmlbox';out.innerHTML=r.result}
+    else if(id==='dev.hash'){out.textContent=pretty(r.result)}
+    else if(id==='data.stat'){
+      out.className='pre htmlbox';
+      out.innerHTML='<table><tr><th>词</th><th>次数</th></tr>'+
+        r.result.map(x=>`<tr><td>${x.word}</td><td>${x.count}</td></tr>`).join('')+
+        `</table><p class="mut" style="margin-top:8px">共 ${r.total_tokens} 个词元</p>`;
+    }
+    else out.textContent=r.result;
+  }catch(e){out.style.display='none';err.textContent='❌ '+e.message}
+}
+
+/* ───── 后台 ───── */
+const TABS=[['mods','模块管理'],['insight','数据画像'],['alarms','告警中心'],
+  ['deps','依赖与版本'],['db','数据库']];
+function renderAdmin(){
+  if(!token){$('#loginBox').style.display='block';$('#adminBox').style.display='none';return}
+  $('#loginBox').style.display='none';$('#adminBox').style.display='block';
+  admTab('mods');sseStart();
+}
+async function doLogin(){
+  try{
+    const j=await api('/api/auth/login',{method:'POST',
+      body:JSON.stringify({username:'admin',password:$('#pw').value})});
+    token=j.token;localStorage.setItem('nb_token',token);
+    $('#loginErr').textContent='';renderAdmin();toast('✅ 已登录');
+  }catch(e){$('#loginErr').textContent='❌ '+e.message}
+}
+function admTab(name){
+  $('#admTabs').innerHTML=TABS.map(([k,l])=>
+    `<button class="${k===name?'act':''}" onclick="admTab('${k}')">${l}</button>`).join('');
+  const P=$('#pane');P.innerHTML='<p class="mut">加载中…</p>';
+  ({mods:loadMods,insight:loadInsight,alarms:loadAlarms,deps:loadDeps,db:loadDb}[name])()
+    .catch(e=>{P.innerHTML='<p class="err">❌ '+e.message+'</p>'});
+}
+async function loadMods(){
+  const j=await api('/api/admin/modules');
+  $('#pane').innerHTML=`<h3 class="sec">模块开关（下线后前台即时隐藏，接口返回 403）</h3>
+    <div class="tscroll"><table><tr><th>模块</th><th>ID</th><th>分类</th><th>状态</th></tr>`+
+    j.modules.map(m=>`<tr><td>${m.icon} ${m.name}</td><td class="mut">${m.id}</td>
+      <td>${m.category}</td><td style="width:60px">
+      <div class="switch ${m.enabled?'on':''}" onclick="toggleMod('${m.id}',this)"></div></td></tr>`).join('')+
+    '</table></div>';
+}
+async function toggleMod(id,el){
+  const on=!el.classList.contains('on');
+  try{await api('/api/admin/modules/'+id,{method:'PATCH',body:JSON.stringify({enabled:on})});
+    el.classList.toggle('on',on);toast(on?'✅ 已启用 '+id:'⛔ 已下线 '+id);}
+  catch(e){toast('❌ '+e.message)}
+}
+async function loadInsight(){
+  const o=(await api('/api/admin/insight/overview')).data;
+  const heat=(await api('/api/admin/insight/modules')).heat;
+  $('#pane').innerHTML=`<div class="cards5">
+    <div class="kpi"><div class="n">${o.users}</div><div class="t">用户总数</div></div>
+    <div class="kpi"><div class="n" style="color:var(--p)">${o.requests_today}</div><div class="t">今日请求</div></div>
+    <div class="kpi"><div class="n" style="color:${o.error_today>0?'#dc2626':'#16a34a'}">${o.error_today}</div><div class="t">今日错误</div></div>
+    <div class="kpi"><div class="n">${o.avg_latency_ms}ms</div><div class="t">平均延迟（P95 ${o.p95_latency_ms}ms）</div></div>
+    <div class="kpi"><div class="n" style="color:${o.unread_alarms>0?'#f59e0b':'#16a34a'}">${o.unread_alarms}</div><div class="t">未读告警</div></div>
+  </div><h3 class="sec">模块热度 Top10（近 7 天）</h3>
+  <div class="tscroll"><table><tr><th>路径</th><th>调用次数</th></tr>`+
+  (heat.map(h=>`<tr><td>${h.module}</td><td>${h.count}</td></tr>`).join('')||
+   '<tr><td colspan="2" class="mut">暂无数据</td></tr>')+'</table></div>';
+}
+async function loadAlarms(){
+  const j=await api('/api/admin/alarms');
+  $('#pane').innerHTML=`<div class="row"><h3 class="sec" style="flex:1;margin:0">最近 50 条告警</h3>
+    <button class="ghost" onclick="markRead()">全部标记已读</button></div>
+  <div class="tscroll"><table>`+(j.alarms.map(a=>
+    `<tr><td style="width:80px"><span class="dot ${a.severity}"></span>${a.severity}</td>
+     <td>${a.message}</td>
+     <td class="mut" style="width:150px">${new Date(a.created_at).toLocaleString()}</td></tr>`).join('')||
+   '<tr><td class="mut">暂无告警 ✅</td></tr>')+'</table></div>';
+}
+async function markRead(){
+  try{await api('/api/admin/alarms/read',{method:'POST'});toast('✅ 已全部标记');admTab('alarms')}
+  catch(e){toast('❌ '+e.message)}
+}
+async function loadDeps(){
+  const j=await api('/api/admin/deps');
+  let b={};try{b=(await api('/api/about')).build}catch(e){}
+  $('#pane').innerHTML=`<h3 class="sec">构建信息</h3>
+    <div class="tscroll"><table>
+    <tr><td>应用版本</td><td><b>v${fmt(b.version)}</b></td></tr>
+    <tr><td>构建时间</td><td>${b.build_at&&b.build_at!=='1970-01-01T00:00:00Z'?new Date(b.build_at).toLocaleString():'—'}</td></tr>
+    <tr><td>运行时 Go</td><td>${fmt(b.go)}</td></tr></table></div>
+  <h3 class="sec">随包组件版本</h3>
+  <div class="tscroll"><table><tr><th>组件</th><th>版本</th></tr>`+
+  j.pkgs.map(p=>`<tr><td>${p.name}</td><td>${fmt(p.current)}</td></tr>`).join('')+
+  '</table></div><p class="mut" style="margin-top:10px">版本由 scripts/components.env 统一维护，构建时自动写入。</p>';
+}
+async function loadDb(){
+  const h=await api('/api/health');
+  $('#pane').innerHTML=`<h3 class="sec">当前数据库：<b>${h.db_driver}</b> ${h.switching?'（切换中…）':''}</h3>
+  <p class="mut">SQLite 零依赖开箱即用；数据量大或需多实例时切换到 MySQL（四要素填对即可，表结构自动迁移）。</p>
+  <div class="row">
+    <label class="f">主机<input id="dh" placeholder="127.0.0.1"></label>
+    <label class="f">端口<input id="dp" type="number" value="3306"></label>
+    <label class="f">用户名<input id="du" placeholder="root"></label>
+    <label class="f">密码<input id="dpw" type="password"></label>
+    <label class="f">库名<input id="ddb" placeholder="nebula"></label>
+  </div>
+  <div class="row">
+    <button onclick="swDb('mysql')">切换到 MySQL</button>
+    <button class="ghost" onclick="swDb('sqlite')">切换回 SQLite</button>
+  </div>`;
+}
+async function swDb(driver){
+  try{
+    if(driver==='mysql'){
+      await api('/api/admin/db/switch',{method:'POST',body:JSON.stringify({driver:'mysql',
+        host:$('#dh').value.trim(),port:+$('#dp').value||3306,user:$('#du').value.trim(),
+        password:$('#dpw').value,database:$('#ddb').value.trim()})});
+      toast('✅ 已切换到 MySQL（配置已持久化）');
+    }else{
+      if(!confirm('确认切回 SQLite？'))return;
+      await api('/api/admin/db/switch',{method:'POST',body:JSON.stringify({driver:'sqlite'})});
+      toast('✅ 已切回 SQLite');
+    }
+    admTab('db');
+  }catch(e){toast('❌ '+e.message)}
+}
+
+/* ───── SSE 实时告警 ───── */
+function sseStart(){
+  try{
+    if(es)es.close();
+    es=new EventSource('/api/admin/events?token='+encodeURIComponent(token));
+    es.onmessage=()=>{$('#bell').classList.add('on');toast('🔔 收到新告警，请到后台查看')};
+  }catch(e){}
+}
+
+/* ───── 启动 ───── */
+async function boot(){
+  try{
+    const b=(await api('/api/about')).build;
+    $('#ver').textContent='v'+fmt(b.version);
+    let f=`🪐 Nebula Tools <b>v${fmt(b.version)}</b> · 构建链路 Go ${fmt(b.go)}`+
+      ` · 随包组件 MySQL ${fmt(b.bundled&&b.bundled.mysql)} / Python ${fmt(b.bundled&&b.bundled.python)}`;
+    if(b.build_at&&b.build_at!=='1970-01-01T00:00:00Z')f+=` · 构建于 ${new Date(b.build_at).toLocaleString()}`;
+    $('#foot').innerHTML=f;
+  }catch(e){}
+  try{MODS=(await api('/api/modules')).modules||[]}catch(e){MODS=[]}
+  $('#q').addEventListener('input',e=>renderHome(e.target.value));
+  renderHome();route();
+}
+boot();
+</script>
+</body>
+</html>
