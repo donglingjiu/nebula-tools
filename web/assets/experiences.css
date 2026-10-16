@@ -1,0 +1,6 @@
+.panel,.option-card,button,.dropzone{transition:background .15s,border-color .15s,box-shadow .15s,transform .12s}
+.option-card:active{transform:scale(.98)}button:active{transform:translateY(1px)}
+.dropzone.drag{transform:scale(1.01)}
+@keyframes novaFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+#app>*{animation:novaFade .25s ease both}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
