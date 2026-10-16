@@ -1,0 +1,34 @@
+name: build
+on:
+  push:
+    branches: [main]        # push 到 main 自动编译
+  workflow_dispatch:         # Actions 页面出现 Run workflow 按钮
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod   # 版本跟着 go.mod 走；若报版本错误，改成 go-version: '1.22'
+
+      - name: Build static linux binary
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+          go build -ldflags "-s -w -X main.Version=v2.2.1-${GITHUB_RUN_NUMBER}" \
+          -o nova-server-linux-amd64 .
+
+      - name: Push binary to dist branch
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan dist-tmp
+          git rm -rf --cached . >/dev/null 2>&1 || true
+          git add -f nova-server-linux-amd64
+          git commit -m "build #${GITHUB_RUN_NUMBER}"
+          git push -f origin dist-tmp:dist
