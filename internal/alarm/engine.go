@@ -53,7 +53,7 @@ func (e *Engine) fire(r Rule, val float64) {
 
 // Evaluate 一轮规则评估
 func (e *Engine) Evaluate() {
-	total, errs, avgMs, p95Ms := metrics.Snapshot()
+	total, errs, _, p95Ms := metrics.Snapshot()
 	if total > 20 {
 		rate := float64(errs) / float64(total)
 		if rate > 0.05 {
