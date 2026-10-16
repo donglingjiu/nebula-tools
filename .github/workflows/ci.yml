@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: '发布版本号，如 v2.2.1'
+        description: '发布版本号，如 v2.2.1（仅字母数字._-，不要空格）'
         required: false
         default: ''
 permissions:
@@ -22,13 +22,14 @@ jobs:
         run: go mod tidy
       - name: 静态检查
         run: go vet ./...
-      - name: 单元测试 + 全链路 E2E（测试报告就在这段日志里）
+      - name: 单元测试 + 全链路 E2E
         run: go test -v ./...
   build:
     needs: test
     if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - { goos: windows, goarch: amd64, ext: .exe }
@@ -42,9 +43,21 @@ jobs:
       - run: go mod tidy
       - run: go vet ./... && go test ./...
       - name: Build
+        env:
+          VER_IN: ${{ github.event.inputs.version }}
         run: |
+          set -x
+          VER="$VER_IN"
+          # 防护1：版本号白名单，含空格/特殊字符/为空一律回退 dev
+          if ! printf '%s' "$VER" | grep -qE '^[A-Za-z0-9._-]+$'; then VER="dev"; fi
+          echo "构建版本: $VER"
           mkdir -p dist
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -trimpath -ldflags "-s -w -X main.Version=${{ github.event.inputs.version || 'dev' }}" -o dist/nova-server-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} .
+          # 防护2：CGO 全关（顺带产出免 glibc 依赖的静态二进制）
+          # 防护3：-X 值单引号包裹，内部有空格也不会撕裂参数
+          # 防护4：set -x 回显完整命令，再出问题日志里能看到真实调用
+          CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} \
+            go build -trimpath -ldflags "-s -w -X 'main.Version=${VER}'" \
+            -o "dist/nova-server-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}" .
       - uses: actions/upload-artifact@v4
         with:
           name: nova-${{ matrix.goos }}-${{ matrix.goarch }}
