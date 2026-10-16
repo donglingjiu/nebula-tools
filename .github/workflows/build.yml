@@ -19,6 +19,7 @@ jobs:
 
       - name: Build static linux binary
         run: |
+          go mod tidy
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
           go build -ldflags "-s -w -X main.Version=v2.2.1-${GITHUB_RUN_NUMBER}" \
           -o nova-server-linux-amd64 .
