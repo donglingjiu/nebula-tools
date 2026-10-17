@@ -49,8 +49,11 @@ function setStatus(m,e){var s=document.querySelector('#app .out');if(s){s.textCo
 function sz(n){return n>1048576?(n/1048576).toFixed(2)+' MB':(n/1024).toFixed(1)+' KB'}
 async function loadPDF(f){var buf=await f.arrayBuffer();
   try{return await PDFDOC.load(buf)}catch(e){throw new Error(String(e).indexOf('ncrypt')>=0?'PDF 已加密,请先解密再处理':'PDF 解析失败:'+e.message)}}
-async function dl(bytes,name){var a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));a.download=name;a.click();
+function safeName(s){return String(s).replace(/[^\w\u4e00-\u9fa5.-]+/g,'-').slice(0,60)||'pdf'}
+async function dl(bytes,name){var url=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
+  var a=document.createElement('a');a.href=url;a.download=safeName(name);
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(url);a.remove()},2000);
   return sz(bytes.length!==undefined?bytes.length:bytes.byteLength)}
 function parseRange(str,total){var set=[],parts=String(str).split(','),i;
   for(i=0;i<parts.length;i++){var p=parts[i].trim();if(!p)continue;

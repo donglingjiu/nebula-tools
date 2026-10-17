@@ -13,16 +13,19 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 .back{display:inline-block;margin-bottom:18px;color:#4f6ef7;text-decoration:none;font-size:14px}
 h1{font-size:26px;color:#1a2233}
 .sub{color:#7a8499;margin:8px 0 24px;font-size:14px}
-.drop{display:block;border:2px dashed #c3cdf0;border-radius:14px;background:#fff;padding:48px 20px;text-align:center;cursor:pointer;transition:.2s}
+.drop{display:block;border:2px dashed #c3cdf0;border-radius:14px;background:#fff;padding:44px 20px;text-align:center;cursor:pointer;transition:.2s}
 .drop:hover{border-color:#4f6ef7;background:#f8faff}
 .drop .big{font-size:16px;color:#1a2233;font-weight:600}
 .drop .hint{font-size:13px;color:#98a2b8;margin-top:6px}
 .drop input{display:none}
-.btn{margin-top:20px;background:linear-gradient(120deg,#4f6ef7,#7c5cf5);color:#fff;border:0;border-radius:10px;padding:12px 28px;font-size:15px;cursor:pointer}
+.btn{background:linear-gradient(120deg,#4f6ef7,#7c5cf5);color:#fff;border:0;border-radius:10px;padding:12px 24px;font-size:15px;cursor:pointer}
 .btn:disabled{opacity:.4;cursor:not-allowed}
-.status{margin-top:14px;font-size:14px;color:#4f6ef7;min-height:20px}
+.btn2{background:#eef1fb;color:#3d55d8;border:0;border-radius:10px;padding:12px 22px;font-size:14px;cursor:pointer}
+.btnrow{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;align-items:center}
+.status{margin-top:14px;font-size:14px;color:#188a54;min-height:20px}
 .status.err{color:#e5484d}
-#preview{margin-top:24px;background:#fff;border-radius:14px;padding:32px;box-shadow:0 2px 12px rgba(30,40,90,.06);display:none;line-height:1.7;font-size:14px;color:#333}
+.tip{font-size:12px;color:#98a2b8}
+#preview{margin-top:24px;background:#fff;border-radius:14px;padding:32px;box-shadow:0 2px 12px rgba(30,40,90,.06);display:none;line-height:1.8;font-size:15px;color:#222}
 #preview img{max-width:100%}
 #preview table{border-collapse:collapse}#preview td,#preview th{border:1px solid #ddd;padding:6px 10px}
 </style>
@@ -31,56 +34,67 @@ h1{font-size:26px;color:#1a2233}
 <div class="wrap">
   <a class="back" href="tools.html">← 返回工具大全</a>
   <h1>Word 转 PDF</h1>
-  <p class="sub">docx → PDF，全程在你的浏览器本地完成，文件不会上传到任何服务器。</p>
+  <p class="sub">docx → PDF,全程浏览器本地完成,文件不上传。推荐「打印版」:浏览器原生分页,任何大小文档都稳。</p>
   <label class="drop">
     <div class="big">点击选择 .docx 文件</div>
-    <div class="hint">仅支持 .docx（老版 .doc 请先在 Word 中另存为 .docx）· 复杂排版还原度有限</div>
+    <div class="hint">仅支持 .docx(老版 .doc 请先另存为 .docx)· 复杂排版还原度有限</div>
     <input type="file" id="file" accept=".docx">
   </label>
   <div class="status" id="status"></div>
-  <button class="btn" id="save" disabled>生成并下载 PDF</button>
+  <div class="btnrow" id="actions" hidden>
+    <button class="btn" id="print">��� 打印版 PDF(推荐,任意大小)</button>
+    <button class="btn2" id="fast">⚡ 极速版(限短文档)</button>
+    <span class="tip">打印版:新窗口打开 → ⌘P / Ctrl+P → 另存为 PDF</span>
+  </div>
   <div id="preview"></div>
 </div>
 <script>
-var fileInput=document.getElementById('file'),
-    statusEl=document.getElementById('status'),
-    preview=document.getElementById('preview'),
-    saveBtn=document.getElementById('save'),
-    currentName='document';
-function setStatus(m,e){statusEl.textContent=m;statusEl.className=e?'status err':'status';}
+var fileInput=document.getElementById('file'),statusEl=document.getElementById('status'),
+    preview=document.getElementById('preview'),actions=document.getElementById('actions'),
+    printBtn=document.getElementById('print'),fastBtn=document.getElementById('fast'),
+    currentName='document',html='';
+function safeName(s){return s.replace(/[^\w\u4e00-\u9fa5.-]+/g,'-').slice(0,60)||'document'}
+function setStatus(m,e){statusEl.textContent=m;statusEl.className=e?'status err':'status'}
 fileInput.addEventListener('change',function(){
-  var f=fileInput.files[0];
-  if(!f)return;
-  if(!/\.docx$/i.test(f.name)){setStatus('仅支持 .docx 文件（.doc 请先另存为 .docx）',true);return;}
-  currentName=f.name.replace(/\.docx$/i,'');
+  var f=fileInput.files[0];if(!f)return;
+  if(!/\.docx$/i.test(f.name)){setStatus('仅支持 .docx 文件(.doc 请先另存为 .docx)',true);return}
+  currentName=safeName(f.name.replace(/\.docx$/i,''));
   setStatus('正在解析文档…');
   var r=new FileReader();
   r.onload=function(){
     mammoth.convertToHtml({arrayBuffer:r.result}).then(function(res){
-      preview.innerHTML=res.value;
-      preview.style.display='block';
-      saveBtn.disabled=false;
-      setStatus('解析完成 ✓ 下方为内容预览，确认后点击生成 PDF。');
-    }).catch(function(e){setStatus('解析失败：'+e.message,true);});
+      html=res.value;preview.innerHTML=html;preview.style.display='block';
+      actions.hidden=false;
+      setStatus('解析完成 ✓ 下方为内容预览。');
+    }).catch(function(e){setStatus('解析失败:'+e.message,true)});
   };
-  r.onerror=function(){setStatus('读取文件失败',true);};
+  r.onerror=function(){setStatus('读取文件失败',true)};
   r.readAsArrayBuffer(f);
 });
-saveBtn.addEventListener('click',function(){
-  saveBtn.disabled=true;
-  setStatus('正在生成 PDF，大文档需十几秒…');
+/* 通道 A:打印管线(推荐)——排版引擎原生分页,零 canvas,任何大小都稳 */
+printBtn.addEventListener('click',function(){
+  var w=window.open('','_blank');
+  if(!w){setStatus('浏览器拦截了新窗口,请允许弹窗后重试',true);return}
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+currentName+'</title><style>'+
+    'body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",serif;line-height:1.9;font-size:14px;color:#111;max-width:800px;margin:0 auto;padding:24px}'+
+    'img{max-width:100%}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:6px 10px}'+
+    'h1,h2,h3{page-break-after:avoid}table,img{page-break-inside:avoid}'+
+    '@page{margin:18mm}</style></head><body>'+html+'</body></html>');
+  w.document.close();
+  setStatus('已打开打印窗口 → 在新窗口按 ⌘P / Ctrl+P,目标打印机选「另存为 PDF」。');
+});
+/* 通道 B:极速 raster(小文档专用,超限拦截) */
+fastBtn.addEventListener('click',function(){
+  if(preview.scrollHeight>12000){
+    setStatus('文档过长('+Math.round(preview.scrollHeight/1000)+'k px)超出极速管线 canvas 上限,请改用「打印版 PDF」',true);return;
+  }
+  fastBtn.disabled=true;setStatus('正在生成,请稍候…');
   html2pdf().from(preview).set({
-    margin:[15,15,15,15],
-    filename:currentName+'.pdf',
+    margin:[15,15,15,15],filename:currentName+'.pdf',
     html2canvas:{scale:2,useCORS:true},
     jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
-  }).save().then(function(){
-    setStatus('已生成并开始下载 ✓');
-    saveBtn.disabled=false;
-  }).catch(function(e){
-    setStatus('生成失败：'+e.message,true);
-    saveBtn.disabled=false;
-  });
+  }).save().then(function(){setStatus('极速版已生成并下载 ✓');fastBtn.disabled=false})
+  .catch(function(e){setStatus('极速版失败:'+e.message+'(请改用打印版)',true);fastBtn.disabled=false});
 });
 </script>
 </body>
