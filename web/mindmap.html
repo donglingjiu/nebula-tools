@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>文本转脑图 · Nova 工具</title>
+<script src="assets/vendor/d3.min.js"></script>
+<script src="assets/vendor/markmap-view.js"></script>
+<script src="assets/vendor/markmap-lib.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f5f7fb;min-height:100vh;padding:40px 20px;display:flex;justify-content:center}
+.wrap{width:100%;max-width:1200px}
+.back{display:inline-block;margin-bottom:18px;color:#4f6ef7;text-decoration:none;font-size:14px}
+h1{font-size:26px;color:#1a2233}
+.sub{color:#7a8499;margin:8px 0 18px;font-size:14px}
+.btnrow{display:flex;gap:10px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.btn{background:linear-gradient(120deg,#4f6ef7,#7c5cf5);color:#fff;border:0;border-radius:10px;padding:10px 20px;font-size:14px;cursor:pointer}
+.btn2{background:#eef1fb;color:#3d55d8;border:0;border-radius:10px;padding:10px 18px;font-size:14px;cursor:pointer}
+.hint{font-size:12px;color:#98a2b8}
+.status{font-size:14px;color:#188a54;min-height:20px;margin-bottom:8px}
+.status.err{color:#e5484d}
+.split{display:flex;gap:16px;align-items:stretch;flex-wrap:wrap}
+textarea{flex:1 1 340px;min-height:420px;border:1px solid #d5dcf0;border-radius:12px;padding:14px;font:13px/1.8 ui-monospace,Consolas,monospace;resize:vertical;background:#fff;color:#1a2233;outline:none}
+textarea:focus{border-color:#4f6ef7}
+.mmwrap{flex:1 1 460px;border-radius:12px;background:#fff;box-shadow:0 2px 12px rgba(30,40,90,.06);overflow:hidden}
+#mm{width:100%;height:72vh;display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="tools.html">← 返回工具大全</a>
+  <h1>文本转脑图</h1>
+  <p class="sub">左侧输入 Markdown 大纲(# 一级 / ## 二级 / ### 三级)，右侧实时生成可交互脑图，可缩放、折叠展开。全程本地渲染，内容不上传。</p>
+  <div class="btnrow">
+    <button class="btn2" id="fit">适应画布</button>
+    <button class="btn" id="dl">导出 SVG</button>
+    <span class="hint">导出的 SVG 含交互节点，用浏览器打开效果最佳</span>
+  </div>
+  <div class="status" id="status"></div>
+  <div class="split">
+    <textarea id="src" spellcheck="false"># Nova 工具站
+## 已上线
+### Word 转 PDF
+### Excel 分析整理
+### 文本转脑图
+### 文本转流程图
+## 规划中
+### PDF 全家桶
+### 真 AI 接入</textarea>
+    <div class="mmwrap"><svg id="mm"></svg></div>
+  </div>
+</div>
+<script>
+function $(id){return document.getElementById(id)}
+function setStatus(m,e){var s=$('status');s.textContent=m;s.className=e?'status err':'status'}
+var mm=null,tr=null;
+try{tr=new markmap.Transformer()}catch(e){setStatus('markmap 库加载失败，检查 vendor 文件',true);throw e}
+function render(){
+  try{
+    var res=tr.transform($('src').value);
+    if(!mm){
+      mm=markmap.Markmap.create($('mm'),{duration:200},res.root);
+      setTimeout(function(){mm.fit()},300);
+    }else{mm.setData(res.root)}
+    setStatus('渲染成功 ✓');
+  }catch(e){setStatus('解析失败:'+e.message,true)}
+}
+var t=null;
+$('src').addEventListener('input',function(){clearTimeout(t);t=setTimeout(render,400)});
+$('fit').addEventListener('click',function(){if(mm)mm.fit()});
+$('dl').addEventListener('click',function(){
+  if(!mm)return;
+  var s=new XMLSerializer().serializeToString($('mm'));
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([s],{type:'image/svg+xml;charset=utf-8'}));
+  a.download='脑图.svg';a.click();
+});
+render();
+</script>
+</body>
+</html>

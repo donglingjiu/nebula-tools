@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>文本转流程图 · Nova 工具</title>
+<script src="assets/vendor/mermaid.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f5f7fb;min-height:100vh;padding:40px 20px;display:flex;justify-content:center}
+.wrap{width:100%;max-width:1200px}
+.back{display:inline-block;margin-bottom:18px;color:#4f6ef7;text-decoration:none;font-size:14px}
+h1{font-size:26px;color:#1a2233}
+.sub{color:#7a8499;margin:8px 0 18px;font-size:14px}
+.btnrow{display:flex;gap:10px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.btn{background:linear-gradient(120deg,#4f6ef7,#7c5cf5);color:#fff;border:0;border-radius:10px;padding:10px 20px;font-size:14px;cursor:pointer}
+.btn2{background:#eef1fb;color:#3d55d8;border:0;border-radius:10px;padding:10px 18px;font-size:14px;cursor:pointer}
+.hint{font-size:12px;color:#98a2b8}
+.status{font-size:14px;color:#188a54;min-height:20px;margin-bottom:8px}
+.status.err{color:#e5484d}
+.split{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+textarea{flex:1 1 340px;min-height:380px;border:1px solid #d5dcf0;border-radius:12px;padding:14px;font:13px/1.8 ui-monospace,Consolas,monospace;resize:vertical;background:#fff;color:#1a2233;outline:none}
+textarea:focus{border-color:#4f6ef7}
+.fcwrap{flex:1 1 460px;background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 12px rgba(30,40,90,.06);overflow:auto}
+.fcwrap svg{max-width:100%;height:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="tools.html">← 返回工具大全</a>
+  <h1>文本转流程图</h1>
+  <p class="sub">用 Mermaid 语法描述步骤，实时生成流程图，支持导出 SVG / PNG。全程本地渲染，内容不上传。</p>
+  <div class="btnrow">
+    <button class="btn" id="render">重新渲染</button>
+    <button class="btn2" id="dlS">导出 SVG</button>
+    <button class="btn2" id="dlP">导出 PNG</button>
+    <span class="hint">语法：A[方框] B{菱形判断} A -- 是 --> B</span>
+  </div>
+  <div class="status" id="status"></div>
+  <div class="split">
+    <textarea id="src" spellcheck="false">flowchart TD
+  A[开始] --> B{有文件?}
+  B -- 是 --> C[解析内容]
+  B -- 否 --> D[手动输入]
+  C --> E[本地处理]
+  D --> E
+  E --> F[导出结果]
+  F --> G[完成]</textarea>
+    <div class="fcwrap" id="box"></div>
+  </div>
+</div>
+<script>
+mermaid.initialize({startOnLoad:false,flowchart:{htmlLabels:false},theme:'default'});
+var seq=0,lastSvg='';
+function $(id){return document.getElementById(id)}
+function setStatus(m,e){var s=$('status');s.textContent=m;s.className=e?'status err':'status'}
+function render(){
+  var id='mmd'+(++seq);
+  mermaid.render(id,$('src').value).then(function(r){
+    lastSvg=r.svg;$('box').innerHTML=r.svg;
+    setStatus('渲染成功 ✓');
+  }).catch(function(e){
+    var m=(e&&e.message||String(e)).split('\n')[0].slice(0,140);
+    setStatus('语法有误：'+m+'（已保留上一次成功结果）',true);
+  });
+}
+$('render').addEventListener('click',render);
+var t=null;
+$('src').addEventListener('input',function(){clearTimeout(t);t=setTimeout(render,500)});
+$('dlS').addEventListener('click',function(){
+  if(!lastSvg)return;
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([lastSvg],{type:'image/svg+xml;charset=utf-8'}));
+  a.download='流程图.svg';a.click();
+});
+$('dlP').addEventListener('click',function(){
+  if(!lastSvg)return;
+  var vb=lastSvg.match(/viewBox="0 0 (\d+) (\d+)"/),W=vb?+vb[1]:900,H=vb?+vb[2]:600;
+  var img=new Image();
+  var url=URL.createObjectURL(new Blob([lastSvg],{type:'image/svg+xml;charset=utf-8'}));
+  img.onload=function(){
+    var c=document.createElement('canvas');c.width=W*2;c.height=H*2;
+    var ctx=c.getContext('2d');
+    ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);
+    ctx.drawImage(img,0,0,c.width,c.height);
+    URL.revokeObjectURL(url);
+    c.toBlob(function(b){if(!b)return;var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='流程图.png';a.click()});
+  };
+  img.onerror=function(){setStatus('PNG 导出失败，请改用 SVG',true);URL.revokeObjectURL(url)};
+  img.src=url;
+});
+render();
+</script>
+</body>
+</html>
