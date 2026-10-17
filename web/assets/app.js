@@ -1,3 +1,4 @@
+if(typeof window.toast!=='function'){window.toast=function(m,t){var bad=/失败|错误|请先|无效/.test(m);var d=document.createElement('div');d.textContent=m;d.style.cssText='position:fixed;top:22px;left:50%;transform:translateX(-50%);background:'+(bad?'#d64545':'#188a54')+';color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,.18)';document.body.appendChild(d);setTimeout(function(){d.remove()},2600)}}
 /* Nova — lightweight static UX prototype. No third-party runtime dependencies. */
 (() => {
 'use strict';
