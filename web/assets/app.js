@@ -393,3 +393,32 @@ function novaLogin(e){
   }
   if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",paint)}else{paint()}
 })();
+
+/* 个人中心指标卡接真：处理文件/处理工具/累计耗时，全部来自 /api/history，零演示值 */
+(function(){
+  function fmtMs(ms){if(!ms)return"0";if(ms<1e3)return ms+"ms";if(ms<6e4)return(ms/1e3).toFixed(1)+"s";return(ms/6e4).toFixed(1)+"min"}
+  function setCard(find,rename,val,foot){
+    var cs=document.querySelectorAll(".stat-card");
+    for(var i=0;i<cs.length;i++){
+      var t=cs[i].querySelector(".stat-top span");
+      if(t&&t.textContent.indexOf(find)>-1){
+        if(rename)t.textContent=rename;
+        var v=cs[i].querySelector(".stat-value");if(v)v.textContent=val;
+        var f=cs[i].querySelector(".stat-foot");if(f)f.textContent=foot;
+      }
+    }
+  }
+  function paint(){
+    fetch("/api/history").then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(list){
+      list=list||[];var now=Date.now(),n7=0,ms7=0,sum=0,dist={};
+      for(var i=0;i<list.length;i++){
+        var h=list[i];sum+=(+h.ms||0);dist[h.tool||"?"]=1;
+        var t=Date.parse(h.at||"")||0;if(t&&now-t<6048e5){n7++;ms7+=(+h.ms||0)}
+      }
+      setCard("处理文件",null,String(list.length),n7+" 次操作在近7天");
+      setCard("AI 会话","处理工具",String(Object.keys(dist).length),Object.keys(dist).length+" 种工具用过");
+      setCard("节省时间","累计耗时",fmtMs(sum),"近7天 "+fmtMs(ms7));
+    }).catch(function(){});
+  }
+  if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",paint)}else{paint()}
+})();
