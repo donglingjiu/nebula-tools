@@ -45,7 +45,7 @@ func hCsvClean(db *DB) http.HandlerFunc {
 			fxE(w, 400, "请上传一个 CSV 文件")
 			return
 		}
-		opts := fxOpts(r)
+		opts := tkOpts(r)
 		raw := bs[0]
 		if opts["charset"] == "gbk" {
 			if conv, err := io.ReadAll(transform.NewReader(bytes.NewReader(raw), simplifiedchinese.GBK.NewDecoder())); err == nil {
@@ -174,7 +174,7 @@ func hImgProcess(db *DB) http.HandlerFunc {
 			return
 		}
 		img := src
-		opts := fxOpts(r)
+		opts := tkOpts(r)
 		if ws := opts["width"]; ws != "" {
 			if target, e := strconv.Atoi(ws); e == nil && target > 0 && target < src.Bounds().Dx() {
 				hh := int(float64(target) * float64(src.Bounds().Dy()) / float64(src.Bounds().Dx()))
@@ -328,7 +328,7 @@ func hXlsxProfile(db *DB) http.HandlerFunc {
 			}
 			stats = append(stats, st)
 		}
-		opts := fxOpts(r)
+		opts := tkOpts(r)
 		if opts["format"] == "md" {
 			var sb strings.Builder
 			sb.WriteString("# 数据剖析报告：" + names[0] + "\n\n")
