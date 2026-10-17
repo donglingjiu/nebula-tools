@@ -363,12 +363,17 @@ init();
 })();
 
 
+
+
 function novaLogin(e){
   var em=document.querySelector("#email"),pw=document.querySelector("#password");
-  if(!em.value.trim()||!pw.value){toast("请输入用户名和密码","error");return}
+  var say=function(m,ok){try{toast(m,ok?"good":"error");return}catch(_){}
+    var d=document.createElement("div");d.textContent=m;
+    d.style.cssText="position:fixed;top:22px;left:50%;transform:translateX(-50%);background:"+(ok?"#188a54":"#d64545")+";color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,.18)";
+    document.body.appendChild(d);setTimeout(function(){d.remove()},2600);};
+  if(!em.value.trim()||!pw.value){say("请输入用户名和密码");return}
   fetch("/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:em.value.trim(),password:pw.value})}).then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j}})}).then(function(x){
-    if(x.ok){toast("登录成功，正在进入工作空间");setTimeout(function(){location.href="workspace.html"},500)}
-    else{toast((x.j&&(x.j.error||x.j.message))||"登录失败，请检查用户名和密码","error")}
-  }).catch(function(){toast("网络错误，请稍后重试","error")});
+    if(x.ok){say("登录成功，正在进入工作空间",true);setTimeout(function(){location.href="workspace.html"},600)}
+    else{say((x.j&&(x.j.error||x.j.message))||"登录失败，请检查用户名和密码")}
+  }).catch(function(){say("网络错误，请稍后重试")});
 }
-
