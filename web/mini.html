@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>常用小工具 · Nova 工具</title>
+<script src="assets/vendor/qrcode.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f5f7fb;min-height:100vh;padding:40px 20px;display:flex;justify-content:center}
+.wrap{width:100%;max-width:860px}
+.back{display:inline-block;margin-bottom:18px;color:#4f6ef7;text-decoration:none;font-size:14px}
+h1{font-size:26px;color:#1a2233}
+.sub{color:#7a8499;margin:8px 0 18px;font-size:14px}
+.side{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.nv{padding:7px 14px;border-radius:999px;background:#fff;border:1px solid #e0e6f5;color:#445;font-size:13px;text-decoration:none}
+.nv.on{background:linear-gradient(120deg,#4f6ef7,#7c5cf5);color:#fff;border-color:transparent}
+#app{background:#fff;border-radius:14px;padding:22px;box-shadow:0 2px 12px rgba(30,40,90,.06)}
+#app h2{font-size:19px;color:#1a2233;margin-bottom:4px}
+#app .d{font-size:13px;color:#98a2b8;margin-bottom:10px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}
+input,select,textarea{border:1px solid #d5dcf0;border-radius:10px;padding:10px 12px;font-size:14px;outline:none;background:#fff;color:#1a2233;font-family:inherit}
+textarea{width:100%;font:13px/1.7 ui-monospace,Consolas,monospace;resize:vertical;margin:8px 0}
+input:focus,textarea:focus{border-color:#4f6ef7}
+.btn{background:linear-gradient(120deg,#4f6ef7,#7c5cf5);color:#fff;border:0;border-radius:10px;padding:10px 20px;font-size:14px;cursor:pointer}
+.btn2{background:#eef1fb;color:#3d55d8;border:0;border-radius:10px;padding:10px 18px;font-size:14px;cursor:pointer}
+.out{background:#0f1730;color:#cfe0ff;border-radius:12px;padding:14px 16px;font:13px/1.8 ui-monospace,Consolas,monospace;white-space:pre-wrap;min-height:20px;margin-top:6px}
+.drop{display:block;border:2px dashed #c3cdf0;border-radius:14px;padding:30px 20px;text-align:center;cursor:pointer;transition:.2s}
+.drop:hover{border-color:#4f6ef7;background:#f8faff}
+.drop .big{font-size:15px;color:#1a2233;font-weight:600}
+.drop input{display:none}
+.hint{font-size:12px;color:#98a2b8}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="tools.html">← 返回工具大全</a>
+  <h1 id="tt">常用小工具</h1>
+  <p class="sub" id="dd"></p>
+  <div class="side" id="nav"></div>
+  <div id="app"></div>
+</div>
+<script>
+function esc(s){return String(s).replace(/[&<>"]/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]})}
+var TOOLS={
+timestamp:{t:'时间戳转换',d:'Unix 时间戳(秒/毫秒)与日期时间互转',r:function(el){
+  el.innerHTML='<div class="row"><input id="a" placeholder="时间戳，如 1729160000(秒)或 13 位毫秒" style="flex:1"><button class="btn2" id="b1">戳 → 日期</button><button class="btn2" id="b3">填入当前</button></div><div class="row"><input id="c" type="datetime-local"><button class="btn2" id="b2">日期 → 戳</button></div><pre class="out" id="o">结果在这里显示</pre>';
+  function p(){var v=el.querySelector('#a').value.trim();if(!v)return '请输入时间戳';var n=+v;if(isNaN(n))return '不是数字';
+    if(String(Math.trunc(n)).length<13)n=n*1000;var d=new Date(n);if(isNaN(d.getTime()))return '超出范围';
+    return d.toLocaleString('zh-CN',{hour12:false})+'\n毫秒: '+d.getTime()+'\n秒: '+Math.floor(d.getTime()/1000)}
+  el.querySelector('#b1').onclick=function(){el.querySelector('#o').textContent=p()};
+  el.querySelector('#b3').onclick=function(){el.querySelector('#a').value=Date.now();el.querySelector('#o').textContent=p()};
+  el.querySelector('#b2').onclick=function(){var v=el.querySelector('#c').value;if(!v){el.querySelector('#o').textContent='请先选择日期';return}
+    var d=new Date(v);el.querySelector('#o').textContent='秒: '+Math.floor(d.getTime()/1000)+'\n毫秒: '+d.getTime()};
+}},
+uuid:{t:'UUID 生成器',d:'一键批量生成 UUID v4',r:function(el){
+  el.innerHTML='<div class="row"><button class="btn" id="g">生成 1 个</button><button class="btn2" id="g10">生成 10 个</button></div><textarea id="o" rows="8" readonly placeholder="结果"></textarea>';
+  function gen(){try{return crypto.randomUUID()}catch(e){return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){var r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16)})}}
+  el.querySelector('#g').onclick=function(){el.querySelector('#o').value=gen()};
+  el.querySelector('#g10').onclick=function(){var a=[],i;for(i=0;i<10;i++)a.push(gen());el.querySelector('#o').value=a.join('\n')};
+}},
+radix:{t:'进制转换',d:'2/8/10/16 进制互转',r:function(el){
+  el.innerHTML='<div class="row"><input id="v" placeholder="数值" style="flex:1"><select id="b"><option value="10">十进制</option><option value="2">二进制</option><option value="8">八进制</option><option value="16">十六进制</option></select><button class="btn2" id="go">转换</button></div><pre class="out" id="o">结果在这里显示</pre>';
+  el.querySelector('#go').onclick=function(){var b=+el.querySelector('#b').value,v=el.querySelector('#v').value.trim();
+    var n=parseInt(v,b);if(isNaN(n)){el.querySelector('#o').textContent='无法按该进制解析';return}
+    el.querySelector('#o').textContent='二进制: '+n.toString(2)+'\n八进制: '+n.toString(8)+'\n十进制: '+n+'\n十六进制: '+n.toString(16).toUpperCase()};
+}},
+img64:{t:'图片转 Base64',d:'本地读取图片输出 DataURL,不上传',r:function(el){
+  el.innerHTML='<label class="drop"><div class="big">点击选择图片</div><input type="file" id="f" accept="image/*"></label><img id="pv" style="max-width:180px;display:none;margin-top:12px;border-radius:8px"><textarea id="o" rows="6" readonly placeholder="DataURL 输出"></textarea><div class="row"><button class="btn2" id="cp">复制全部</button><span class="hint" id="sz"></span></div>';
+  el.querySelector('#f').onchange=function(){var f=this.files[0];if(!f)return;var r=new FileReader();
+    r.onload=function(){el.querySelector('#o').value=r.result;var im=el.querySelector('#pv');im.src=r.result;im.style.display='block';
+      el.querySelector('#sz').textContent='原图 '+(f.size/1024).toFixed(1)+' KB · Base64 '+(r.result.length/1024).toFixed(1)+' KB'};
+    r.readAsDataURL(f)};
+  el.querySelector('#cp').onclick=function(){el.querySelector('#o').select();document.execCommand('copy')};
+}},
+qrcode:{t:'二维码生成',d:'文本/链接本地生成二维码',r:function(el){
+  el.innerHTML='<div class="row"><input id="t" placeholder="输入文本或链接 https://…" style="flex:1"><button class="btn" id="g">生成</button></div><div id="qr" style="background:#fff;padding:14px;border-radius:12px;display:inline-block;margin-top:12px"></div>';
+  el.querySelector('#g').onclick=function(){var v=el.querySelector('#t').value.trim();if(!v)return;
+    var box=el.querySelector('#qr');box.innerHTML='';
+    new QRCode(box,{text:v,width:200,height:200,correctLevel:QRCode.CorrectLevel.M})};
+}},
+textcount:{t:'字数统计',d:'字符/汉字/词数/行数/字节数',r:function(el){
+  el.innerHTML='<textarea id="t" rows="8" placeholder="粘贴文本,实时统计"></textarea><pre class="out" id="o">等待输入…</pre>';
+  el.querySelector('#t').oninput=function(){var v=this.value;
+    var han=(v.match(/[\u4e00-\u9fa5]/g)||[]).length,words=(v.match(/[a-zA-Z0-9]+/g)||[]).length;
+    var lines=v?v.split('\n').length:0,bytes=new Blob([v]).size;
+    el.querySelector('#o').textContent='总字符: '+v.length+'\n汉字: '+han+'\n英文单词/数字串: '+words+'\n行数: '+lines+'\nUTF-8 字节: '+bytes};
+}},
+dedup:{t:'文本去重排序',d:'按行去重、排序、去空行',r:function(el){
+  el.innerHTML='<textarea id="i" rows="7" placeholder="每行一条"></textarea><div class="row"><button class="btn2" id="d">去重</button><button class="btn2" id="s">排序</button><button class="btn2" id="e">去空行</button><button class="btn" id="all">全做一遍</button></div><textarea id="o" rows="7" readonly placeholder="结果"></textarea>';
+  function L(){return el.querySelector('#i').value.split('\n')}
+  function set(a){el.querySelector('#o').value=a.join('\n')}
+  el.querySelector('#d').onclick=function(){set(Array.from(new Set(L())))};
+  el.querySelector('#s').onclick=function(){set(L().slice().sort())};
+  el.querySelector('#e').onclick=function(){set(L().filter(function(x){return x.trim()!==''}))};
+  el.querySelector('#all').onclick=function(){set(Array.from(new Set(L().filter(function(x){return x.trim()!==''}))).sort())};
+}},
+caseconv:{t:'大小写转换',d:'全大写/全小写/首字母大写',r:function(el){
+  el.innerHTML='<textarea id="i" rows="6" placeholder="输入英文文本"></textarea><div class="row"><button class="btn2" id="u">ABC 全大写</button><button class="btn2" id="l">abc 全小写</button><button class="btn2" id="c">Abc 首字母大写</button></div><textarea id="o" rows="6" readonly></textarea>';
+  el.querySelector('#u').onclick=function(){el.querySelector('#o').value=el.querySelector('#i').value.toUpperCase()};
+  el.querySelector('#l').onclick=function(){el.querySelector('#o').value=el.querySelector('#i').value.toLowerCase()};
+  el.querySelector('#c').onclick=function(){el.querySelector('#o').value=el.querySelector('#i').value.replace(/\b[a-z]/g,function(m){return m.toUpperCase()})};
+}},
+datecalc:{t:'日期计算器',d:'两日期相差天数 / 日期加减天数',r:function(el){
+  el.innerHTML='<div class="row"><input type="date" id="d1"><input type="date" id="d2"><button class="btn2" id="diff">算相差</button></div><div class="row"><input type="date" id="d3"><input type="number" id="n" placeholder="天数(可负)" style="width:130px"><button class="btn2" id="add">加减日期</button></div><pre class="out" id="o">结果在这里显示</pre>';
+  el.querySelector('#diff').onclick=function(){var a=new Date(el.querySelector('#d1').value),b=new Date(el.querySelector('#d2').value);
+    if(isNaN(a.getTime())||isNaN(b.getTime())){el.querySelector('#o').textContent='请选两个日期';return}
+    var d=Math.round((b-a)/864e5);el.querySelector('#o').textContent='相差 '+Math.abs(d)+' 天'+(d>=0?'(后者更晚)':'(前者更晚)')};
+  el.querySelector('#add').onclick=function(){var a=new Date(el.querySelector('#d3').value),n=+el.querySelector('#n').value||0;
+    if(isNaN(a.getTime())){el.querySelector('#o').textContent='请选日期';return}
+    a.setDate(a.getDate()+n);
+    el.querySelector('#o').textContent=a.toLocaleDateString('zh-CN')+' 星期'+'日一二三四五六'[a.getDay()]};
+}},
+bmi:{t:'BMI 计算器',d:'身高体重秒算 BMI 与分类',r:function(el){
+  el.innerHTML='<div class="row"><input type="number" id="h" placeholder="身高 cm" style="width:140px"><input type="number" id="w" placeholder="体重 kg" style="width:140px"><button class="btn" id="go">计算</button></div><pre class="out" id="o">结果在这里显示</pre>';
+  el.querySelector('#go').onclick=function(){var h=+el.querySelector('#h').value/100,w=+el.querySelector('#w').value;
+    if(!h||!w){el.querySelector('#o').textContent='请输入身高体重';return}
+    var b=w/(h*h),cat=b<18.5?'偏瘦':b<24?'正常':b<28?'偏胖':'肥胖';
+    el.querySelector('#o').textContent='BMI: '+b.toFixed(1)+'\n分类: '+cat+'\n健康范围: 18.5 ~ 23.9'};
+}}
+};
+var id=(location.hash||'').slice(1);
+if(!TOOLS[id])id='timestamp';
+var t=TOOLS[id];
+document.title=t.t+' · Nova 工具';
+document.getElementById('tt').textContent=t.t;
+document.getElementById('dd').textContent=t.d;
+t.r(document.getElementById('app'));
+var h='',k;
+for(k in TOOLS)h+='<a class="nv'+(k===id?' on':'')+'" href="#'+k+'">'+TOOLS[k].t+'</a>';
+document.getElementById('nav').innerHTML=h;
+window.addEventListener('hashchange',function(){location.reload()});
+</script>
+</body>
+</html>
