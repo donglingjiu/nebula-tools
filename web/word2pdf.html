@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Word 转 PDF · Nova 工具</title>
+<script src="assets/vendor/mammoth.min.js"></script>
+<script src="assets/vendor/html2pdf.bundle.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f5f7fb;min-height:100vh;display:flex;justify-content:center;padding:40px 20px}
+.wrap{width:100%;max-width:760px}
+.back{display:inline-block;margin-bottom:18px;color:#4f6ef7;text-decoration:none;font-size:14px}
+h1{font-size:26px;color:#1a2233}
+.sub{color:#7a8499;margin:8px 0 24px;font-size:14px}
+.drop{display:block;border:2px dashed #c3cdf0;border-radius:14px;background:#fff;padding:48px 20px;text-align:center;cursor:pointer;transition:.2s}
+.drop:hover{border-color:#4f6ef7;background:#f8faff}
+.drop .big{font-size:16px;color:#1a2233;font-weight:600}
+.drop .hint{font-size:13px;color:#98a2b8;margin-top:6px}
+.drop input{display:none}
+.btn{margin-top:20px;background:linear-gradient(120deg,#4f6ef7,#7c5cf5);color:#fff;border:0;border-radius:10px;padding:12px 28px;font-size:15px;cursor:pointer}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.status{margin-top:14px;font-size:14px;color:#4f6ef7;min-height:20px}
+.status.err{color:#e5484d}
+#preview{margin-top:24px;background:#fff;border-radius:14px;padding:32px;box-shadow:0 2px 12px rgba(30,40,90,.06);display:none;line-height:1.7;font-size:14px;color:#333}
+#preview img{max-width:100%}
+#preview table{border-collapse:collapse}#preview td,#preview th{border:1px solid #ddd;padding:6px 10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="tools.html">← 返回工具大全</a>
+  <h1>Word 转 PDF</h1>
+  <p class="sub">docx → PDF，全程在你的浏览器本地完成，文件不会上传到任何服务器。</p>
+  <label class="drop">
+    <div class="big">点击选择 .docx 文件</div>
+    <div class="hint">仅支持 .docx（老版 .doc 请先在 Word 中另存为 .docx）· 复杂排版还原度有限</div>
+    <input type="file" id="file" accept=".docx">
+  </label>
+  <div class="status" id="status"></div>
+  <button class="btn" id="save" disabled>生成并下载 PDF</button>
+  <div id="preview"></div>
+</div>
+<script>
+var fileInput=document.getElementById('file'),
+    statusEl=document.getElementById('status'),
+    preview=document.getElementById('preview'),
+    saveBtn=document.getElementById('save'),
+    currentName='document';
+function setStatus(m,e){statusEl.textContent=m;statusEl.className=e?'status err':'status';}
+fileInput.addEventListener('change',function(){
+  var f=fileInput.files[0];
+  if(!f)return;
+  if(!/\.docx$/i.test(f.name)){setStatus('仅支持 .docx 文件（.doc 请先另存为 .docx）',true);return;}
+  currentName=f.name.replace(/\.docx$/i,'');
+  setStatus('正在解析文档…');
+  var r=new FileReader();
+  r.onload=function(){
+    mammoth.convertToHtml({arrayBuffer:r.result}).then(function(res){
+      preview.innerHTML=res.value;
+      preview.style.display='block';
+      saveBtn.disabled=false;
+      setStatus('解析完成 ✓ 下方为内容预览，确认后点击生成 PDF。');
+    }).catch(function(e){setStatus('解析失败：'+e.message,true);});
+  };
+  r.onerror=function(){setStatus('读取文件失败',true);};
+  r.readAsArrayBuffer(f);
+});
+saveBtn.addEventListener('click',function(){
+  saveBtn.disabled=true;
+  setStatus('正在生成 PDF，大文档需十几秒…');
+  html2pdf().from(preview).set({
+    margin:[15,15,15,15],
+    filename:currentName+'.pdf',
+    html2canvas:{scale:2,useCORS:true},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
+  }).save().then(function(){
+    setStatus('已生成并开始下载 ✓');
+    saveBtn.disabled=false;
+  }).catch(function(e){
+    setStatus('生成失败：'+e.message,true);
+    saveBtn.disabled=false;
+  });
+});
+</script>
+</body>
+</html>
