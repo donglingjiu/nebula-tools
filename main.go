@@ -554,6 +554,7 @@ func newRouter(db *DB) http.Handler {
 		J(w, db.Export())
 	}))
 	registerFileTools(mux, db)
+	registerToolkit(mux, db)
 	// ---------- 静态资源（embed 进二进制，部署只需一个可执行文件） ----------
 	sub, _ := fs.Sub(webFS, "web")
 	fileServer := http.FileServer(http.FS(sub))

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>开发者工具箱 · Nova</title>
+<link rel="stylesheet" href="assets/styles.css">
+<style>
+body{font-family:system-ui,-apple-system,"PingFang SC",sans-serif;background:#f5f7fc;margin:0;padding:28px 16px;color:#293b60}
+.wrap{max-width:960px;margin:0 auto}
+.panel{background:#fff;border:1px solid #e9eef7;border-radius:18px;padding:20px;box-shadow:0 6px 24px rgba(41,59,96,.06)}
+h1{font-size:20px;margin:0 0 4px}.sub{color:#7a86a0;font-size:13px;margin:0 0 18px}
+.tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.tab{border:1px solid #dfe6f3;background:#fff;border-radius:999px;padding:8px 18px;font-size:13px;cursor:pointer;color:#51618a}
+.tab.active{background:#3b5bdb;color:#fff;border-color:#3b5bdb}
+textarea,input[type=text]{width:100%;box-sizing:border-box;border:1px solid #dfe6f3;border-radius:12px;padding:11px 13px;font-size:13px;font-family:ui-monospace,Consolas,monospace;background:#fbfcff}
+textarea{min-height:150px;resize:vertical}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+button.p{background:#3b5bdb;color:#fff;border:0;border-radius:10px;padding:9px 16px;font-size:13px;cursor:pointer}
+button.s{background:#eef2fd;color:#3b5bdb;border:0;border-radius:10px;padding:9px 16px;font-size:13px;cursor:pointer}
+.msg{font-size:12px;border-radius:10px;padding:9px 12px;margin-top:10px;display:none;line-height:1.7}
+.msg.ok{display:block;background:#effaf1;color:#1d7a3d}.msg.err{display:block;background:#fdf0ef;color:#c0392b}
+pre.out{background:#0f1a33;color:#d7e3ff;border-radius:12px;padding:14px;font-size:12px;overflow:auto;max-height:340px;display:none;white-space:pre-wrap;word-break:break-all}
+label.f{font-size:12px;color:#7a86a0;display:block;margin:10px 0 5px}
+.flags label{margin-right:12px;font-size:12px;color:#51618a}
+.hl{background:#ffe58a;border-radius:3px}
+.cap{font-size:12px;color:#51618a;line-height:1.9;margin-top:8px}
+.dl{border-left:3px solid #2f9e44;padding:4px 10px;margin:6px 0;background:#f6fef8;border-radius:0 8px 8px 0;font-size:12px}
+.dr{border-left:3px solid #e03131;padding:4px 10px;margin:6px 0;background:#fef6f5;border-radius:0 8px 8px 0;font-size:12px}
+.dc{border-left:3px solid #f08c00;padding:4px 10px;margin:6px 0;background:#fff9f0;border-radius:0 8px 8px 0;font-size:12px}
+</style>
+</head>
+<body><div class="wrap">
+<h1>开发者工具箱</h1>
+<p class="sub">JSON 格式化与对比 · 正则表达式测试 · Base64 / URL 编解码 —— 全部在浏览器本地完成，数据不出本机。</p>
+<div class="panel">
+<div class="tabs">
+<button class="tab active" data-t="json">JSON 格式化 / 对比</button>
+<button class="tab" data-t="re">正则测试</button>
+<button class="tab" data-t="b64">Base64 / URL</button>
+</div>
+
+<div id="pane-json">
+<label class="f">JSON 输入</label>
+<textarea id="jIn" placeholder='{"name":"张三","tags":["a","b"]}'></textarea>
+<div class="row">
+<button class="p" id="jFmt">格式化</button>
+<button class="s" id="jMin">压缩</button>
+<button class="s" id="jCp">复制结果</button>
+<button class="s" id="jDl">下载 .json</button>
+</div>
+<div class="msg" id="jMsg"></div>
+<pre class="out" id="jOut"></pre>
+<label class="f">对比：第二个 JSON（可选）</label>
+<textarea id="jIn2" style="min-height:90px" placeholder="粘贴另一份 JSON 进行对比"></textarea>
+<div class="row"><button class="s" id="jDiff">对比差异</button></div>
+<div class="cap" id="jDiffOut"></div>
+</div>
+
+<div id="pane-re" style="display:none">
+<label class="f">正则表达式</label>
+<input type="text" id="rePat" placeholder="例：(\d{4})-(\d{2})-(\d{2})">
+<div class="row flags">标志：
+<label><input type="checkbox" value="g" checked> g 全局</label>
+<label><input type="checkbox" value="i"> i 忽略大小写</label>
+<label><input type="checkbox" value="m"> m 多行</label>
+<label><input type="checkbox" value="s"> s 点匹配换行</label>
+<label><input type="checkbox" value="u"> u Unicode</label>
+</div>
+<label class="f">测试文本</label>
+<textarea id="reTxt" placeholder="在此粘贴要匹配的文本…"></textarea>
+<label class="f">替换为（可选，$1 引用捕获组）</label>
+<input type="text" id="reRep" placeholder="例：$2/$3/$1">
+<div class="row"><button class="p" id="reRun">运行</button></div>
+<div class="msg" id="reMsg"></div>
+<div class="cap" id="reCaps"></div>
+<pre class="out" id="reOut"></pre>
+</div>
+
+<div id="pane-b64" style="display:none">
+<label class="f">文本</label>
+<textarea id="bTxt" style="min-height:90px"></textarea>
+<div class="row">
+<button class="p" id="bE64">Base64 编码</button>
+<button class="s" id="bD64">Base64 解码</button>
+<button class="s" id="bEU">URL 编码</button>
+<button class="s" id="bDU">URL 解码</button>
+<button class="s" id="bCp">复制结果</button>
+</div>
+<div class="msg" id="bMsg"></div>
+<pre class="out" id="bOut"></pre>
+</div>
+</div></div>
+<script>
+const $=s=>document.querySelector(s);
+function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function show(el,cls,t){el.className='msg '+cls;el.textContent=t}
+function res(t,m){const o=$('#bOut');o.style.display='block';o.textContent=t;show($('#bMsg'),'ok',m)}
+function copyText(t){
+  if(navigator.clipboard&&window.isSecureContext)return navigator.clipboard.writeText(t);
+  const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();
+  document.execCommand('copy');ta.remove();return Promise.resolve()}
+function pos(e,src){const a=/at line (\d+) column (\d+)/.exec(e.message);
+  if(a)return '第 '+a[1]+' 行 · 第 '+a[2]+' 列';
+  const b=/position (\d+)/.exec(e.message);
+  if(b){const p=+b[1];return '第 '+src.slice(0,p).split('\n').length+' 行（第 '+p+' 字符附近）'}return ''}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');['json','re','b64'].forEach(n=>$('#pane-'+n).style.display=t.dataset.t===n?'block':'none')});
+/* JSON */
+function jParse(){const s=$('#jIn').value;try{const o=JSON.parse(s);return{o,err:null}}catch(e){return{o:null,err:e,s}}}
+$('#jFmt').onclick=()=>{const r=jParse();if(r.err){show($('#jMsg'),'err','✗ '+r.err.message+(pos(r.err,r.s)?' · '+pos(r.err,r.s):''));$('#jOut').style.display='none';return}
+  $('#jOut').style.display='block';$('#jOut').textContent=JSON.stringify(r.o,null,2);show($('#jMsg'),'ok','✓ 合法 JSON，已格式化')};
+$('#jMin').onclick=()=>{const r=jParse();if(r.err){show($('#jMsg'),'err','✗ '+r.err.message);return}
+  $('#jOut').style.display='block';$('#jOut').textContent=JSON.stringify(r.o);show($('#jMsg'),'ok','✓ 已压缩')};
+$('#jCp').onclick=()=>{if($('#jOut').style.display==='none'){show($('#jMsg'),'err','请先格式化');return}copyText($('#jOut').textContent).then(()=>show($('#jMsg'),'ok','✓ 已复制'))};
+$('#jDl').onclick=()=>{if($('#jOut').style.display==='none'){show($('#jMsg'),'err','请先格式化');return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([$('#jOut').textContent],{type:'application/json'}));a.download='data.json';a.click()};
+function flat(o,p,acc){if(o&&typeof o==='object'){if(Array.isArray(o))o.forEach((v,i)=>flat(v,p+'['+i+']',acc));else for(const k in o)flat(o[k],p?p+'.'+k:k,acc)}else acc.push(p+' = '+JSON.stringify(o));return acc}
+$('#jDiff').onclick=()=>{
+  try{const A=flat(JSON.parse($('#jIn').value),'',[]),B=flat(JSON.parse($('#jIn2').value),'',[]);
+  const ma=new Map(A.map(x=>{const i=x.indexOf(' = ');return[x.slice(0,i),x.slice(i+3)]}));
+  const mb=new Map(B.map(x=>{const i=x.indexOf(' = ');return[x.slice(0,i),x.slice(i+3)]}));
+  let h='',n=0;
+  mb.forEach((v,k)=>{if(!ma.has(k)){h+='<div class="dl">+ '+esc(k)+' = '+esc(v)+'</div>';n++}else if(ma.get(k)!==v){h+='<div class="dc">~ '+esc(k)+'：'+esc(ma.get(k))+' → '+esc(v)+'</div>';n++}});
+  ma.forEach((v,k)=>{if(!mb.has(k)){h+='<div class="dr">- '+esc(k)+' = '+esc(v)+'</div>';n++}});
+  $('#jDiffOut').innerHTML=n?('共 '+n+' 处差异'+(n>40?'（仅显示前 40 组附近的条目）':'')+'<br>'+h.split('</div>').slice(0,40).join('</div>')+'</div>'):'✓ 两份 JSON 语义完全一致';
+  }catch(e){$('#jDiffOut').textContent='✗ 解析失败：'+e.message}};
+/* 正则 */
+$('#reRun').onclick=()=>{
+  if(!$('#rePat').value){show($('#reMsg'),'err','请输入正则表达式');return}
+  try{
+    let flags='';document.querySelectorAll('#pane-re input:checked').forEach(c=>flags+=c.value);
+    const src=$('#rePat').value,txt=$('#reTxt').value;
+    const gflags=flags.includes('g')?flags:flags+'g';
+    const rg=new RegExp(src,gflags);let ms=[],m,cnt=0;
+    while((m=rg.exec(txt))&&cnt<500){ms.push(m);cnt++;if(m[0]==='')rg.lastIndex++}
+    let html='',last=0;ms.forEach(mm=>{html+=esc(txt.slice(last,mm.index))+'<span class="hl">'+esc(mm[0])+'</span>';last=mm.index+mm[0].length});
+    html+=esc(txt.slice(last));
+    const out=$('#reOut');out.style.display='block';out.innerHTML=html||'（无匹配）';
+    const caps=[];ms.slice(0,20).forEach((mm,i)=>{if(mm.length>1){const p=[];for(let k=1;k<mm.length;k++)p.push('$'+k+'='+JSON.stringify(mm[k]??null));caps.push('匹配'+(i+1)+' @'+mm.index+'：'+p.join(' · '))}});
+    $('#reCaps').innerHTML=caps.join('<br>');
+    let msg='共 '+cnt+' 处匹配'+(cnt>=500?'（仅显示前 500）':'');
+    const rep=$('#reRep').value;
+    if(rep){out.innerHTML='<b>替换结果：</b><br>'+esc(txt.replace(new RegExp(src,gflags),rep));msg+=' · 已显示替换预览'}
+    show($('#reMsg'),'ok',msg);
+  }catch(e){show($('#reMsg'),'err','✗ '+e.message);$('#reOut').style.display='none';$('#reCaps').textContent=''}};
+/* Base64 / URL（TextEncoder 保证中文不乱码） */
+function e64(s){const u=new TextEncoder().encode(s);let b='';u.forEach(x=>b+=String.fromCharCode(x));return btoa(b)}
+function d64(s){const bin=atob(s.trim());const u=new Uint8Array([...bin].map(c=>c.charCodeAt(0)));return new TextDecoder().decode(u)}
+$('#bE64').onclick=()=>{try{res(e64($('#bTxt').value),'✓ 已编码（UTF-8 安全）')}catch(e){show($('#bMsg'),'err','✗ '+e.message)}};
+$('#bD64').onclick=()=>{try{res(d64($('#bTxt').value),'✓ 已解码')}catch(e){show($('#bMsg'),'err','✗ 不是合法 Base64')}};
+$('#bEU').onclick=()=>res(encodeURIComponent($('#bTxt').value),'✓ 已编码');
+$('#bDU').onclick=()=>{try{res(decodeURIComponent($('#bTxt').value),'✓ 已解码')}catch(e){show($('#bMsg'),'err','✗ 含非法转义序列')}};
+$('#bCp').onclick=()=>{if($('#bOut').style.display==='none'){show($('#bMsg'),'err','暂无结果');return}copyText($('#bOut').textContent).then(()=>show($('#bMsg'),'ok','✓ 已复制'))};
+</script>
+</body></html>
+
