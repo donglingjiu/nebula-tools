@@ -18,6 +18,9 @@ func tkOpts(r *http.Request) map[string]string {
 	out := map[string]string{}
 	raw := r.FormValue("opts")
 	if raw == "" {
+		raw = r.URL.Query().Get("opts")
+	}
+	if raw == "" {
 		return out
 	}
 	var m map[string]interface{}
