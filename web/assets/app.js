@@ -422,3 +422,12 @@ function novaLogin(e){
   }
   if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",paint)}else{paint()}
 })();
+
+/* favicon 兜底：data-URI 内联图标，零网络请求，404 根治 */
+(function(){
+  if(document.querySelector("link[rel~='icon']"))return;
+  var svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#4f6ef7"/><text x="16" y="22" font-size="17" font-family="Arial,sans-serif" font-weight="bold" fill="#fff" text-anchor="middle">N</text></svg>';
+  var l=document.createElement("link");l.rel="icon";l.type="image/svg+xml";
+  l.href="data:image/svg+xml,"+encodeURIComponent(svg);
+  document.head.appendChild(l);
+})();
