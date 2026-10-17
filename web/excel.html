@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Excel 分析整理 · Nova 工具</title>
+<script src="assets/vendor/xlsx.full.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f5f7fb;min-height:100vh;padding:40px 20px;display:flex;justify-content:center}
+.wrap{width:100%;max-width:1000px}
+.back{display:inline-block;margin-bottom:18px;color:#4f6ef7;text-decoration:none;font-size:14px}
+h1{font-size:26px;color:#1a2233}
+.sub{color:#7a8499;margin:8px 0 24px;font-size:14px}
+.drop{display:block;border:2px dashed #c3cdf0;border-radius:14px;background:#fff;padding:44px 20px;text-align:center;cursor:pointer;transition:.2s}
+.drop:hover{border-color:#4f6ef7;background:#f8faff}
+.drop .big{font-size:16px;color:#1a2233;font-weight:600}
+.drop .hint{font-size:13px;color:#98a2b8;margin-top:6px}
+.drop input{display:none}
+.status{margin-top:14px;font-size:14px;color:#4f6ef7;min-height:20px}
+.status.err{color:#e5484d}
+.panel2{background:#fff;border-radius:12px;padding:16px 20px;margin-top:16px;box-shadow:0 2px 12px rgba(30,40,90,.06);display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-size:14px;color:#334}
+.panel2 b{color:#1a2233}
+.panel2 label{display:flex;align-items:center;gap:5px;cursor:pointer}
+.kcol{margin-right:10px;font-size:13px}
+select{padding:6px 10px;border:1px solid #d5dcf0;border-radius:8px;background:#fff;font-size:13px}
+.btn{background:linear-gradient(120deg,#4f6ef7,#7c5cf5);color:#fff;border:0;border-radius:10px;padding:10px 20px;font-size:14px;cursor:pointer}
+.btn2{background:#eef1fb;color:#3d55d8;border:0;border-radius:10px;padding:10px 18px;font-size:14px;cursor:pointer}
+.tblwrap{margin-top:16px;border-radius:12px;overflow:auto;box-shadow:0 2px 12px rgba(30,40,90,.06);max-height:60vh;background:#fff}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border:1px solid #e3e8f2;padding:6px 9px;text-align:left;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+th{background:#f0f4ff;color:#1a2233}
+caption{caption-side:top;text-align:left;color:#98a2b8;padding:8px 4px;font-size:12px}
+#statbox{margin-top:12px;font-size:13px;color:#556;line-height:1.9;background:#fff;border-radius:12px;padding:12px 20px;box-shadow:0 2px 12px rgba(30,40,90,.06)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="tools.html">← 返回工具大全</a>
+  <h1>Excel 分析整理</h1>
+  <p class="sub">上传 CSV / XLSX → 去重、删空行、排序、选列、看统计 → 导出。全程本地完成，文件不上传。</p>
+  <label class="drop">
+    <div class="big">点击选择 .xlsx / .xls / .csv 文件</div>
+    <div class="hint">多 Sheet 工作簿可切换 · 预览仅显示前 100 行，导出为全量数据</div>
+    <input type="file" id="file" accept=".xlsx,.xls,.csv">
+  </label>
+  <div class="status" id="status"></div>
+  <div id="ops" hidden>
+    <div class="panel2">
+      <b>Sheet</b><select id="sheetSel"></select>
+      <span id="stat" style="color:#188a54;font-size:13px"></span>
+    </div>
+    <div class="panel2">
+      <label><input type="checkbox" id="opDedup"> 去除完全重复行</label>
+      <label><input type="checkbox" id="opEmpty" checked> 删除空行</label>
+      <span>排序列</span><select id="sortCol"></select>
+      <select id="sortDir"><option value="1">升序</option><option value="-1">降序</option></select>
+      <button class="btn2" id="apply">应用并刷新预览</button>
+      <button class="btn" id="dlX">导出 .xlsx</button>
+      <button class="btn2" id="dlC">导出 .csv</button>
+      <div id="keepCols" style="width:100%"></div>
+    </div>
+    <div id="statbox" hidden></div>
+    <div class="tblwrap"><table id="preview"></table></div>
+  </div>
+</div>
+<script>
+var wb=null,rows=[],name='data';
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s).replace(/[&<>"]/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]})}
+function setStatus(m,e){var s=$('status');s.textContent=m;s.className=e?'status err':'status'}
+$('file').addEventListener('change',function(){
+  var f=this.files[0];if(!f)return;
+  name=f.name.replace(/\.(xlsx|xls|csv)$/i,'');
+  setStatus('解析中…');
+  var r=new FileReader();
+  r.onload=function(){
+    try{
+      wb=XLSX.read(new Uint8Array(r.result),{type:'array'});
+      var sel=$('sheetSel');sel.innerHTML='';
+      wb.SheetNames.forEach(function(n,i){var o=document.createElement('option');o.value=i;o.textContent=n;sel.appendChild(o)});
+      $('ops').hidden=false;
+      pick();
+    }catch(e){setStatus('解析失败:'+e.message,true)}
+  };
+  r.onerror=function(){setStatus('读取失败',true)};
+  r.readAsArrayBuffer(f);
+});
+$('sheetSel').addEventListener('change',pick);
+function pick(){
+  var ws=wb.Sheets[wb.SheetNames[+$('sheetSel').value]];
+  rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''});
+  var cols=rows[0]?rows[0].length:0,sc=$('sortCol'),kc=$('keepCols');
+  sc.innerHTML='<option value="-1">不排序</option>';kc.innerHTML='';
+  for(var c=0;c<cols;c++){
+    var lab=(rows[0]&&rows[0][c]!=='')?rows[0][c]:'列'+(c+1);
+    sc.insertAdjacentHTML('beforeend','<option value="'+c+'">'+esc(lab)+'</option>');
+    kc.insertAdjacentHTML('beforeend','<label class="kcol"><input type="checkbox" data-c="'+c+'" checked> '+esc(lab)+'</label>');
+  }
+  apply();
+}
+function applied(){
+  var keep=[],cks=$('keepCols').querySelectorAll('input');
+  cks.forEach(function(k){if(k.checked)keep.push(+k.dataset.c)});
+  if(!keep.length&&rows[0])keep=rows[0].map(function(_,i){return i});
+  var head=rows[0]?rows[0].filter(function(_,i){return keep.indexOf(i)>=0}):[];
+  var data=rows.slice(1);
+  if($('opEmpty').checked)data=data.filter(function(r){return r.some(function(v){return v!==''&&v!=null})});
+  if($('opDedup').checked){var seen={},out=[];data.forEach(function(r){var k=JSON.stringify(keep.map(function(i){return r[i]}));if(!seen[k]){seen[k]=1;out.push(r)}});data=out}
+  var sc=+$('sortCol').value,dir=+$('sortDir').value;
+  if(sc>=0)data=data.slice().sort(function(a,b){var x=a[sc],y=b[sc],nx=parseFloat(x),ny=parseFloat(y);
+    if(!isNaN(nx)&&!isNaN(ny))return(nx-ny)*dir;
+    return(String(x)>String(y)?1:String(x)<String(y)?-1:0)*dir});
+  return [head].concat(data.map(function(r){return keep.map(function(i){return r[i]==null?'':r[i]})}));
+}
+function apply(){
+  var out=applied(),nR=out.length-1,nC=out[0]?out[0].length:0,orig=Math.max(0,rows.length-1);
+  $('stat').textContent='原 '+orig+' 行 → 处理后 '+nR+' 行 × '+nC+' 列';
+  var lines=[];
+  for(var c=0;c<nC;c++){
+    var vals=[],empty=0;
+    for(var r=1;r<out.length;r++){var v=out[r][c];if(v===''||v==null)empty++;else vals.push(v)}
+    var nums=vals.map(parseFloat).filter(function(n){return!isNaN(n)});
+    var nm=esc(out[0]&&out[0][c]!==''?out[0][c]:'列'+(c+1));
+    if(nums.length&&nums.length>=vals.length*0.6){
+      var min=Math.min.apply(0,nums),max=Math.max.apply(0,nums),sum=nums.reduce(function(a,b){return a+b},0);
+      lines.push('<b>'+nm+'</b>:数值列 min '+min+' / max '+max+' / 平均 '+(sum/nums.length).toFixed(2)+(empty?' / 空 '+empty:''));
+    }else{
+      lines.push('<b>'+nm+'</b>:文本列 非空 '+vals.length+(empty?' / 空 '+empty:''));
+    }
+  }
+  var sb=$('statbox');
+  if(lines.length){sb.hidden=false;sb.innerHTML=lines.slice(0,15).join('<br>')}
+  var t=$('preview'),h='';
+  out.slice(0,101).forEach(function(r,i){
+    var tag=i===0?'th':'td';
+    h+='<tr>'+r.map(function(v){return'<'+tag+'>'+esc(v)+'</'+tag+'>'}).join('')+'</tr>';
+  });
+  t.innerHTML=(out.length>101?'<caption>预览前 100 行(共 '+nR+' 行)</caption>':'')+h;
+  setStatus('就绪 ✓ 调整选项后点「应用并刷新预览」，满意即导出。');
+}
+$('apply').addEventListener('click',apply);
+function download(kind){
+  var out=applied(),ws=XLSX.utils.aoa_to_sheet(out),b=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(b,ws,'data');
+  if(kind==='x'){XLSX.writeFile(b,name+'-整理.xlsx');return}
+  var csv=XLSX.utils.sheet_to_csv(ws);
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download=name+'-整理.csv';a.click();
+}
+$('dlX').addEventListener('click',function(){download('x')});
+$('dlC').addEventListener('click',function(){download('c')});
+</script>
+</body>
+</html>
