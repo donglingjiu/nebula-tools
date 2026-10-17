@@ -182,7 +182,11 @@ func newRouter(db *DB) http.Handler {
 		J(w, map[string]any{"ok": true})
 	})
 
-	mux.HandleFunc("GET /api/tools", func(w http.ResponseWriter, r *http.Request) {
+	
+	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/ai.html", http.StatusFound)
+	})
+mux.HandleFunc("GET /api/tools", func(w http.ResponseWriter, r *http.Request) {
 		u := s.user(r)
 		isAdmin := u != nil && u.Role == "admin"
 		ids := make([]string, 0, len(ToolRegistry))
