@@ -244,7 +244,7 @@ func hXlsxProfile(db *DB) http.HandlerFunc {
 			return
 		}
 		defer f.Close()
-		sm, _ := f.GetSheetMap()
+		sm := f.GetSheetMap()
 		if len(sm) == 0 {
 			fxE(w, 422, "无工作表")
 			return
