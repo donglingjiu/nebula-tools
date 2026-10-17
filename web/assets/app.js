@@ -431,3 +431,60 @@ function novaLogin(e){
   l.href="data:image/svg+xml,"+encodeURIComponent(svg);
   document.head.appendChild(l);
 })();
+
+/* 真机试炼场：12 个文本工具直连 /api/run；卡片诚实徽章：8 可用 8 规划中 */
+(function(){
+  if(!/tools\.html/.test(location.pathname))return;
+  function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+  function el(id){return document.getElementById(id)}
+  function build(lib,tools){
+    var sec=document.createElement("section");sec.id="nova-runner";sec.className="panel";
+    sec.style.cssText="margin:19px 0;border:1px solid #e9eef7;border-radius:14px;padding:18px";
+    sec.innerHTML='<div class="section-head"><div><h3>真机试炼场</h3><p>文本工具直连后端引擎（/api/run），运行记录自动进入个人中心历史。</p></div></div>'
+      +'<div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:10px 0">'
+      +'<select id="nr-tool" style="padding:9px 12px;border:1px solid #e2e8f4;border-radius:10px;background:#fff;font-size:13px;max-width:280px"></select>'
+      +'<button id="nr-go" style="padding:9px 18px;border:0;border-radius:10px;background:#4f6ef7;color:#fff;cursor:pointer;font-size:13px">运行</button>'
+      +'<span id="nr-ms" class="small muted"></span></div>'
+      +'<textarea id="nr-in" placeholder="粘贴输入：CSV、JSON、文本、URL……" style="width:100%;box-sizing:border-box;min-height:110px;padding:12px;border:1px solid #e2e8f4;border-radius:10px;font:12px/1.6 ui-monospace,monospace;resize:vertical"></textarea>'
+      +'<pre id="nr-out" style="margin:10px 0 0;padding:12px;min-height:52px;background:#f7f9fe;border:1px solid #e9eef7;border-radius:10px;font:12px/1.6 ui-monospace,monospace;white-space:pre-wrap;word-break:break-all;color:#33415e">输出将显示在这里</pre>';
+    lib.parentNode.insertBefore(sec,lib.nextSibling);
+    el("nr-tool").innerHTML=tools.map(function(t){return '<option value="'+esc(t.id)+'">'+esc(t.name)+' · '+esc(t.id)+'</option>'}).join("");
+    window.__nrSelect=function(id){el("nr-tool").value=id;el("nr-in").focus()};
+    el("nr-go").addEventListener("click",function(){
+      var id=el("nr-tool").value,input=el("nr-in").value,out=el("nr-out");
+      if(!input.trim()){try{toast("请先粘贴输入内容","error")}catch(_){}return}
+      out.textContent="运行中…";el("nr-ms").textContent="";
+      fetch("/api/run/"+encodeURIComponent(id),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({input:input,opts:{})}).then(function(r){return r.json()}).then(function(j){
+        if(j&&j.ok!==false&&typeof j.output!=="undefined"){out.textContent=j.output;el("nr-ms").textContent=(j.ms||0)+" ms";try{toast("运行成功","good")}catch(_){}}
+        else{out.textContent="出错了："+((j&&j.error)||"未知错误");try{toast("运行失败","error")}catch(_){}}
+      }).catch(function(){out.textContent="网络错误";try{toast("网络错误","error")}catch(_){}});
+    });
+  }
+  function badges(){
+    var MAP={"JSON 格式化":["可用","#nova-runner","dev.json"],"Base64 / URL 编码":["可用","#nova-runner","dev.encode"],"Markdown 编辑器":["文本版可用","#nova-runner","dev.md"],"PDF 转 Word":["可用","workspace.html",""],"图片压缩与转换":["可用","workspace.html",""],"Excel 数据洞察":["可用","workspace.html",""],"CSV 表格处理":["可用","workspace.html",""],"工作流规划":["可用","workflows.html",""]};
+    var cs=document.querySelectorAll(".tool-card");
+    for(var i=0;i<cs.length;i++){
+      var h=cs[i].querySelector("h3");if(!h)continue;
+      var title=(h.childNodes[0]&&h.childNodes[0].textContent||"").trim();
+      if(title==="开发者工具箱")continue;
+      var m=MAP[title],tag=document.createElement("span");tag.className="tag";
+      if(m){
+        tag.textContent=m[0];tag.style.cssText="background:#e8f7ef;color:#188a54;margin-left:6px";h.appendChild(tag);
+        cs[i].setAttribute("href",m[1]);
+        if(m[1]==="#nova-runner"){(function(id){cs[i].addEventListener("click",function(ev){ev.preventDefault();if(window.__nrSelect)window.__nrSelect(id);var s=el("nova-runner");if(s)s.scrollIntoView({behavior:"smooth"})})})(m[2])}
+      }else{
+        tag.textContent="规划中";tag.style.cssText="background:#f1f3f9;color:#8a94a8;margin-left:6px";h.appendChild(tag);
+        cs[i].addEventListener("click",function(ev){ev.preventDefault();try{toast("该工具规划中，敬请期待")}catch(_){}});
+      }
+    }
+  }
+  function init(){
+    var lib=document.querySelector(".tool-library");if(!lib)return;
+    badges();
+    fetch("/api/tools").then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(list){
+      var ts=(list||[]).filter(function(t){return t.kind==="text"});
+      if(ts.length)build(lib,ts);
+    }).catch(function(){});
+  }
+  if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init)}else{init()}
+})();
