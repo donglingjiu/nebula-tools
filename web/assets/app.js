@@ -311,18 +311,6 @@ init();
     if(!res.ok){let m='处理失败';try{const j=await res.json();m=j.error||m}catch(e){};toast(label+'：'+m);return false}
     dl(await res.blob(),outName(res.headers.get('Content-Disposition'),fb));return true;
   }
-  document.addEventListener('submit',e=>{
-    const f=e.target;if(!(f&&f.id==='loginForm'))return;
-    e.preventDefault();e.stopPropagation();
-    const un=(f.querySelector('#email')||f.querySelector('input:not([type=password])'))?.value.trim();
-    const pw=f.querySelector('input[type=password]')?.value||'';
-    if(!un||!pw){toast('请输入用户名和密码');return}
-    fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:un,password:pw})}).then(async res=>{
-      const d=await res.json().catch(()=>({}));
-      if(!res.ok){toast(d.error||'登录失败：用户名或密码错误');return}
-      toast('欢迎回来，'+(d.username||un));setTimeout(()=>location.href='index.html',500);
-    }).catch(()=>toast('网络错误，请重试'));
-  },true);
   document.addEventListener('click',e=>{
     const rm=e.target.closest('[data-remove-file]');
     if(rm){const row=rm.closest('[data-local-file]');const n=row&&row.dataset.localFile;
