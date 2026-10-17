@@ -372,7 +372,7 @@ function novaLogin(e){
 
 (function(){
   function who(){try{return JSON.parse(localStorage.getItem("novaUser")||"null")}catch(e){return null}}
-  function fmt(v){var s=String(v==null?"":v);var m=/^(d{4}-d{2}-d{2})T(d{2}:d{2})/.exec(s);if(m)return m[1]+" "+m[2];try{var n=+s;if(n>1e12)return new Date(n).toLocaleString("zh-CN",{hour12:false});if(n>1e9)return new Date(n*1000).toLocaleString("zh-CN",{hour12:false})}catch(e){}return s}
+  function fmt(v){var s=String(v==null?"":v);var m=/^([0-9]{4}-[0-9]{2}-[0-9]{2})T([0-9]{2}:[0-9]{2})/.exec(s);if(m)return m[1]+" "+m[2];try{var n=+s;if(n>1e12)return new Date(n).toLocaleString("zh-CN",{hour12:false});if(n>1e9)return new Date(n*1000).toLocaleString("zh-CN",{hour12:false})}catch(e){}return s}
   function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
   var TN={"fx:pdf-merge":"PDF 合并","fx:pdf-split":"PDF 拆分","fx:pdf-compress":"PDF 压缩","fx:pdf-to-docx":"PDF 转 Word","fx:pdf-to-xlsx":"PDF 转 Excel","t:csv-clean":"CSV 清洗","t:img-process":"图片处理","t:xlsx-profile":"Excel 剖析"};
   function toolName(t){return TN[t]||(t.indexOf("workflow:")===0?"工作流 · "+t.slice(9):t)}
