@@ -34,7 +34,7 @@ input:focus,select:focus{border-color:#4f6ef7}
 label.ck{display:flex;align-items:center;gap:5px;font-size:13px;color:#445;cursor:pointer}
 label.ck input{width:16px;height:16px}
 </style>
-</head>
+<script src="assets/vendor/nova-dl.js"></script></head>
 <body>
 <div class="wrap">
   <a class="back" href="tools.html">← 返回工具大全</a>
@@ -50,10 +50,7 @@ function sz(n){return n>1048576?(n/1048576).toFixed(2)+' MB':(n/1024).toFixed(1)
 async function loadPDF(f){var buf=await f.arrayBuffer();
   try{return await PDFDOC.load(buf)}catch(e){throw new Error(String(e).indexOf('ncrypt')>=0?'PDF 已加密,请先解密再处理':'PDF 解析失败:'+e.message)}}
 function safeName(s){return String(s).replace(/[^\w\u4e00-\u9fa5.-]+/g,'-').slice(0,60)||'pdf'}
-async function dl(bytes,name){var url=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
-  var a=document.createElement('a');a.href=url;a.download=safeName(name);
-  document.body.appendChild(a);a.click();
-  setTimeout(function(){URL.revokeObjectURL(url);a.remove()},2000);
+async function dl(bytes,name){window.novaDL(new Blob([bytes],{type:'application/pdf'}),name);
   return sz(bytes.length!==undefined?bytes.length:bytes.byteLength)}
 function parseRange(str,total){var set=[],parts=String(str).split(','),i;
   for(i=0;i<parts.length;i++){var p=parts[i].trim();if(!p)continue;

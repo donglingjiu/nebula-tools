@@ -23,8 +23,8 @@ textarea{flex:1 1 340px;min-height:380px;border:1px solid #d5dcf0;border-radius:
 textarea:focus{border-color:#4f6ef7}
 .fcwrap{flex:1 1 460px;background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 12px rgba(30,40,90,.06);overflow:auto}
 .fcwrap svg{max-width:100%;height:auto}
-</style>
-</head>
+@media(max-width:700px){.split{flex-direction:column}}</style>
+<script src="assets/vendor/nova-dl.js"></script></head>
 <body>
 <div class="wrap">
   <a class="back" href="tools.html">← 返回工具大全</a>
@@ -69,9 +69,7 @@ var t=null;
 $('src').addEventListener('input',function(){clearTimeout(t);t=setTimeout(render,500)});
 $('dlS').addEventListener('click',function(){
   if(!lastSvg)return;
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([lastSvg],{type:'image/svg+xml;charset=utf-8'}));
-  a.download='流程图.svg';a.click();
+  window.novaDL(new Blob([lastSvg],{type:'image/svg+xml;charset=utf-8'}),'流程图.svg');
 });
 $('dlP').addEventListener('click',function(){
   if(!lastSvg)return;
@@ -84,7 +82,7 @@ $('dlP').addEventListener('click',function(){
     ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);
     ctx.drawImage(img,0,0,c.width,c.height);
     URL.revokeObjectURL(url);
-    c.toBlob(function(b){if(!b)return;var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='流程图.png';a.click()});
+    c.toBlob(function(b){if(b)window.novaDL(b,'流程图.png')});
   };
   img.onerror=function(){setStatus('PNG 导出失败，请改用 SVG',true);URL.revokeObjectURL(url)};
   img.src=url;

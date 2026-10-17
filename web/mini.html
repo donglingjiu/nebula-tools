@@ -36,7 +36,7 @@ label.ck{display:flex;align-items:center;gap:5px;font-size:13px;color:#445;curso
 .cell b{display:block;color:#1a2233;margin-bottom:3px}
 .tag{display:inline-block;background:#eef1fb;color:#3d55d8;border-radius:6px;padding:2px 8px;font-size:12px;margin:2px}
 </style>
-</head>
+<script src="assets/vendor/nova-dl.js"></script></head>
 <body>
 <div class="wrap">
   <a class="back" href="tools.html">← 返回工具大全</a>
@@ -111,7 +111,7 @@ qrcode:{t:'二维码生成',d:'尺寸/纠错/配色自定义 + PNG 下载',r:fun
   $('dl').onclick=function(){var c=$('qr').querySelector('canvas');
     if(!c){mk();c=$('qr').querySelector('canvas')}
     if(!c){return}
-    c.toBlob(function(b){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='二维码.png';a.click()})};
+    c.toBlob(function(b){if(b)window.novaDL(b,'二维码.png')})};
 }},
 textcount:{t:'字数统计',d:'基础计数 + 中英文词频 TOP10',r:function(el){
   el.innerHTML='<textarea id="t" rows="8" placeholder="粘贴文本,实时统计"></textarea><pre class="out" id="o">等待输入…</pre><div id="top"></div>';

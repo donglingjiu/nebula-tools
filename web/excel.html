@@ -33,7 +33,7 @@ th{background:#f0f4ff;color:#1a2233}
 caption{caption-side:top;text-align:left;color:#98a2b8;padding:8px 4px;font-size:12px}
 #statbox{margin-top:12px;font-size:13px;color:#556;line-height:1.9;background:#fff;border-radius:12px;padding:12px 20px;box-shadow:0 2px 12px rgba(30,40,90,.06)}
 </style>
-</head>
+<script src="assets/vendor/nova-dl.js"></script></head>
 <body>
 <div class="wrap">
   <a class="back" href="tools.html">← 返回工具大全</a>
@@ -76,7 +76,7 @@ $('file').addEventListener('change',function(){
   var r=new FileReader();
   r.onload=function(){
     try{
-      wb=XLSX.read(new Uint8Array(r.result),{type:'array'});
+      wb=/\.csv$/i.test(f.name)?XLSX.read(window.novaDecode(r.result),{type:'string'}):XLSX.read(new Uint8Array(r.result),{type:'array'});
       var sel=$('sheetSel');sel.innerHTML='';
       wb.SheetNames.forEach(function(n,i){var o=document.createElement('option');o.value=i;o.textContent=n;sel.appendChild(o)});
       $('ops').hidden=false;
@@ -145,9 +145,7 @@ function download(kind){
   XLSX.utils.book_append_sheet(b,ws,'data');
   if(kind==='x'){XLSX.writeFile(b,name+'-整理.xlsx');return}
   var csv=XLSX.utils.sheet_to_csv(ws);
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
-  a.download=name+'-整理.csv';a.click();
+  window.novaDL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),name+'-整理.csv');
 }
 $('dlX').addEventListener('click',function(){download('x')});
 $('dlC').addEventListener('click',function(){download('c')});
