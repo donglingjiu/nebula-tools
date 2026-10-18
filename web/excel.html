@@ -53,14 +53,15 @@ caption{caption-side:top;text-align:left;color:#98a2b8;padding:8px 4px;font-size
     <div class="panel2">
       <label><input type="checkbox" id="opDedup"> 去除完全重复行</label>
       <label><input type="checkbox" id="opEmpty" checked> 删除空行</label>
-      <span>排序列</span><select id="sortCol"></select>
+      <input type="text" id="filterKw" placeholder="筛选:任一列包含" style="width:150px"><span>排序列</span><select id="sortCol"></select>
       <select id="sortDir"><option value="1">升序</option><option value="-1">降序</option></select>
       <button class="btn2" id="apply">应用并刷新预览</button>
       <button class="btn" id="dlX">导出 .xlsx</button>
-      <button class="btn2" id="dlC">导出 .csv</button>
+      <button class="btn2" id="dlC">导出 .csv</button><button class="btn2" id="dlJ">导出 .json</button><button class="btn2" id="dlS">导出 .sql</button><button class="btn2" id="dlM">导出 .md</button>
       <div id="keepCols" style="width:100%"></div>
     </div>
-    <div id="statbox" hidden></div>
+    <div class="panel2"><b>拆列</b><select id="splitCol" style="max-width:140px"></select><input type="text" id="splitDelim" placeholder="分隔符" style="width:110px"><button class="btn2" id="doSplit">拆分为多列</button><span style="color:#7a8499;font-size:12px">按分隔符拆分所选列,新列追加到表尾;重新上传可还原</span></div>
+  <div id="statbox" hidden></div>
     <div class="tblwrap"><table id="preview"></table></div>
   </div>
 </div>
@@ -68,7 +69,7 @@ caption{caption-side:top;text-align:left;color:#98a2b8;padding:8px 4px;font-size
 var wb=null,rows=[],name='data';
 function $(id){return document.getElementById(id)}
 function esc(s){return String(s).replace(/[&<>"]/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]})}
-function setStatus(m,e){var s=$('status');s.textContent=m;s.className=e?'status err':'status'}
+function setStatus(m,e,sl){var s=$('status');s.textContent=m;s.className=e?'status err':'status';if(sl)return;var c=e?'#e5484d':'#188a54';var d=document.createElement('div');d.textContent=m;d.style.cssText='position:fixed;top:16px;left:50%;transform:translateX(-50%);background:'+c+';color:#fff;padding:9px 20px;border-radius:8px;font-size:14px;z-index:999;box-shadow:0 4px 14px rgba(0,0,0,.25)';document.body.appendChild(d);setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},1800)}
 $('file').addEventListener('change',function(){
   var f=this.files[0];if(!f)return;
   name=f.name.replace(/\.(xlsx|xls|csv)$/i,'');
@@ -91,11 +92,12 @@ function pick(){
   var ws=wb.Sheets[wb.SheetNames[+$('sheetSel').value]];
   rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''});
   var cols=rows[0]?rows[0].length:0,sc=$('sortCol'),kc=$('keepCols');
-  sc.innerHTML='<option value="-1">不排序</option>';kc.innerHTML='';
+  sc.innerHTML='<option value="-1">不排序</option>';kc.innerHTML='';var spl=$('splitCol');spl.innerHTML='<option value="-1">选择列</option>';
   for(var c=0;c<cols;c++){
     var lab=(rows[0]&&rows[0][c]!=='')?rows[0][c]:'列'+(c+1);
     sc.insertAdjacentHTML('beforeend','<option value="'+c+'">'+esc(lab)+'</option>');
     kc.insertAdjacentHTML('beforeend','<label class="kcol"><input type="checkbox" data-c="'+c+'" checked> '+esc(lab)+'</label>');
+    spl.insertAdjacentHTML('beforeend','<option value="'+c+'">'+esc(lab)+'</option>');
   }
   apply();
 }
@@ -107,6 +109,8 @@ function applied(){
   var data=rows.slice(1);
   if($('opEmpty').checked)data=data.filter(function(r){return r.some(function(v){return v!==''&&v!=null})});
   if($('opDedup').checked){var seen={},out=[];data.forEach(function(r){var k=JSON.stringify(keep.map(function(i){return r[i]}));if(!seen[k]){seen[k]=1;out.push(r)}});data=out}
+  var kw=$('filterKw').value.trim().toLowerCase();
+  if(kw)data=data.filter(function(r){return keep.some(function(i){return String(r[i]==null?'':r[i]).toLowerCase().indexOf(kw)>=0})});
   var sc=+$('sortCol').value,dir=+$('sortDir').value;
   if(sc>=0)data=data.slice().sort(function(a,b){var x=a[sc],y=b[sc],nx=parseFloat(x),ny=parseFloat(y);
     if(!isNaN(nx)&&!isNaN(ny))return(nx-ny)*dir;
@@ -137,7 +141,28 @@ function apply(){
     h+='<tr>'+r.map(function(v){return'<'+tag+'>'+esc(v)+'</'+tag+'>'}).join('')+'</tr>';
   });
   t.innerHTML=(out.length>101?'<caption>预览前 100 行(共 '+nR+' 行)</caption>':'')+h;
-  setStatus('就绪 ✓ 调整选项后点「应用并刷新预览」，满意即导出。');
+  setStatus('就绪 ✓ 调整选项后点「应用并刷新预览」，满意即导出。',false,true);
+}
+function splitNow(){
+  if(!rows.length){setStatus('请先上传数据',true);return}
+  var ci=+$('splitCol').value,d=$('splitDelim').value;
+  if(ci<0||!d){setStatus('请选择拆分列并填写分隔符',true);return}
+  var mx=1,parts=[];
+  for(var i=0;i<rows.length;i++){
+    if(i===0){parts.push(null);continue}
+    var v=String(rows[i][ci]==null?'':rows[i][ci]);
+    var ps=v.split(d);
+    parts.push(ps);
+    if(ps.length>mx)mx=ps.length;
+  }
+  var base=(rows[0][ci]!==''&&rows[0][ci]!=null)?String(rows[0][ci]):('列'+(ci+1));
+  for(var i=0;i<rows.length;i++){
+    if(i===0){for(var j=1;j<=mx;j++)rows[0].push(base+'-'+j);continue}
+    var ps=parts[i];
+    for(var j=0;j<mx;j++)rows[i].push(ps[j]!==undefined?ps[j]:'');
+  }
+  setStatus('已拆分:新列 '+base+'-1 … '+base+'-'+mx);
+  pick();
 }
 $('apply').addEventListener('click',apply);
 function download(kind){
@@ -145,10 +170,19 @@ function download(kind){
   XLSX.utils.book_append_sheet(b,ws,'data');
   if(kind==='x'){XLSX.writeFile(b,name+'-整理.xlsx');return}
   var csv=XLSX.utils.sheet_to_csv(ws);
-  window.novaDL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),name+'-整理.csv');
+  if(kind==='c'){window.novaDL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),name+'-整理.csv');setStatus('已导出 CSV ✓');return}
+  var h2=out[0]||[],objs=[],r2,c2;
+  for(r2=1;r2<out.length;r2++){var ob={};for(c2=0;c2<h2.length;c2++)ob[String(h2[c2]!==''&&h2[c2]!=null?h2[c2]:('列'+(c2+1)))]=out[r2][c2];objs.push(ob)}
+  if(kind==='j'){window.novaDL(new Blob([JSON.stringify(objs,null,2)],{type:'application/json'}),name+'-整理.json');setStatus('已导出 JSON ✓');return}
+  if(kind==='s'){var tn=name.replace(/[^a-zA-Z0-9_]{1,}/g,'_');tn=tn.replace(/^_{1,}|_{1,}$/g,'')||'data';var q=String.fromCharCode(39),L2=['CREATE TABLE '+tn+' ('+h2.map(function(hh,ci2){return 'c'+(ci2+1)+' TEXT'}).join(', ')+');'];for(r2=1;r2<out.length;r2++){L2.push('INSERT INTO '+tn+' VALUES ('+h2.map(function(hh,ci2){var v2=String(out[r2][ci2]==null?'':out[r2][ci2]);return q+v2.split(q).join(q+q)+q}).join(', ')+');')}window.novaDL(new Blob([L2.join('\n')],{type:'text/plain'}),name+'-整理.sql');setStatus('已导出 SQL ✓ ('+(out.length-1)+' 行)');return}
+  if(kind==='m'){var M2='| '+h2.join(' | ')+' |\n| --- | --- |\n';for(r2=1;r2<out.length;r2++){M2+='| '+h2.map(function(hh,ci2){return String(out[r2][ci2]==null?'':out[r2][ci2]).split('|').join('\\|').split('\n').join(' ')}).join(' | ')+' |\n'}window.novaDL(new Blob([M2],{type:'text/markdown'}),name+'-整理.md');setStatus('已导出 Markdown ✓');return}
 }
 $('dlX').addEventListener('click',function(){download('x')});
 $('dlC').addEventListener('click',function(){download('c')});
+$('dlJ').addEventListener('click',function(){download('j')});
+$('dlS').addEventListener('click',function(){download('s')});
+$('dlM').addEventListener('click',function(){download('m')});
+$('doSplit').addEventListener('click',splitNow);
 </script>
 </body>
 </html>
