@@ -34,6 +34,7 @@ caption{caption-side:top;text-align:left;color:#98a2b8;padding:8px 4px;font-size
 #statbox{margin-top:12px;font-size:13px;color:#556;line-height:1.9;background:#fff;border-radius:12px;padding:12px 20px;box-shadow:0 2px 12px rgba(30,40,90,.06)}
 </style>
 <script src="assets/vendor/nova-dl.js"></script><style>.nova-nav{position:sticky;top:0;z-index:99;background:#1a2233;color:#cdd5e8;font-size:13px;padding:8px 16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}.nova-nav a{color:#cdd5e8;text-decoration:none}.nova-nav a:hover{color:#fff}.nova-nav .grp{color:#8fa3ff;font-weight:600;margin-left:6px}.nova-nav b{color:#fff}</style><link rel=icon href=data:,>
+<style>body{flex-direction:column}.nova-nav{width:100%;box-sizing:border-box}</style>
 </head>
 <body><nav class="nova-nav"><b>Nova 工具</b><span class="grp">文档</span><a href="pdf2word.html">PDF转Word</a><a href="word2pdf.html">Word转PDF</a><a href="pdf.html">PDF工具箱</a><a href="markdown.html">Markdown</a><a href="mindmap.html">脑图</a><a href="imgtool.html">图片压缩</a><a href="excel.html">Excel洞察</a><span class="grp">开发</span><a href="json.html">JSON工具</a><a href="jsonx.html">JSON转换</a><a href="regex.html">正则测试</a><a href="base64.html">编码</a><span class="grp">数据</span><a href="excel.html">数据洞察</a><a href="tools.html" style="margin-left:auto">☰ 全部工具</a></nav>
 <div class="wrap">
@@ -92,6 +93,9 @@ $('sheetSel').addEventListener('change',pick);
 function pick(){
   var ws=wb.Sheets[wb.SheetNames[+$('sheetSel').value]];
   rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''});
+  rebuild();
+}
+function rebuild(){
   var cols=rows[0]?rows[0].length:0,sc=$('sortCol'),kc=$('keepCols');
   sc.innerHTML='<option value="-1">不排序</option>';kc.innerHTML='';var spl=$('splitCol');spl.innerHTML='<option value="-1">选择列</option>';
   for(var c=0;c<cols;c++){
@@ -166,7 +170,7 @@ function splitNow(){
     for(var j=0;j<mx;j++)rows[i].push(ps[j]!==undefined?ps[j]:'');
   }
   setStatus('已拆分:新列 '+base+'-1 … '+base+'-'+mx);
-  pick();
+  rebuild();
 }
 $('apply').addEventListener('click',apply);
 function download(kind){
