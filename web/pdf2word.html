@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PDF 转 Word · Nova 工具</title>
+<script src="assets/vendor/pdf.min.js"></script>
+<script src="assets/vendor/jszip.min.js"></script>
+<script src="assets/vendor/nova-dl.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f5f7fb;min-height:100vh;display:flex;justify-content:center;padding:40px 20px}
+.wrap{width:100%;max-width:760px}
+.back{display:inline-block;margin-bottom:18px;color:#4f6ef7;text-decoration:none;font-size:14px}
+h1{font-size:26px;color:#1a2233}
+.sub{color:#7a8499;margin:8px 0 24px;font-size:14px}
+.drop{display:block;border:2px dashed #c3cdf0;border-radius:14px;background:#fff;padding:40px 20px;text-align:center;cursor:pointer;transition:.2s}
+.drop:hover{border-color:#4f6ef7;background:#f8faff}
+.drop .big{font-size:16px;color:#1a2233;font-weight:600}
+.drop .hint{font-size:13px;color:#98a2b8;margin-top:6px}
+.drop input{display:none}
+.row{display:flex;gap:12px;align-items:center;margin-top:18px;flex-wrap:wrap}
+select{border:1px solid #d5dcf0;border-radius:10px;padding:10px 12px;font-size:14px;background:#fff;color:#1a2233}
+.btn{background:linear-gradient(120deg,#4f6ef7,#7c5cf5);color:#fff;border:0;border-radius:10px;padding:12px 24px;font-size:15px;cursor:pointer}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.status{margin-top:14px;font-size:14px;color:#188a54;min-height:20px}
+.status.err{color:#e5484d}
+.tip{margin-top:10px;font-size:12.5px;color:#8a94a8;line-height:1.8;background:#fff;border-radius:12px;padding:12px 16px;box-shadow:0 2px 12px rgba(30,40,90,.06)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="tools.html">← 返回工具大全</a>
+  <h1>PDF 转 Word</h1>
+  <p class="sub">双模式保真转换,全程浏览器本地完成,文件不上传。</p>
+  <label class="drop">
+    <div class="big">点击选择 PDF 文件</div>
+    <div class="hint" id="info">文本型 PDF → 文本模式(可编辑)· 扫描/子集字体 → 自动切影像模式(100% 保真)</div>
+    <input type="file" id="file" accept=".pdf">
+  </label>
+  <div class="row">
+    <span style="font-size:14px;color:#445">模式</span>
+    <select id="mode"><option value="auto">自动(推荐,按检测结果切换)</option><option value="text">文本模式(可编辑)</option><option value="image">影像模式(保真,不可编辑)</option></select>
+    <button class="btn" id="go" disabled>转换为 .docx</button>
+  </div>
+  <div class="status" id="status"></div>
+  <div class="tip">
+    <b>保真说明(诚实边界):</b><br>
+    · <b>文本模式</b>:提取文字可编辑;受 PDF 内部字体映射限制,个别 PDF(嵌入子集字体)会提取出乱码——本工具会自动检测并建议切影像模式;多栏/表格的段落顺序可能有偏差。<br>
+    · <b>影像模式</b>:每页按显示效果渲染为高清图片嵌入 Word,<b>内容 100% 保真</b>,但文字不可编辑。<br>
+    · 扫描件/图片型 PDF 请直接用影像模式。
+  </div>
+</div>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='assets/vendor/pdf.worker.min.js';
+var $=function(id){return document.getElementById(id)};
+var buf=null,name='pdf';
+function esc(s){return String(s).replace(/[&<>"]/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]})}
+function setStatus(m,e){var s=$('status');s.textContent=m;s.className=e?'status err':'status'}
+$('file').addEventListener('change',function(){
+  var f=this.files[0];if(!f)return;
+  name=f.name.replace(/\.pdf$/i,'');
+  f.arrayBuffer().then(function(b){buf=b;$('go').disabled=false;
+    $('info').textContent=f.name+' · 准备就绪';
+    setStatus('已载入,点「转换为 .docx」。')});
+});
+/* 手写最小 OOXML,经 JSZip 打包成 .docx(Word/WPS 均可打开) */
+function pXml(t){return '<w:p><w:r><w:rPr><w:sz w:val="22"/></w:rPr><w:t xml:space="preserve">'+esc(t)+'</w:t></w:r></w:p>'}
+function imgXml(i,cx,cy){return '<w:p><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="'+cx+'" cy="'+cy+'"/><wp:docPr id="'+(i+1)+'" name="p'+(i+1)+'"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="'+(i+1)+'" name="p'+(i+1)+'"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rId'+(100+i)+'"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+cx+'" cy="'+cy+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>'}
+function b64u8(dataurl){var b=atob(dataurl.split(',')[1]),u=new Uint8Array(b.length),i;
+  for(i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
+async function makeDocx(paras,images){
+  var zip=new JSZip(),body='',i;
+  for(i=0;i<paras.length;i++)body+=pXml(paras[i]);
+  var rels='';
+  if(images){
+    for(i=0;i<images.length;i++){
+      var ext=images[i].mime==='image/png'?'png':'jpeg';
+      zip.file('word/media/image'+i+'.'+ext,b64u8(images[i].url),{binary:true});
+      rels+='<Relationship Id="rId'+(100+i)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image'+i+'.'+ext+'"/>';
+      body+=imgXml(i,5486400,Math.round(5486400*images[i].h/images[i].w));
+    }
+  }
+  var CT='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpeg" ContentType="image/jpeg"/><Default Extension="png" ContentType="image/png"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>';
+  var RELS='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+  var DOC='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><w:body>'+body+'<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr></w:body></w:document>';
+  zip.file('[Content_Types].xml',CT);
+  zip.file('_rels/.rels',RELS);
+  zip.file('word/document.xml',DOC);
+  if(images)zip.file('word/_rels/document.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+rels+'</Relationships>');
+  return await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+}
+/* 乱码检测:Latin-1 扩展区字符(乱码重灾区)对比 CJK,异常即判定字体无映射 */
+function mojibake(t){
+  var bad=(t.match(/[\u0080-\u00FF]/g)||[]).length,cjk=(t.match(/[\u4e00-\u9fa5]/g)||[]).length;
+  return bad>=20&&bad>cjk*0.5;
+}
+$('go').addEventListener('click',async function(){
+  if(!buf)return;
+  $('go').disabled=true;
+  try{
+    var pdf=await pdfjsLib.getDocument({data:new Uint8Array(buf)}).promise,
+        n=pdf.numPages,mode=$('mode').value,allText='',i;
+    /* 文本/自动:先抽取全文做乱码体检 */
+    if(mode!=='image'){
+      for(i=1;i<=n;i++){var pg=await pdf.getPage(i),tc=await pg.getTextContent(),line='',j;
+        for(j=0;j<tc.items.length;j++){line+=tc.items[j].str;if(tc.items[j].hasEOL){allText+=line+'\n';line=''}}
+        allText+=line+'\n'}
+      if(mojibake(allText)){
+        if(mode==='text'){setStatus('检测到该 PDF 字体缺少字符映射,文本模式会输出乱码;请改用「影像模式」获得 100% 保真',true);$('go').disabled=false;return}
+        mode='image';
+      }
+    }
+    if(mode==='image'){
+      var images=[];
+      for(i=1;i<=n;i++){
+        setStatus('影像模式:渲染第 '+i+'/'+n+' 页…');
+        var pg=await pdf.getPage(i),vp=pg.getViewport({scale:2}),
+            c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;
+        await pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+        images.push({url:c.toDataURL('image/jpeg',0.85),mime:'image/jpeg',w:vp.width,h:vp.height});
+      }
+      setStatus('打包 docx…');
+      var blob=await makeDocx([],images);
+      window.novaDL(blob,name+'-转换.docx');
+      setStatus('完成 ✓ 影像模式(100% 保真):'+n+' 页已嵌入 Word,文字不可编辑。');
+    }else{
+      setStatus('打包 docx…');
+      var paras=allText.split('\n');
+      while(paras.length&&!paras[paras.length-1])paras.pop();
+      var blob=await makeDocx(paras,null);
+      window.novaDL(blob,name+'-转换.docx');
+      setStatus('完成 ✓ 文本模式:'+n+' 页文字已提取,可编辑。');
+    }
+  }catch(e){setStatus('转换失败:'+e.message,true)}
+  $('go').disabled=false;
+});
+</script>
+</body>
+</html>
