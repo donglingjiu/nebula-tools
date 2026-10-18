@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JSON 工具 · Nova 工具</title>
+<script src="assets/vendor/nova-dl.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC",Consolas,monospace;background:#f5f7fb;min-height:100vh;display:flex;justify-content:center;padding:40px 20px}
+.wrap{width:100%;max-width:860px}
+.back{display:inline-block;margin-bottom:18px;color:#4f6ef7;text-decoration:none;font-size:14px}
+h1{font-size:26px;color:#1a2233}
+.sub{color:#7a8499;margin:8px 0 18px;font-size:14px}
+textarea{width:100%;height:340px;border:1px solid #d5dcf0;border-radius:12px;padding:14px;font:13px/1.6 Consolas,monospace;resize:vertical;background:#fff}
+textarea:focus{outline:2px solid #4f6ef7;border-color:transparent}
+.row{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.btn{background:linear-gradient(120deg,#4f6ef7,#7c5cf5);color:#fff;border:0;border-radius:10px;padding:10px 20px;font-size:14px;cursor:pointer}
+.btn2{background:#fff;color:#4f6ef7;border:1px solid #c3cdf0;border-radius:10px;padding:10px 20px;font-size:14px;cursor:pointer}
+.status{margin-top:12px;font-size:14px;color:#188a54;min-height:20px}
+.status.err{color:#e5484d}
+.stats{margin-top:8px;font-size:13px;color:#7a8499}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="tools.html">← 返回工具大全</a>
+  <h1>JSON 工具</h1>
+  <p class="sub">格式化 · 压缩 · 校验(带行号)· 键排序 · 下载,全程本地。</p>
+  <textarea id="src" placeholder='粘贴 JSON,如 {"b":1,"a":{"d":2,"c":3}}'></textarea>
+  <div class="row">
+    <button class="btn" id="fmt">格式化</button>
+    <button class="btn" id="min">压缩</button>
+    <button class="btn" id="sort">键排序</button>
+    <button class="btn2" id="cp">复制结果</button>
+    <button class="btn2" id="dl">下载 .json</button>
+  </div>
+  <div class="status" id="status"></div>
+  <div class="stats" id="stats"></div>
+</div>
+<script>
+var $=function(id){return document.getElementById(id)};
+function set(m,e){var s=$('status');s.textContent=m;s.className=e?'status err':'status'}
+function parse(){
+  var t=$('src').value.trim();
+  if(!t){set('请先粘贴 JSON',1);return null}
+  try{return JSON.parse(t)}catch(e){
+    var m=String(e.message),pos=(m.match(/position (\d+)/i)||[])[1];
+    if(pos){var ln=t.slice(0,+pos).split('\n').length;set('语法错误(第 '+ln+' 行):'+m,1)}
+    else set('语法错误:'+m,1);
+    return null;
+  }
+}
+function nodes(v){var n=1;if(v&&typeof v==='object')for(var k in v)n+=nodes(v[k]);return n}
+function depth(v){if(!v||typeof v!=='object')return 1;var d=0;for(var k in v){var x=depth(v[k]);if(x>d)d=x}return d+1}
+function sortKeys(v){
+  if(Array.isArray(v))return v.map(sortKeys);
+  if(v&&typeof v==='object'){var o={};Object.keys(v).sort().forEach(function(k){o[k]=sortKeys(v[k])});return o}
+  return v;
+}
+function show(o,note){$('src').value=JSON.stringify(o,null,2);
+  $('stats').textContent='节点 '+nodes(o)+' · 深度 '+depth(o)+(note?' · '+note:'');set('完成 ✓')}
+$('fmt').onclick=function(){var o=parse();if(o!==null)show(o,'已格式化')};
+$('min').onclick=function(){var o=parse();if(o!==null){$('src').value=JSON.stringify(o);
+  $('stats').textContent='压缩后 '+$('src').value.length+' 字符 · 节点 '+nodes(o);set('完成 ✓')}};
+$('sort').onclick=function(){var o=parse();if(o!==null)show(sortKeys(o),'键已排序')};
+$('cp').onclick=function(){$('src').select();
+  navigator.clipboard.writeText($('src').value).then(function(){set('已复制 ✓')},
+  function(){document.execCommand('copy');set('已复制 ✓')})};
+$('dl').onclick=function(){if(parse()===null)return;
+  novaDL(new Blob([$('src').value],{type:'application/json'}),'data.json')};
+</script>
+</body>
+</html>
