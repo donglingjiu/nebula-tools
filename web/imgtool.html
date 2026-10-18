@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>图片压缩与转换 · Nova 工具</title>
+<script src="assets/vendor/nova-dl.js"></script>
+<script src="assets/vendor/jszip.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC",sans-serif;background:#f0f2f7;min-height:100vh;display:flex;justify-content:center;padding:40px 20px}
+.wrap{width:100%;max-width:860px}
+.back{display:inline-block;margin-bottom:18px;color:#4f6ef7;text-decoration:none;font-size:14px}
+h1{font-size:26px;color:#1a2233}
+.sub{color:#7a8499;margin:8px 0 18px;font-size:14px}
+.card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 12px rgba(30,40,90,.06);margin-bottom:14px}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:14px;color:#334}
+.row label{display:flex;gap:6px;align-items:center}
+input[type=range]{width:140px}
+#pick{border:2px dashed #c3cdf0;border-radius:12px;padding:28px;text-align:center;color:#7a8499;cursor:pointer}
+#pick:hover{border-color:#4f6ef7;color:#4f6ef7}
+.item{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #eef1f8;font-size:13px}
+.item img{width:56px;height:56px;object-fit:cover;border-radius:8px;background:#f0f2f7}
+.item .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .sz{color:#7a8499;white-space:nowrap}
+.item .dn{background:#4f6ef7;color:#fff;border:0;border-radius:8px;padding:6px 14px;cursor:pointer}
+.save{color:#188a54;font-weight:600}
+.btn{background:linear-gradient(120deg,#4f6ef7,#7c5cf5);color:#fff;border:0;border-radius:10px;padding:10px 22px;font-size:14px;cursor:pointer}
+.status{margin-top:12px;font-size:14px;color:#188a54;min-height:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="tools.html">← 返回工具大全</a>
+  <h1>图片压缩与转换</h1>
+  <p class="sub">全程本地处理,文件不出浏览器。支持 jpg / png / webp 互转、限宽缩放、质量压缩,批量打包 ZIP。</p>
+  <div class="card">
+    <div id="pick">点击选择图片(可多选)或拖拽到此处</div>
+    <input type="file" id="fi" accept="image/*" multiple hidden>
+  </div>
+  <div class="card">
+    <div class="row">
+      <label>格式
+        <select id="fmt"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option><option value="image/webp" selected>WebP(压缩最优)</option></select>
+      </label>
+      <label>质量 <input type="range" id="q" min="30" max="95" value="80"> <span id="qv">80</span></label>
+      <label>限宽 <input type="number" id="mw" placeholder="如 1920" style="width:90px;border:1px solid #d5dcf0;border-radius:8px;padding:6px 10px"> px(0=不限)</label>
+      <button class="btn" id="go">处理全部</button>
+      <button class="btn" id="zip" style="background:#188a54">打包下载 ZIP</button>
+    </div>
+    <div id="list" style="margin-top:10px"></div>
+    <div class="status" id="st"></div>
+  </div>
+</div>
+<script>
+var $=function(id){return document.getElementById(id)};
+var files=[],outs=[];
+$('qv').textContent=$('q').value;
+$('q').oninput=function(){$('qv').textContent=this.value};
+$('pick').onclick=function(){$('fi').click()};
+$('pick').ondragover=function(e){e.preventDefault()};
+$('pick').ondrop=function(e){e.preventDefault();handle(e.dataTransfer.files)};
+$('fi').onchange=function(){handle(this.files)};
+function handle(fl){files=Array.from(fl||[]);$('list').innerHTML='';
+  files.forEach(function(f,i){var d=document.createElement('div');d.className='item';
+    d.innerHTML='<img src="'+URL.createObjectURL(f)+'"><span class="nm">'+f.name+'</span><span class="sz">'+(f.size/1024).toFixed(1)+' KB</span>';
+    $('list').appendChild(d)});}
+function ext(){return {'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[$('fmt').value]}
+$('go').onclick=function(){
+  if(!files.length)return st('请先选择图片',1);
+  outs=[];var fmt=$('fmt').value,q=+$('q').value/100,mw=+$('mw').value||0,done=0;
+  $('list').innerHTML='';
+  files.forEach(function(f){
+    var img=new Image();
+    img.onload=function(){
+      var w=img.width,h=img.height;
+      if(mw&&w>mw){h=Math.round(h*mw/w);w=mw}
+      var c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      c.toBlob(function(b){
+        if(!b)return st(f.name+' 处理失败',1);
+        var nm=f.name.replace(/\.\w+$/,'')+'.'+ext();
+        outs.push({name:nm,blob:b,orig:f.size});
+        var d=document.createElement('div');d.className='item';
+        var sv=f.size?Math.round((1-b.size/f.size)*100):0;
+        d.innerHTML='<img src="'+URL.createObjectURL(b)+'"><span class="nm">'+nm+'</span>'+
+          '<span class="sz">'+(f.size/1024).toFixed(1)+' → '+(b.size/1024).toFixed(1)+' KB <span class="save">-'+sv+'%</span></span>'+
+          '<button class="dn">下载</button>';
+        d.querySelector('.dn').onclick=function(){novaDL(b,nm)};
+        $('list').appendChild(d);
+        if(++done===files.length)st('全部完成 ✓ 共 '+done+' 张,平均节省 '+
+          Math.round((1-outs.reduce(function(s,o){return s+o.blob.size},0)/outs.reduce(function(s,o){return s+o.orig},0))*100)+'%');
+      },fmt,q);
+    };
+    img.src=URL.createObjectURL(f);
+  });
+};
+$('zip').onclick=function(){
+  if(!outs.length)return st('先点「处理全部」',1);
+  if(!window.JSZip){ // 兜底:逐个下载
+    outs.forEach(function(o,i){setTimeout(function(){novaDL(o.blob,o.name)},i*400)});
+    return st('JSZip 未加载,已逐个下载');
+  }
+  var z=new JSZip();
+  outs.forEach(function(o){z.file(o.name,o.blob)});
+  z.generateAsync({type:'blob'}).then(function(b){novaDL(b,'images-'+Date.now()+'.zip');st('ZIP 打包完成 ✓')});
+};
+function st(m,e){var s=$('st');s.textContent=m;s.style.color=e?'#e5484d':'#188a54'}
+</script>
+</body>
+</html>

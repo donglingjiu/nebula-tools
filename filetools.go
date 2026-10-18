@@ -133,7 +133,7 @@ func hPdfMerge(db *DB) http.HandlerFunc {
 		data := out.Bytes()
 		if fxOpts(r)["compress"] == "true" {
 			var c bytes.Buffer
-			if err := api.Optimize(bytes.NewReader(data), &c, nil); err == nil && c.Len() > 0 && c.Len() < len(data) {
+			if err := api.Optimize(context.Background(), bytes.NewReader(data), &c, nil); err == nil && c.Len() > 0 && c.Len() < len(data) {
 				data = c.Bytes()
 			}
 		}
@@ -158,7 +158,7 @@ func hPdfSplit(db *DB) http.HandlerFunc {
 			fxE(w, 400, "请上传一个 PDF 文件")
 			return
 		}
-		n, err := api.PageCount(bytes.NewReader(bs[0]), nil)
+		n, err := api.PageCount(context.Background(), bytes.NewReader(bs[0]), nil)
 		if err != nil {
 			fxE(w, 422, "读取页数失败: "+err.Error())
 			return
@@ -172,7 +172,7 @@ func hPdfSplit(db *DB) http.HandlerFunc {
 		zw := zip.NewWriter(&zipBuf)
 		for p := 1; p <= n; p++ {
 			var pb bytes.Buffer
-			if err := api.Collect(bytes.NewReader(bs[0]), &pb, []string{strconv.Itoa(p)}, nil); err != nil {
+			if err := api.Collect(context.Background(), bytes.NewReader(bs[0]), &pb, []string{strconv.Itoa(p)}, nil); err != nil {
 				zw.Close()
 				fxE(w, 422, fmt.Sprintf("拆分第 %d 页失败: %v", p, err))
 				return
@@ -203,7 +203,7 @@ func hPdfCompress(db *DB) http.HandlerFunc {
 			return
 		}
 		var out bytes.Buffer
-		if err := api.Optimize(bytes.NewReader(bs[0]), &out, nil); err != nil {
+		if err := api.Optimize(context.Background(), bytes.NewReader(bs[0]), &out, nil); err != nil {
 			fxE(w, 422, "优化失败: "+err.Error())
 			return
 		}
