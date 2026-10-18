@@ -90,9 +90,19 @@ async function makeDocx(paras,images){
   if(images)zip.file('word/_rels/document.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+rels+'</Relationships>');
   return await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
 }
-/* 坐标级版式重建:y 聚类成行 → 行内 x 排序 → 间隙补空格 → 竖排单字行回拼 */
+/* 坐标级版式重建 v2:y 聚类 → 分段 → 双栏检测堆叠 → 竖排合并 */
 async function extractLayoutText(pdf,onProgress){
   var n=pdf.numPages,out=[];
+  function vmerge(ls){ /* 同栏内连续单字行合并(竖排标签) */
+    var res=[],buf=[],i;
+    function fl(){if(buf.length){res.push(buf.join(''));buf=[]}}
+    for(i=0;i<ls.length;i++){
+      var t=ls[i],st=t.replace(/\s/g,'');
+      if(st.length===1)buf.push(t);
+      else{fl();if(t)res.push(t)}
+    }
+    fl();return res;
+  }
   for(var p=1;p<=n;p++){
     if(onProgress)onProgress(p,n);
     var pg=await pdf.getPage(p),tc=await pg.getTextContent(),items=[],i;
@@ -103,6 +113,7 @@ async function extractLayoutText(pdf,onProgress){
     if(!items.length){out.push('');continue}
     var hs=items.map(function(o){return o.h}).sort(function(a,b){return a-b}),
         medH=hs[hs.length>>1]||10,tolY=Math.max(2,medH*0.6);
+    /* y 聚类成行 */
     items.sort(function(a,b){return b.y-a.y||a.x-b.x});
     var lines=[],cur=[items[0]],curY=items[0].y;
     for(i=1;i<items.length;i++){
@@ -110,26 +121,64 @@ async function extractLayoutText(pdf,onProgress){
       else{lines.push(cur);cur=[items[i]];curY=items[i].y}
     }
     lines.push(cur);
+    /* 行内分段:间隙>0.35字高切开(段间补空格) */
     var rows=[];
     for(i=0;i<lines.length;i++){
-      lines[i].sort(function(a,b){return a.x-b.x});
-      var s2='',prev=null,k;
-      for(k=0;k<lines[i].length;k++){
-        var o=lines[i][k];
-        if(prev&&(o.x-(prev.x+prev.w))>Math.max(prev.h,o.h)*0.35)s2+=' ';
-        s2+=o.s;prev=o;
+      var L=lines[i].slice().sort(function(a,b){return a.x-b.x}),segs=[],k;
+      for(k=0;k<L.length;k++){
+        var o=L[k],ls2=segs[segs.length-1];
+        if(ls2&&(o.x-(ls2.x+ls2.w))<=Math.max(ls2.h,o.h)*0.35){ls2.text+=o.s;ls2.w=(o.x+o.w)-ls2.x;ls2.h=Math.max(ls2.h,o.h)}
+        else segs.push({x:o.x,w:o.w,h:o.h,text:o.s});
       }
-      s2=s2.replace(/\s+/g,' ').trim();
-      if(s2)rows.push({y:lines[i][0].y,x:lines[i][0].x,text:s2,single:s2.replace(/ /g,'').length<=1});
+      if(segs.length)rows.push({y:lines[i][0].y,segs:segs});
     }
-    var merged=[];
-    for(i=0;i<rows.length;i++){
-      var r=rows[i],last=merged[merged.length-1];
-      if(r.single&&last&&last.single&&Math.abs(r.x-last.x)<=tolY*1.5&&(last.y-r.y)<=medH*1.8&&last.y>r.y){
-        last.text+=r.text;last.y=r.y;
-      }else merged.push(r);
+    /* 双栏边界:gap>40pt 的右段起点,多行命中同一位置才算栏界 */
+    var tally={},gapRows=0,ri;
+    for(ri=0;ri<rows.length;ri++){
+      var gs=rows[ri].segs,g=false;
+      for(i=1;i<gs.length;i++){var gp=gs[i].x-(gs[i-1].x+gs[i-1].w);
+        if(gp>40){var bk=Math.round(gs[i].x/12)*12;tally[bk]=(tally[bk]||0)+1;g=true}}
+      if(g)gapRows++;
     }
-    out.push(merged.map(function(r){return r.text}).join('\n'));
+    var bounds=[];
+    for(var bk2 in tally)if(tally[bk2]>=Math.max(3,Math.round(gapRows*0.5)))bounds.push(+bk2);
+    bounds.sort(function(a,b){return a-b});
+    /* 按栏界拆行 */
+    for(ri=0;ri<rows.length;ri++){
+      var r=rows[ri],cols=[],c;
+      for(c=0;c<=bounds.length;c++)cols.push('');
+      for(i=0;i<r.segs.length;i++){
+        var sg=r.segs[i],ci=bounds.length;
+        for(c=0;c<bounds.length;c++)if(sg.x<bounds[c]){ci=c;break}
+        cols[ci]=cols[ci]?cols[ci]+' '+sg.text:sg.text;
+      }
+      var ncol=0;for(c=0;c<cols.length;c++)if(cols[c])ncol++;
+      r.cols=cols;r.ncol=ncol;r.text=cols.filter(Boolean).join(' ');
+    }
+    /* 输出:含「单字小栏」的连续双栏行段 → 堆叠(先左后右);否则逐行 */
+    var out0=[],run=[];
+    function flushRun(){
+      if(!run.length)return;
+      var tiny=false;
+      run.forEach(function(r){r.cols.forEach(function(t){var st=t.replace(/\s/g,'');if(st.length>=1&&st.length<=2)tiny=true})});
+      if(run.length>=3&&bounds.length&&tiny){
+        var nc=bounds.length+1,cts=[],c;
+        for(c=0;c<nc;c++)cts.push([]);
+        run.forEach(function(r){for(var c2=0;c2<nc;c2++)if(r.cols[c2])cts[c2].push(r.cols[c2])});
+        for(c=0;c<nc;c++){
+          var lns=vmerge(cts[c]);
+          if(lns.join('').replace(/\s/g,''))out0.push(lns.join('\n'));
+        }
+        out0.push('');
+      }else run.forEach(function(r){out0.push(r.text)});
+      run=[];
+    }
+    for(ri=0;ri<rows.length;ri++){
+      if(bounds.length&&rows[ri].ncol>=2)run.push(rows[ri]);
+      else{flushRun();if(rows[ri].text)out0.push(rows[ri].text)}
+    }
+    flushRun();
+    out.push(out0.join('\n'));
   }
   return out.join('\n\n');
 }
