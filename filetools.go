@@ -133,7 +133,7 @@ func hPdfMerge(db *DB) http.HandlerFunc {
 		data := out.Bytes()
 		if fxOpts(r)["compress"] == "true" {
 			var c bytes.Buffer
-			if err := api.Optimize(context.Background(), bytes.NewReader(data), &c, nil); err == nil && c.Len() > 0 && c.Len() < len(data) {
+			if err := api.Optimize(context.Background(), bytes.NewReader(data), &c, nil, nil); err == nil && c.Len() > 0 && c.Len() < len(data) {
 				data = c.Bytes()
 			}
 		}
@@ -203,7 +203,7 @@ func hPdfCompress(db *DB) http.HandlerFunc {
 			return
 		}
 		var out bytes.Buffer
-		if err := api.Optimize(context.Background(), bytes.NewReader(bs[0]), &out, nil); err != nil {
+		if err := api.Optimize(context.Background(), bytes.NewReader(bs[0]), &out, nil, nil); err != nil {
 			fxE(w, 422, "优化失败: "+err.Error())
 			return
 		}
