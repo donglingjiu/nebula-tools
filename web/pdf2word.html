@@ -90,6 +90,56 @@ async function makeDocx(paras,images){
   if(images)zip.file('word/_rels/document.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+rels+'</Relationships>');
   return await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
 }
+/* 坐标级版式重建:y 聚类成行 → 行内 x 排序 → 间隙补空格 → 竖排单字行回拼 */
+async function extractLayoutText(pdf,onProgress){
+  var n=pdf.numPages,out=[];
+  for(var p=1;p<=n;p++){
+    if(onProgress)onProgress(p,n);
+    var pg=await pdf.getPage(p),tc=await pg.getTextContent(),items=[],i;
+    for(i=0;i<tc.items.length;i++){
+      var it=tc.items[i];if(!it.str)continue;
+      items.push({s:it.str,x:it.transform[4],y:it.transform[5],w:it.width||0,h:Math.abs(it.transform[3])||it.height||10});
+    }
+    if(!items.length){out.push('');continue}
+    var hs=items.map(function(o){return o.h}).sort(function(a,b){return a-b}),
+        medH=hs[hs.length>>1]||10,tolY=Math.max(2,medH*0.6);
+    items.sort(function(a,b){return b.y-a.y||a.x-b.x});
+    var lines=[],cur=[items[0]],curY=items[0].y;
+    for(i=1;i<items.length;i++){
+      if(Math.abs(items[i].y-curY)<=tolY){cur.push(items[i]);curY=(curY*cur.length+items[i].y)/(cur.length+1)}
+      else{lines.push(cur);cur=[items[i]];curY=items[i].y}
+    }
+    lines.push(cur);
+    var rows=[];
+    for(i=0;i<lines.length;i++){
+      lines[i].sort(function(a,b){return a.x-b.x});
+      var s2='',prev=null,k;
+      for(k=0;k<lines[i].length;k++){
+        var o=lines[i][k];
+        if(prev&&(o.x-(prev.x+prev.w))>Math.max(prev.h,o.h)*0.35)s2+=' ';
+        s2+=o.s;prev=o;
+      }
+      s2=s2.replace(/\s+/g,' ').trim();
+      if(s2)rows.push({y:lines[i][0].y,x:lines[i][0].x,text:s2,single:s2.replace(/ /g,'').length<=1});
+    }
+    var merged=[];
+    for(i=0;i<rows.length;i++){
+      var r=rows[i],last=merged[merged.length-1];
+      if(r.single&&last&&last.single&&Math.abs(r.x-last.x)<=tolY*1.5&&(last.y-r.y)<=medH*1.8&&last.y>r.y){
+        last.text+=r.text;last.y=r.y;
+      }else merged.push(r);
+    }
+    out.push(merged.map(function(r){return r.text}).join('\n'));
+  }
+  return out.join('\n\n');
+}
+/* 版式混乱检测:短行占比过高 = 表单/逐字定位类版式 */
+function layoutChaos(t){
+  var ls=t.split('\n').filter(function(x){return x.trim()});
+  if(ls.length<10)return false;
+  var short=ls.filter(function(x){return x.replace(/\s/g,'').length<=2}).length;
+  return short/ls.length>0.5;
+}
 /* 乱码检测:Latin-1 扩展区字符(乱码重灾区)对比 CJK,异常即判定字体无映射 */
 function mojibake(t){
   var bad=(t.match(/[\u0080-\u00FF]/g)||[]).length,cjk=(t.match(/[\u4e00-\u9fa5]/g)||[]).length;
@@ -103,12 +153,12 @@ $('go').addEventListener('click',async function(){
         n=pdf.numPages,mode=$('mode').value,allText='',i;
     /* 文本/自动:先抽取全文做乱码体检 */
     if(mode!=='image'){
-      for(i=1;i<=n;i++){var pg=await pdf.getPage(i),tc=await pg.getTextContent(),line='',j;
-        for(j=0;j<tc.items.length;j++){line+=tc.items[j].str;if(tc.items[j].hasEOL){allText+=line+'\n';line=''}}
-        allText+=line+'\n'}
-      if(mojibake(allText)){
-        if(mode==='text'){setStatus('检测到该 PDF 字体缺少字符映射,文本模式会输出乱码;请改用「影像模式」获得 100% 保真',true);$('go').disabled=false;return}
+      allText=await extractLayoutText(pdf,function(pp,tt){setStatus('解析第 '+pp+'/'+tt+' 页…')});
+      var moji=mojibake(allText),chaos=layoutChaos(allText);
+      if(moji&&mode==='text'){setStatus('该 PDF 字体缺少字符映射,文本模式会输出乱码;请改用「影像模式」获得 100% 保真',true);$('go').disabled=false;return}
+      if(mode==='auto'&&(moji||chaos)){
         mode='image';
+        setStatus(moji?'检测到字体缺字符映射,自动切影像模式(100% 保真)…':'检测到表单类版式(拆行严重),自动切影像模式(100% 保真)…');
       }
     }
     if(mode==='image'){
