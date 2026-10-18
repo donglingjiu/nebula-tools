@@ -19,7 +19,7 @@ jobs:
 
       - name: Pin dependencies & build
         run: |
-          go get github.com/pdfcpu/pdfcpu@latest
+          go get github.com/pdfcpu/pdfcpu@v0.16.2
           go get github.com/xuri/excelize/v2@v2.8.1
           go get github.com/ledongthuc/pdf@latest
           go mod tidy
