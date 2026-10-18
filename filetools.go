@@ -4,6 +4,7 @@ package main
 // 全程内存处理，不落盘；通过 main.go 里一行 registerFileTools(mux, db) 挂载。
 
 import (
+	"context"
 	"archive/zip"
 	"bytes"
 	"encoding/json"
@@ -125,7 +126,7 @@ func hPdfMerge(db *DB) http.HandlerFunc {
 			rs = append(rs, bytes.NewReader(b))
 		}
 		var out bytes.Buffer
-		if err := api.MergeRaw(rs, &out, false, nil); err != nil {
+		if err := api.MergeRaw(context.Background(), rs, &out, false, nil); err != nil {
 			fxE(w, 422, "合并失败: "+err.Error())
 			return
 		}
