@@ -59,8 +59,8 @@ E("mbold").dataset.w=SS;
 E("mital").dataset.w=S;
 E("btnic").dataset.w=B;
 function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
-var RXB=new RegExp(SS+"([^"+S+"]+)"+SS,"g");
-var RXI=new RegExp(S+"([^"+S+"]+)"+S,"g");
+var BS=String.fromCharCode(92);var RXB=new RegExp(BS+S+BS+S+"([^"+S+"]+)"+BS+S+BS+S,"g");
+var RXI=new RegExp(BS+S+"([^"+S+"]+)"+BS+S,"g");
 var RXC=new RegExp(B+"([^"+B+"]+)"+B,"g");
 function md(t){
   var L=esc(t).split("\n"),o=[],cod=false,buf=[],lt="";
