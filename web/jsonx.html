@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JSON 转换器 · JSONPath/实体类/多格式 · Nova</title>
+<script src="assets/vendor/nova-dl.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC",Consolas,monospace;background:#f0f2f7;min-height:100vh;display:flex;flex-direction:column}
+.bar{background:#1a2233;color:#fff;padding:10px 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.bar b{margin-right:6px}
+.bar button,.bar input{background:#2a3550;color:#cdd5e8;border:0;border-radius:6px;padding:6px 12px;font-size:12.5px}
+.bar button{cursor:pointer}.bar button:hover{background:#3a4a70;color:#fff}
+.bar input{min-width:170px}
+.bar .sep{color:#5a6a90}
+.main{flex:1;display:flex;gap:10px;padding:10px 14px;min-height:0}
+.pane{flex:1;display:flex;flex-direction:column;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(30,40,90,.06)}
+.pane h3{font-size:13px;color:#5a6579;padding:8px 12px;background:#f7f8fc;border-bottom:1px solid #e8ecf5}
+textarea{flex:1;border:0;resize:none;padding:12px;font:13px/1.6 Consolas,monospace;outline:none;color:#1a2233}
+pre{flex:1;overflow:auto;padding:12px;font:13px/1.6 Consolas,monospace;white-space:pre-wrap;word-break:break-all;color:#1a2233}
+.jwt{display:flex;gap:8px;padding:0 14px 10px;flex-wrap:wrap;align-items:center;font-size:13px}
+.jwt input{flex:1;min-width:220px;border:1px solid #d5dcf0;border-radius:8px;padding:8px 12px;font:13px Consolas,monospace}
+.jwt button{background:#4f6ef7;color:#fff;border:0;border-radius:8px;padding:8px 16px;cursor:pointer}
+.status{padding:8px 14px;font-size:13px;color:#188a54;min-height:34px;background:#fff;border-top:1px solid #e8ecf5;margin:0 14px 14px;border-radius:8px}
+.status.err{color:#e5484d}
+@media(max-width:760px){.main{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="bar">
+  <b>JSON 转换器</b>
+  <input id="path" placeholder='JSONPath: $.a.b / $.items[0] / $.items[*] / $..id'>
+  <button id="qp">查询</button>
+  <span class="sep">|</span>
+  <button data-l="ts">→TS</button><button data-l="java">→Java</button>
+  <button data-l="go">→Go</button><button data-l="py">→Py</button>
+  <span class="sep">|</span>
+  <button id="x2">→XML</button><button id="y2">→YAML</button>
+  <button id="c2">→CSV</button><button id="s2">→SQL</button>
+  <span class="sep">|</span>
+  <button id="cp">复制</button><button id="dl">下载</button><button id="demo">示例</button>
+</div>
+<div class="main">
+  <div class="pane"><h3>JSON 输入</h3><textarea id="src" spellcheck="false"></textarea></div>
+  <div class="pane"><h3>输出</h3><pre id="out"></pre></div>
+</div>
+<div class="jwt">
+  <b>JWT</b>
+  <input id="jwt" placeholder="粘贴 eyJhbGciOi... token">
+  <input id="sec" placeholder="HS256 密钥(可选,填了即验签)">
+  <button id="jd">解码/验签</button>
+</div>
+<div class="status" id="st"></div>
+<script>
+var $=function(id){return document.getElementById(id)};
+function set(m,e){var s=$('st');s.textContent=m;s.className=e?'status err':'status'}
+function esc(s){return s.replace(/[&<>]/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[m]})}
+function getJSON(){
+  var t=$('src').value.trim();
+  if(!t){set('请先粘贴 JSON',1);return null}
+  try{return JSON.parse(t)}catch(e){set('JSON 语法错误:'+e.message,1);return null}
+}
+function show(t,note){$('out').textContent=t;set('完成 ✓'+(note?' · '+note:''))}
+/* ── JSONPath(简化版:$ .key [n] [*] ..key)── */
+function jpath(o,path){
+  var out=[o];path=path.trim().replace(/^\$\.?/,'');
+  if(!path)return out;
+  path.split('.').forEach(function(seg){
+    if(!seg)return;
+    var next=[],rec=seg.startsWith('..');if(rec)seg=seg.slice(2);
+    var m=seg.match(/^(\w+)?(\[(\*|\d+)\])?$/);
+    if(!m){set('不支持的语法:'+seg,1);throw 0}
+    var key=m[1],idx=m[3];
+    out.forEach(function(cur){
+      function app(v){
+        if(key){v=(v===null||v===undefined)?undefined:v[key];if(v===undefined)return}
+        if(idx!==undefined){
+          if(idx==='*'){if(Array.isArray(v))v.forEach(function(x){next.push(x)})}
+          else if(Array.isArray(v)&&v[+idx]!==undefined)next.push(v[+idx]);
+        }else next.push(v);
+      }
+      if(rec){(function walk(v){app(v);if(v&&typeof v==='object')for(var q in v)walk(v[q])})(cur)}
+      else app(cur);
+    });
+    out=next;
+  });
+  return out;
+}
+/* ── 实体类生成 ── */
+function cap(k){return k.replace(/(^|[-_ ])(\w)/g,function(_,a,b){return b.toUpperCase()}).replace(/^./,function(c){return c.toUpperCase()})}
+function gen(v,name,acc,lang){
+  name=cap(name||'Root');var t,tymap;
+  if(lang==='ts')tymap={string:'string',number:'number',boolean:'boolean'};
+  if(lang==='java')tymap={string:'String',number:'Integer',boolean:'Boolean'};
+  if(lang==='go')tymap={string:'string',number:'float64',boolean:'bool'};
+  if(lang==='py')tymap={string:'str',number:'float',boolean:'bool'};
+  if(!v||typeof v!=='object')return '';
+  if(Array.isArray(v))return (v.length&&typeof v[0]==='object'&&v[0]!==null)?gen(v[0],name+'Item',acc,lang):'';
+  if(lang==='ts')t='export interface '+name+' {\n';
+  if(lang==='java')t='public class '+name+' {\n';
+  if(lang==='go')t='type '+name+' struct {\n';
+  if(lang==='py')t='@dataclass\nclass '+name+':\n';
+  var keys=Object.keys(v);
+  keys.forEach(function(k){
+    var val=v[k],ty;
+    if(val===null)ty=lang==='ts'?'any':lang==='go'?'interface{}':'object';
+    else if(Array.isArray(val)){
+      var el=val[0];
+      if(el&&typeof el==='object'){ty=lang==='ts'?cap(k)+'Item[]':lang==='java'?cap(k)+'Item[]':lang==='go'?'[]'+cap(k)+'Item':'list['+cap(k)+'Item]';gen(el,cap(k)+'Item',acc,lang)}
+      else ty=lang==='ts'?'any[]':lang==='java'?'List<Object>':lang==='go'?'[]interface{}':'list';
+    }
+    else if(typeof val==='object'){ty=lang==='ts'?'':lang==='go'?'*'+cap(k):lang==='java'?'':'';
+      if(lang==='ts')ty=cap(k);if(lang==='java')ty=cap(k);
+      gen(val,cap(k),acc,lang)}
+    else ty=tymap[typeof val];
+    if(lang==='go')t+='    '+cap(k)+' '+ty+' `json:"'+k+'"`\n';
+    else t+='  '+k+': '+ty+'\n';
+  });
+  t+=lang==='go'?'}\n':lang==='ts'?'}\n':lang==='java'?'}\n':'\n';
+  acc.push(t);return acc.join('\n');
+}
+/* ── 序列化:XML / YAML / CSV / SQL ── */
+function toXML(v,tag){
+  tag=tag||'root';
+  if(Array.isArray(v))return v.map(function(x){return toXML(x,tag.replace(/s$/,'')||'item')}).join('');
+  if(v&&typeof v==='object'){var s='<'+tag+'>';
+    for(var k in v)s+=toXML(v[k],k.replace(/[^\w]/g,'_'));
+    return s+'</'+tag+ '>'}
+  return '<'+tag+'>'+String(v)+'</'+tag+'>';
+}
+function toYAML(v,ind){
+  ind=ind||0;var pad=new Array(ind+1).join('  ');
+  if(Array.isArray(v))return v.map(function(x){var y=toYAML(x,ind+1);
+    return pad+'- '+(y.indexOf('\n')<0?y:'\n'+y)}).join('\n');
+  if(v&&typeof v==='object')return Object.keys(v).map(function(k){
+    var y=toYAML(v[k],ind+1);return pad+k+': '+(y.indexOf('\n')<0?y:'\n'+y)}).join('\n');
+  return String(v);
+}
+function toCSV(v){
+  if(!Array.isArray(v)||!v.length||typeof v[0]!=='object')throw'→CSV 需顶层数组且元素为对象';
+  var seen={},keys=[];
+  v.forEach(function(o){for(var k in o)if(!seen[k]){seen[k]=1;keys.push(k)}});
+  var q=function(x){var s=(x===null||x===undefined)?'':(typeof x==='object')?JSON.stringify(x):String(x);
+    return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
+  return keys.join(',')+'\n'+v.map(function(o){return keys.map(function(k){return q(o[k])}).join(',')}).join('\n');
+}
+function toSQL(v){
+  var arr=Array.isArray(v)?v:[v];if(!arr.length||typeof arr[0]!=='object')throw'→SQL 需对象(数组)';
+  var keys=Object.keys(arr[0]);
+  var lit=function(x){if(x===null||x===undefined)return'NULL';
+    if(typeof x==='number')return x;if(typeof x==='boolean')return x?'TRUE':'FALSE';
+    var s=typeof x==='object'?JSON.stringify(x):String(x);return"'"+s.replace(/'/g,"''")+"'"};
+  return 'INSERT INTO my_table ('+keys.join(',')+') VALUES\n'+
+    arr.map(function(o){return '('+keys.map(function(k){return lit(o[k])}).join(',')+')'}).join(',\n')+';';
+}
+/* ── JWT ── */
+function b64u(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';
+  return decodeURIComponent(escape(atob(s)))}
+function b64uBytes(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';
+  var bin=atob(s),u=new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u}
+/* ── 事件 ── */
+$('qp').onclick=function(){
+  var o=getJSON();if(o===null)return;
+  try{var r=jpath(o,$('path').value||'$');
+    show(JSON.stringify(r.length===1?r[0]:r,null,2),'命中 '+r.length+' 项')}
+  catch(e){}
+};
+document.querySelectorAll('[data-l]').forEach(function(b){
+  b.onclick=function(){
+    var o=getJSON();if(o===null)return;
+    if(o===null||typeof o!=='object')return set('实体类生成需顶层为对象/数组',1);
+    var out=gen(o,'Root',[],b.getAttribute('data-l'));
+    if(!out)return set('没有可生成的字段',1);
+    show(out);
+  };
+});
+$('x2').onclick=function(){var o=getJSON();if(o!==null)show('<?xml version="1.0"?>\n'+toXML(o))};
+$('y2').onclick=function(){var o=getJSON();if(o!==null){try{show(toYAML(o),'简单结构适用,复杂场景用专用 YAML 库')}catch(e){set('YAML 序列化失败',1)}}};
+$('c2').onclick=function(){var o=getJSON();if(o!==null)try{show(toCSV(o))}catch(e){set(e,1)}};
+$('s2').onclick=function(){var o=getJSON();if(o!==null)try{show(toSQL(o))}catch(e){set(e,1)}};
+$('jd').onclick=function(){
+  var tk=$('jwt').value.trim().split('.');
+  if(tk.length<2)return set('JWT 格式不对(至少两段)',1);
+  try{
+    var h=JSON.parse(b64u(tk[0])),p=JSON.parse(b64u(tk[1]));
+    var txt='--- HEADER ---\n'+JSON.stringify(h,null,2)+'\n--- PAYLOAD ---\n'+JSON.stringify(p,null,2);
+    var sec=$('sec').value.trim();
+    if(sec&&tk.length===3&&h.alg==='HS256'&&window.crypto&&crypto.subtle){
+      var enc=new TextEncoder();
+      crypto.subtle.importKey('raw',enc.encode(sec),{name:'HMAC',hash:'SHA-256'},false,['verify'])
+      .then(function(k){return crypto.subtle.verify('HMAC',k,b64uBytes(tk[2]),enc.encode(tk[0]+'.'+tk[1]))})
+      .then(function(ok){$('out').textContent=txt;set('解码完成 · HS256 签名'+(ok?'有效 ✓':'无效 ✗'),!ok)});
+    }else{$('out').textContent=txt;set('解码完成(未验签——未填密钥或非 HS256)')}
+  }catch(e){set('解码失败:'+e.message,1)}
+};
+$('cp').onclick=function(){navigator.clipboard.writeText($('out').textContent).then(function(){set('已复制 ✓')})};
+$('dl').onclick=function(){var t=$('out').textContent;if(!t)return set('无输出可下载',1);
+  novaDL(new Blob([t],{type:'text/plain'}),'output.txt')};
+$('demo').onclick=function(){$('src').value='{"code":0,"data":{"items":[{"id":1,"name":"甲","price":9.9},{"id":2,"name":"乙","price":19.9}],"total":2},"msg":"ok"}'};
+$('demo').click();
+</script>
+</body>
+</html>
