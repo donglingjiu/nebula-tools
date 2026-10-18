@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang=zh-CN>
+<head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>Base64 / URL 编码 · Nova 工具</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,PingFang SC,sans-serif;background:#f0f2f7;min-height:100vh;display:flex;justify-content:center;padding:40px 20px}
+.wrap{width:100%;max-width:860px}
+.back{display:inline-block;margin-bottom:18px;color:#4f6ef7;text-decoration:none;font-size:14px}
+h1{font-size:26px;color:#1a2233}
+.sub{color:#7a8499;margin:8px 0 18px;font-size:14px}
+.card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 12px rgba(30,40,90,.06)}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tab{padding:8px 18px;border-radius:8px;border:1px solid #d5dcf0;cursor:pointer;font-size:14px;color:#556}
+.tab.on{background:#4f6ef7;border-color:#4f6ef7;color:#fff}
+textarea{width:100%;height:130px;border:1px solid #d5dcf0;border-radius:10px;padding:12px;font-size:14px;resize:vertical;font-family:inherit}
+.lbl{font-size:13px;color:#7a8499;margin:10px 0 6px}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.btn{background:linear-gradient(120deg,#4f6ef7,#7c5cf5);color:#fff;border:0;border-radius:10px;padding:10px 20px;font-size:14px;cursor:pointer}
+.btn.g{background:#188a54}
+.btn.n{background:#eef1f8;color:#334}
+.st{margin-top:10px;font-size:13px;min-height:18px;color:#188a54}
+</style>
+</head>
+<body>
+<div class=wrap>
+<a class=back href=tools.html>← 返回工具大全</a>
+<h1>Base64 / URL 编码</h1>
+<p class=sub>全程本地处理,UTF-8 中文安全。Base64 与 URL 编解码,支持往返交换与一键复制。</p>
+<div class=card>
+<div class=tabs>
+<div class="tab on" data-m=b64>Base64</div>
+<div class=tab data-m=url>URL</div>
+</div>
+<div class=lbl>输入</div>
+<textarea id=fin placeholder=输入文本…></textarea>
+<div class=btns>
+<button class=btn id=benc>编码 →</button>
+<button class="btn g" id=bdec>← 解码</button>
+<button class="btn n" id=bswap>交换 ↑↓</button>
+<button class="btn n" id=bcopy>复制结果</button>
+<button class="btn n" id=bclr>清空</button>
+</div>
+<div class=lbl>输出</div>
+<textarea id=fout placeholder=结果… readonly></textarea>
+<div class=st id=stx></div>
+</div>
+<script>
+var E=function(i){return document.getElementById(i)},url=0;
+var tabs=document.querySelectorAll(".tab");
+for(var i=0;i<tabs.length;i++)tabs[i].onclick=function(){
+  for(var j=0;j<tabs.length;j++)tabs[j].classList.remove("on");
+  this.classList.add("on");url=this.dataset.m=="url"?1:0;
+  msg("已切换到 "+(url?"URL":"Base64"));
+};
+function b64e(s){var b=new TextEncoder().encode(s),r="",i;
+  for(i=0;i<b.length;i+=0x8000)r+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000));
+  return btoa(r)}
+function b64d(s){return new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s+/g,"")),function(c){return c.charCodeAt(0)}))}
+function run(d){
+  if(!E("fin").value)return msg("请输入内容",1);
+  try{E("fout").value=url?(d?decodeURIComponent(E("fin").value):encodeURIComponent(E("fin").value))
+                        :(d?b64d(E("fin").value):b64e(E("fin").value));
+    msg((d?"解码":"编码")+"完成 ✓")}catch(e){msg("失败:输入不是合法的编码串",1)}
+}
+E("benc").onclick=function(){run(0)};
+E("bdec").onclick=function(){run(1)};
+E("bswap").onclick=function(){var t=E("fin").value;E("fin").value=E("fout").value;E("fout").value=t;msg("已交换 ↑↓")};
+E("bcopy").onclick=function(){if(!E("fout").value)return msg("无结果可复制",1);
+  navigator.clipboard.writeText(E("fout").value).then(function(){msg("已复制 ✓")},function(){E("fout").select();document.execCommand("copy");msg("已复制 ✓")})};
+E("bclr").onclick=function(){E("fin").value="";E("fout").value="";msg("")};
+function msg(m,e){var s=E("stx");s.textContent=m;s.style.color=e?"#e5484d":"#188a54"}
+</script>
+</body>
+</html>

@@ -461,7 +461,7 @@ function novaLogin(e){
     });
   }
   function badges(){
-    var MAP={"JSON 格式化":["可用","json.html","dev.json"],"Base64 / URL 编码":["可用","#nova-runner","dev.encode"],"Markdown 编辑器":["文本版可用","#nova-runner","dev.md"],"PDF 转 Word":["可用","pdf2word.html",""],"JSON 工具":["可用","json.html",""],"JSON 转换器":["可用","jsonx.html",""],"PDF 工具箱":["可用","pdf.html",""],"脑图":["可用","mindmap.html",""],"正则测试器":["可用","regex.html",""],"图片压缩与转换":["可用","imgtool.html",""],"Excel 数据洞察":["可用","excel.html",""],"CSV 表格处理":["可用","excel.html",""],"工作流规划":["可用","workflows.html",""]};
+    var MAP={"JSON 格式化":["可用","json.html","dev.json"],"Base64 / URL 编码":["可用","base64.html","dev.encode"],"Markdown 编辑器":["可用","markdown.html","dev.md"],"PDF 转 Word":["可用","pdf2word.html",""],"JSON 工具":["可用","json.html",""],"JSON 转换器":["可用","jsonx.html",""],"PDF 工具箱":["可用","pdf.html",""],"脑图":["可用","mindmap.html",""],"正则测试器":["可用","regex.html",""],"图片压缩与转换":["可用","imgtool.html",""],"Excel 数据洞察":["可用","excel.html",""],"CSV 表格处理":["可用","excel.html",""],"工作流规划":["可用","workflows.html",""]};
     var cs=document.querySelectorAll(".tool-card");
     for(var i=0;i<cs.length;i++){
       var h=cs[i].querySelector("h3");if(!h)continue;

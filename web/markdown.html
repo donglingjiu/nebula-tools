@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang=zh-CN>
+<head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>Markdown 编辑器 · Nova 工具</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,PingFang SC,sans-serif;background:#f0f2f7;min-height:100vh;display:flex;justify-content:center;padding:40px 20px}
+.wrap{width:100%;max-width:1080px}
+.back{display:inline-block;margin-bottom:18px;color:#4f6ef7;text-decoration:none;font-size:14px}
+h1{font-size:26px;color:#1a2233}
+.sub{color:#7a8499;margin:8px 0 14px;font-size:14px}
+.card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 12px rgba(30,40,90,.06)}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.mb{border:1px solid #d5dcf0;background:#f6f8ff;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;color:#334}
+.ed{display:flex;gap:14px;flex-wrap:wrap}
+textarea{flex:1;min-width:300px;height:440px;border:1px solid #d5dcf0;border-radius:10px;padding:14px;font-size:14px;line-height:1.7;resize:vertical;font-family:ui-monospace,Consolas,monospace}
+.pv{flex:1;min-width:300px;height:440px;overflow:auto;border:1px solid #e3e8f5;border-radius:10px;padding:16px;background:#fafbff;font-size:14px;line-height:1.8;color:#233}
+.pv h1{font-size:22px;margin:10px 0 8px}
+.pv h2{font-size:18px;margin:8px 0 6px}
+.pv h3,.pv h4{font-size:16px;margin:8px 0 6px}
+.pv p{margin:6px 0}
+.pv ul,.pv ol{margin:6px 0 6px 22px}
+.pv blockquote{border-left:3px solid #c3cdf0;padding:2px 10px;color:#556;margin:8px 0;background:#f4f6ff}
+.pv code{background:#eef1f8;padding:1px 5px;border-radius:4px;font-size:13px}
+.pv pre{background:#1a2233;color:#dce3ff;padding:12px;border-radius:8px;overflow:auto;margin:8px 0}
+.pv pre code{background:none;color:inherit}
+.pv a{color:#4f6ef7}
+.pv hr{border:0;border-top:1px solid #dde3f3;margin:12px 0}
+.st{margin-top:10px;font-size:13px;color:#188a54;min-height:18px}
+</style>
+</head>
+<body>
+<div class=wrap>
+<a class=back href=tools.html>← 返回工具大全</a>
+<h1>Markdown 编辑器</h1>
+<p class=sub>左侧编辑,右侧实时预览;本地渲染,支持标题/列表/引用/代码块/链接/加粗斜体。</p>
+<div class=card>
+<div class=bar>
+<button class=mb data-w=**>加粗</button>
+<button class=mb data-w=*>斜体</button>
+<button class=mb id=btnic>行内码</button>
+<button class=mb id=demo>载入示例</button>
+<button class=mb id=copyhtml>复制 HTML</button>
+<button class=mb id=clr>清空</button>
+</div>
+<div class=ed>
+<textarea id=ed placeholder="# 标题"></textarea>
+<div class=pv id=pv></div>
+</div>
+<div class=st id=stx></div>
+</div>
+<script>
+var E=function(i){return document.getElementById(i)};
+var B=String.fromCharCode(96),T=B+B+B;
+E("btnic").dataset.w=B;
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function md(t){
+  var L=esc(t).split("\n"),o=[],cod=false,buf=[],lt="";
+  var cl=function(){if(lt){o.push("</"+lt+">");lt=""}};
+  for(var i=0;i<L.length;i++){var l=L[i];
+    if(l.slice(0,3)==T){cl();if(cod){o.push("<pre><code>"+buf.join("\n")+"</code></pre>");buf=[]}cod=!cod;continue}
+    if(cod){buf.push(l);continue}
+    var h=l.match(/^(#{1,4}) (.*)/);
+    if(h){cl();o.push("<h"+h[1].length+">"+h[2]+"</h"+h[1].length+">");continue}
+    if(/^(---|\*\*\*)$/.test(l.trim())){cl();o.push("<hr>");continue}
+    var u=l.match(/^\s*[-*] (.*)/),n=l.match(/^\s*\d+\. (.*)/);
+    if(u){if(lt!="ul"){cl();o.push("<ul>");lt="ul"}o.push("<li>"+u[1]+"</li>");continue}
+    if(n){if(lt!="ol"){cl();o.push("<ol>");lt="ol"}o.push("<li>"+n[1]+"</li>");continue}
+    cl();
+    if(/^&gt; ?/.test(l)){o.push("<blockquote>"+l.replace(/^&gt; ?/,"")+"</blockquote>");continue}
+    if(l.trim())o.push("<p>"+l+"</p>");
+  }
+  cl();if(cod)o.push("<pre><code>"+buf.join("\n")+"</code></pre>");
+  var ic=new RegExp(B+"([^"+B+"]+)"+B,"g");
+  return o.join("")
+    .replace(/\*\*([^*]+)\*\*/g,function(m,g){return "<b>"+g+"</b>"})
+    .replace(/\*([^*]+)\*/g,function(m,g){return "<i>"+g+"</i>"})
+    .replace(ic,function(m,g){return "<code>
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g,function(m,t2,u2){return "<a href=\""+u2+"\" target=_blank rel=noopener>"+t2+"</a>"});
+}
+function render(){E("pv").innerHTML=md(E("ed").value)}
+E("ed").oninput=render;
+var mbs=document.querySelectorAll(".mb[data-w]");
+for(var i=0;i<mbs.length;i++)mbs[i].onclick=function(){
+  var t=E("ed"),s=t.selectionStart,e=t.selectionEnd;
+  t.setRangeText(this.dataset.w+t.value.slice(s,e)+this.dataset.w,s,e);t.focus();render();
+};
+E("demo").onclick=function(){
+  E("ed").value="# Nova Markdown\n支持 **加粗**、*斜体*、"+B+"行内代码"+B+"。\n\n## 列表\n- 甲\n- 乙\n1. 第一\n2. 第二\n\n> 引用:大道至简\n\n"+T+"\ncode block\n"+T+"\n\n[链接](https://example.com)";
+  render();msg("示例已载入 ✓");
+};
+E("copyhtml").onclick=function(){
+  navigator.clipboard.writeText(E("pv").innerHTML).then(function(){msg("HTML 已复制 ✓")},function(){msg("复制失败",1)});
+};
+E("clr").onclick=function(){E("ed").value="";render();msg("已清空")};
+render();
+function msg(m,e){var s=E("stx");s.textContent=m;s.style.color=e?"#e5484d":"#188a54"}
+</script>
+</body>
+</html>
