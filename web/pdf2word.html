@@ -195,10 +195,10 @@ function mojibake(t){
   return bad>=20&&bad>cjk*0.5;
 }
 $('go').addEventListener('click',async function(){
-  if(!buf)return;
+  if(!buf||!buf.byteLength){setStatus('文件数据已失效,请重新选择 PDF',true);return}
   $('go').disabled=true;
   try{
-    var pdf=await pdfjsLib.getDocument({data:new Uint8Array(buf)}).promise,
+    var pdf=await pdfjsLib.getDocument({data:new Uint8Array(buf).slice()}).promise,
         n=pdf.numPages,mode=$('mode').value,allText='',i;
     /* 文本/自动:先抽取全文做乱码体检 */
     if(mode!=='image'){
