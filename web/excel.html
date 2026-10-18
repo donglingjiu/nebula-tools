@@ -33,7 +33,8 @@ th{background:#f0f4ff;color:#1a2233}
 caption{caption-side:top;text-align:left;color:#98a2b8;padding:8px 4px;font-size:12px}
 #statbox{margin-top:12px;font-size:13px;color:#556;line-height:1.9;background:#fff;border-radius:12px;padding:12px 20px;box-shadow:0 2px 12px rgba(30,40,90,.06)}
 </style>
-<script src="assets/vendor/nova-dl.js"></script><style>.nova-nav{position:sticky;top:0;z-index:99;background:#1a2233;color:#cdd5e8;font-size:13px;padding:8px 16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}.nova-nav a{color:#cdd5e8;text-decoration:none}.nova-nav a:hover{color:#fff}.nova-nav .grp{color:#8fa3ff;font-weight:600;margin-left:6px}.nova-nav b{color:#fff}</style></head>
+<script src="assets/vendor/nova-dl.js"></script><style>.nova-nav{position:sticky;top:0;z-index:99;background:#1a2233;color:#cdd5e8;font-size:13px;padding:8px 16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}.nova-nav a{color:#cdd5e8;text-decoration:none}.nova-nav a:hover{color:#fff}.nova-nav .grp{color:#8fa3ff;font-weight:600;margin-left:6px}.nova-nav b{color:#fff}</style><link rel=icon href=data:,>
+</head>
 <body><nav class="nova-nav"><b>Nova 工具</b><span class="grp">文档</span><a href="pdf2word.html">PDF转Word</a><a href="word2pdf.html">Word转PDF</a><a href="pdf.html">PDF工具箱</a><a href="markdown.html">Markdown</a><a href="mindmap.html">脑图</a><a href="imgtool.html">图片压缩</a><a href="excel.html">Excel洞察</a><span class="grp">开发</span><a href="json.html">JSON工具</a><a href="jsonx.html">JSON转换</a><a href="regex.html">正则测试</a><a href="base64.html">编码</a><span class="grp">数据</span><a href="excel.html">数据洞察</a><a href="tools.html" style="margin-left:auto">☰ 全部工具</a></nav>
 <div class="wrap">
   <a class="back" href="tools.html">← 返回工具大全</a>
@@ -146,6 +147,8 @@ function apply(){
 function splitNow(){
   if(!rows.length){setStatus('请先上传数据',true);return}
   var ci=+$('splitCol').value,d=$('splitDelim').value;
+  var FM={'｜':'|','，':',','；':';','：':':'};
+  if(FM[d])d=FM[d];
   if(ci<0||!d){setStatus('请选择拆分列并填写分隔符',true);return}
   var mx=1,parts=[];
   for(var i=0;i<rows.length;i++){
@@ -155,6 +158,7 @@ function splitNow(){
     parts.push(ps);
     if(ps.length>mx)mx=ps.length;
   }
+  if(mx===1){setStatus('分隔符 ['+d+'] 未在任何单元格命中,已取消拆分',true);return}
   var base=(rows[0][ci]!==''&&rows[0][ci]!=null)?String(rows[0][ci]):('列'+(ci+1));
   for(var i=0;i<rows.length;i++){
     if(i===0){for(var j=1;j<=mx;j++)rows[0].push(base+'-'+j);continue}
