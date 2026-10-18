@@ -3,72 +3,152 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>JSON 工具 · Nova 工具</title>
+<title>JSON 工具 · 格式化/压缩/校验 · Nova</title>
 <script src="assets/vendor/nova-dl.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,"PingFang SC",Consolas,monospace;background:#f5f7fb;min-height:100vh;display:flex;justify-content:center;padding:40px 20px}
-.wrap{width:100%;max-width:860px}
-.back{display:inline-block;margin-bottom:18px;color:#4f6ef7;text-decoration:none;font-size:14px}
-h1{font-size:26px;color:#1a2233}
-.sub{color:#7a8499;margin:8px 0 18px;font-size:14px}
-textarea{width:100%;height:340px;border:1px solid #d5dcf0;border-radius:12px;padding:14px;font:13px/1.6 Consolas,monospace;resize:vertical;background:#fff}
-textarea:focus{outline:2px solid #4f6ef7;border-color:transparent}
-.row{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
-.btn{background:linear-gradient(120deg,#4f6ef7,#7c5cf5);color:#fff;border:0;border-radius:10px;padding:10px 20px;font-size:14px;cursor:pointer}
-.btn2{background:#fff;color:#4f6ef7;border:1px solid #c3cdf0;border-radius:10px;padding:10px 20px;font-size:14px;cursor:pointer}
-.status{margin-top:12px;font-size:14px;color:#188a54;min-height:20px}
+body{font-family:-apple-system,"PingFang SC",Consolas,monospace;background:#f0f2f7;min-height:100vh;display:flex;flex-direction:column}
+.bar{background:#1a2233;color:#fff;padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.bar b{font-size:15px;margin-right:8px}
+.bar button,.bar select{background:#2a3550;color:#cdd5e8;border:0;border-radius:6px;padding:6px 12px;font-size:12.5px;cursor:pointer}
+.bar button:hover{background:#3a4a70;color:#fff}
+.bar .on{background:#4f6ef7;color:#fff}
+.main{flex:1;display:flex;gap:10px;padding:10px 14px;min-height:0}
+.pane{flex:1;display:flex;flex-direction:column;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(30,40,90,.06)}
+.pane h3{font-size:13px;color:#5a6579;padding:8px 12px;background:#f7f8fc;border-bottom:1px solid #e8ecf5;display:flex;gap:10px;align-items:center}
+.pane h3 label{font-weight:400;cursor:pointer}
+.ed{flex:1;display:flex;min-height:0;position:relative}
+#lno{width:42px;background:#f7f8fc;color:#b0b8cc;text-align:right;padding:10px 6px 10px 0;font:13px/1.6 Consolas,monospace;overflow:hidden;user-select:none;border-right:1px solid #e8ecf5}
+#src{flex:1;border:0;resize:none;padding:10px 12px;font:13px/1.6 Consolas,monospace;color:#1a2233;outline:none;white-space:pre;overflow:auto}
+#out{flex:1;overflow:auto;padding:10px 14px;font:13px/1.6 Consolas,monospace;white-space:pre}
+#tree{flex:1;overflow:auto;padding:12px 16px;font:13px/1.8 Consolas,monospace;display:none}
+#tree details{margin-left:14px}
+#tree summary{cursor:pointer;color:#7c5cf5;list-style:revert}
+#tree .k{color:#0550ae}
+#tree .str{color:#22863a}
+#tree .num{color:#b5651d}
+#tree .meta{color:#98a2b8;font-size:11px}
+.key{color:#0550ae}.str2{color:#22863a}.num2{color:#b5651d}.bool2{color:#d73a49}.null2{color:#8250df}
+.status{padding:8px 14px;font-size:13px;color:#188a54;background:#fff;border-top:1px solid #e8ecf5;min-height:34px}
 .status.err{color:#e5484d}
-.stats{margin-top:8px;font-size:13px;color:#7a8499}
+#stats{margin-left:auto;color:#98a2b8;font-size:12px}
+@media(max-width:760px){.main{flex-direction:column}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <a class="back" href="tools.html">← 返回工具大全</a>
-  <h1>JSON 工具</h1>
-  <p class="sub">格式化 · 压缩 · 校验(带行号)· 键排序 · 下载,全程本地。</p>
-  <textarea id="src" placeholder='粘贴 JSON,如 {"b":1,"a":{"d":2,"c":3}}'></textarea>
-  <div class="row">
-    <button class="btn" id="fmt">格式化</button>
-    <button class="btn" id="min">压缩</button>
-    <button class="btn" id="sort">键排序</button>
-    <button class="btn2" id="cp">复制结果</button>
-    <button class="btn2" id="dl">下载 .json</button>
-  </div>
-  <div class="status" id="status"></div>
-  <div class="stats" id="stats"></div>
+<div class="bar">
+  <b>JSON 工具</b>
+  <button id="fmt">格式化</button><button id="min">压缩</button>
+  <button id="esc">添加转义</button><button id="uesc">去除转义</button>
+  <button id="c2u">中文→Unicode</button><button id="u2c">Unicode→中文</button>
+  <button id="d2j">Dict→Json</button><button id="j2d">Json→Dict</button>
+  <button id="get">转Get参数</button>
+  <select id="ind"><option value="2">2 空格</option><option value="4">4 空格</option></select>
+  <button id="cp">复制</button><button id="dl">下载</button><button id="clr">清空</button><button id="demo">示例</button>
 </div>
+<div class="main">
+  <div class="pane">
+    <h3>输入 <label><input type="checkbox" id="lnoOn" checked> 行号</label><span id="stats"></span></h3>
+    <div class="ed"><pre id="lno">1</pre><textarea id="src" spellcheck="false" placeholder='粘贴 JSON,如 {"b":1,"a":{"d":2,"c":3}}'></textarea></div>
+  </div>
+  <div class="pane">
+    <h3>视图
+      <button id="vCode" class="on" style="padding:3px 10px">代码</button>
+      <button id="vTree" style="padding:3px 10px">树形</button>
+      <button id="all" style="padding:3px 10px;margin-left:auto">全展开</button>
+      <button id="fold" style="padding:3px 10px">全折叠</button>
+    </h3>
+    <div id="out"></div>
+    <div id="tree"></div>
+  </div>
+</div>
+<div class="status" id="status">输入即实时校验,错误精确定位行列。</div>
 <script>
 var $=function(id){return document.getElementById(id)};
-function set(m,e){var s=$('status');s.textContent=m;s.className=e?'status err':'status'}
-function parse(){
-  var t=$('src').value.trim();
-  if(!t){set('请先粘贴 JSON',1);return null}
-  try{return JSON.parse(t)}catch(e){
-    var m=String(e.message),pos=(m.match(/position (\d+)/i)||[])[1];
-    if(pos){var ln=t.slice(0,+pos).split('\n').length;set('语法错误(第 '+ln+' 行):'+m,1)}
-    else set('语法错误:'+m,1);
-    return null;
-  }
-}
+var IN=2,last=null;
+function esc2(s){return s.replace(/[&<>]/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[m]})}
+function set(m,e){var s=$('status');s.innerHTML=m+(last?'<span id="stats"> · 节点 '+nodes(last)+' · 深度 '+depth(last)+'</span>':'');s.className=e?'status err':'status'}
 function nodes(v){var n=1;if(v&&typeof v==='object')for(var k in v)n+=nodes(v[k]);return n}
 function depth(v){if(!v||typeof v!=='object')return 1;var d=0;for(var k in v){var x=depth(v[k]);if(x>d)d=x}return d+1}
-function sortKeys(v){
-  if(Array.isArray(v))return v.map(sortKeys);
-  if(v&&typeof v==='object'){var o={};Object.keys(v).sort().forEach(function(k){o[k]=sortKeys(v[k])});return o}
-  return v;
+function errPos(t,e){
+  var m=String(e.message),p=(m.match(/position (\d+)/i)||[])[1];
+  if(p!==undefined){var b=t.slice(0,+p),ln=b.split('\n').length,co=b.length-b.lastIndexOf('\n');return '(第 '+ln+' 行 第 '+co+' 列)'}
+  var l=(m.match(/line (\d+)/i)||[])[1];return l?'(第 '+l+' 行)':'';
 }
-function show(o,note){$('src').value=JSON.stringify(o,null,2);
-  $('stats').textContent='节点 '+nodes(o)+' · 深度 '+depth(o)+(note?' · '+note:'');set('完成 ✓')}
-$('fmt').onclick=function(){var o=parse();if(o!==null)show(o,'已格式化')};
-$('min').onclick=function(){var o=parse();if(o!==null){$('src').value=JSON.stringify(o);
-  $('stats').textContent='压缩后 '+$('src').value.length+' 字符 · 节点 '+nodes(o);set('完成 ✓')}};
-$('sort').onclick=function(){var o=parse();if(o!==null)show(sortKeys(o),'键已排序')};
-$('cp').onclick=function(){$('src').select();
-  navigator.clipboard.writeText($('src').value).then(function(){set('已复制 ✓')},
-  function(){document.execCommand('copy');set('已复制 ✓')})};
-$('dl').onclick=function(){if(parse()===null)return;
-  novaDL(new Blob([$('src').value],{type:'application/json'}),'data.json')};
+function parse(t){
+  if(!t.trim()){set('请先输入 JSON',1);return null}
+  try{var o=JSON.parse(t);last=o;return o}catch(e){set('语法错误 '+errPos($('src').value,e)+' · '+esc2(e.message),1);return null}
+}
+function hl(j){return j.replace(/("(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(\.\d+)?([eE][+\-]?\d+)?)/g,function(m){
+  var c='num2';
+  if(/^"/.test(m))c=/:$/.test(m)?'key':'str2';
+  else if(/true|false/.test(m))c='bool2';
+  else if(/null/.test(m))c='null2';
+  return '<span class="'+c+'">'+esc2(m)+'</span>';
+})}
+function showCode(o){$('out').style.display='block';$('tree').style.display='none';
+  $('out').innerHTML=hl(JSON.stringify(o,null,IN))}
+function buildTree(v,name){
+  var d=document.createElement('div');
+  if(v===null){d.innerHTML=(name?'<span class="k">'+esc2(name)</span> ':'')+'<span class="null2">null</span>';return d}
+  if(Array.isArray(v)||typeof v==='object'){
+    var det=document.createElement('details');det.open=true;
+    var sum=document.createElement('summary');
+    sum.innerHTML=esc2(name||'')+' <span class="meta">'+(Array.isArray(v)?'['+v.length+' 项]':'{'+Object.keys(v).length+' 键}')+'</span>';
+    det.appendChild(sum);
+    for(var k in v)det.appendChild(buildTree(v[k],Array.isArray(v)?'':k+': '));
+    d.appendChild(det);
+  }else{
+    d.innerHTML='<span class="k">'+esc2(name||'')+'</span> '+(typeof v==='string'?'<span class="str">"'+esc2(v)+'"</span>':'<span class="num">'+v+'</span>');
+  }
+  return d;
+}
+function showTree(o){$('tree').style.display='block';$('out').style.display='none';
+  $('tree').innerHTML='';$('tree').appendChild(buildTree(o,'root'))}
+function walk(open){$('tree').querySelectorAll('details').forEach(function(d){d.open=open})}
+/* 编辑器:行号同步 + 实时校验 */
+function syncLno(){
+  var t=$('src').value,n=t.split('\n').length,h='';
+  for(var i=1;i<=n;i++)h+=i+'\n';
+  $('lno').textContent=h;
+}
+$('src').addEventListener('scroll',function(){$('lno').scrollTop=$('src').scrollTop});
+$('src').addEventListener('input',function(){clearTimeout(window._t);window._t=setTimeout(live,300)});
+$('lnoOn').addEventListener('change',function(){$('lno').style.display=this.checked?'block':'none'});
+function live(){syncLno();var o=parse($('src').value);if(o!==null){showCode(o);if($('tree').style.display==='block')showTree(o)}}
+/* 工具条 */
+$('fmt').onclick=function(){var o=parse($('src').value);if(o!==null){$('src').value=JSON.stringify(o,null,IN);live();set('格式化完成 ✓')}};
+$('min').onclick=function(){var o=parse($('src').value);if(o!==null){$('src').value=JSON.stringify(o);live();set('压缩完成 ✓ · '+$('src').value.length+' 字符')}};
+$('ind').onchange=function(){IN=+this.value;var o=parse($('src').value);if(o!==null){showCode(o);set('缩进切换为 '+IN+' 空格 ✓')}};
+$('esc').onclick=function(){var t=$('src').value;if(!t)return set('请先输入内容',1);
+  $('src').value=JSON.stringify(t).slice(1,-1);live();set('转义完成 ✓')};
+$('uesc').onclick=function(){var t=$('src').value.trim();if(!t)return set('请先输入内容',1);
+  try{var r=JSON.parse(t);if(typeof r==='string'){$('src').value=r}else{$('src').value=JSON.parse('"'+t+'"')}live();set('去转义完成 ✓')}
+  catch(e){try{$('src').value=JSON.parse('"'+t+'"');live();set('去转义完成 ✓')}catch(e2){set('去转义失败:不是合法的转义串',1)}}};
+$('c2u').onclick=function(){var t=$('src').value;if(!t)return;
+  $('src').value=t.replace(/[\u4e00-\u9fa5]/g,function(c){return '\\u'+c.charCodeAt(0).toString(16).padStart(4,'0')});live();set('中文已转 Unicode ✓')};
+$('u2c').onclick=function(){var t=$('src').value;if(!t)return;
+  $('src').value=t.replace(/\\u([0-9a-fA-F]{4})/g,function(m,h){return String.fromCharCode(parseInt(h,16))});live();set('Unicode 已转中文 ✓')};
+$('d2j').onclick=function(){var t=$('src').value;if(!t)return;
+  $('src').value=t.replace(/'/g,'"').replace(/\bTrue\b/g,'true').replace(/\bFalse\b/g,'false').replace(/\bNone\b/g,'null').replace(/,(\s*[}\]])/g,'$1');live();set('Dict → Json 粗转完成(复杂结构请人工复核)✓')};
+$('j2d').onclick=function(){var t=$('src').value;if(!t)return;
+  $('src').value=t.replace(/"/g,"'").replace(/\btrue\b/g,'True').replace(/\bfalse\b/g,'False').replace(/\bnull\b/g,'None');set('Json → Dict 粗转完成 ✓')};
+$('get').onclick=function(){var o=parse($('src').value);if(o===null)return;
+  if(typeof o!=='object'||Array.isArray(o))return set('转 Get 参数需顶层为对象',1);
+  var qs=[];for(var k in o){var v=o[k];qs.push(encodeURIComponent(k)+'='+encodeURIComponent(typeof v==='object'?JSON.stringify(v):v))}
+  $('src').value=qs.join('&');set('已转为 Get 参数串 ✓')};
+$('cp').onclick=function(){
+  var txt=$('tree').style.display==='block'?JSON.stringify(last,null,IN):$('src').value;
+  navigator.clipboard.writeText(txt).then(function(){set('已复制 ✓')},function(){set('复制失败,请手动选择',1)})};
+$('dl').onclick=function(){if(last===null)return set('当前内容不是合法 JSON,无法下载',1);
+  novaDL(new Blob([JSON.stringify(last,null,IN)],{type:'application/json'}),'data.json')};
+$('clr').onclick=function(){$('src').value='';last=null;$('out').innerHTML='';$('tree').innerHTML='';syncLno();set('已清空')};
+$('demo').onclick=function(){$('src').value='{"b":1,"a":{"d":2,"c":[3,4,{"e":null}]},"s":"中文测试"}';live()};
+$('vCode').onclick=function(){this.classList.add('on');$('vTree').classList.remove('on');if(last!==null)showCode(last)};
+$('vTree').onclick=function(){this.classList.add('on');$('vCode').classList.remove('on');if(last!==null)showTree(last)};
+$('all').onclick=function(){walk(true)};
+$('fold').onclick=function(){walk(false)};
+$('demo').click();
 </script>
 </body>
 </html>
