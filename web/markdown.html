@@ -112,7 +112,7 @@ E("copyhtml").onclick=function(){
 };
 E("clr").onclick=function(){E("ed").value="";render();msg("\u5df2\u6e05\u7a7a")};
 render();
-function msg(m,e){var s=E("stx");s.textContent=m;s.style.color=e?"#e5484d":"#188a54"}
+function msg(m,e){var c=e?"#e5484d":"#188a54";var s=E("stx");s.textContent=m;s.style.color=c;var d=document.createElement("div");d.textContent=m;d.style.cssText="position:fixed;top:16px;left:50%;transform:translateX(-50%);background:"+c+";color:#fff;padding:9px 20px;border-radius:8px;font-size:14px;z-index:999;box-shadow:0 4px 14px rgba(0,0,0,.25)";document.body.appendChild(d);setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},1800)}
 </script>
 </body>
 </html>
