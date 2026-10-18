@@ -2,6 +2,7 @@
 <html lang=zh-CN>
 <head>
 <meta charset=utf-8>
+<link rel=icon href=data:,>
 <meta name=viewport content="width=device-width,initial-scale=1">
 <title>Base64 / URL 编码 · Nova 工具</title>
 <style>
@@ -68,8 +69,10 @@ function run(d){
 E("benc").onclick=function(){run(0)};
 E("bdec").onclick=function(){run(1)};
 E("bswap").onclick=function(){var t=E("fin").value;E("fin").value=E("fout").value;E("fout").value=t;msg("已交换 ↑↓")};
+function cpT(t,ok,no){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(ok,function(){lg(t)?ok():no()})}else{lg(t)?ok():no()}}
+function lg(t){var a=document.createElement("textarea");a.value=t;a.style.position="fixed";a.style.opacity="0";document.body.appendChild(a);a.select();var d=false;try{d=document.execCommand("copy")}catch(e){}document.body.removeChild(a);return d}
 E("bcopy").onclick=function(){if(!E("fout").value)return msg("无结果可复制",1);
-  navigator.clipboard.writeText(E("fout").value).then(function(){msg("已复制 ✓")},function(){E("fout").select();document.execCommand("copy");msg("已复制 ✓")})};
+  cpT(E("fout").value,function(){msg("已复制 ✓")},function(){E("fout").select();document.execCommand("copy");msg("已复制 ✓")})};
 E("bclr").onclick=function(){E("fin").value="";E("fout").value="";msg("")};
 function msg(m,e){var s=E("stx");s.textContent=m;s.style.color=e?"#e5484d":"#188a54"}
 </script>

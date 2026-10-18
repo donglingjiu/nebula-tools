@@ -2,6 +2,7 @@
 <html lang=zh-CN>
 <head>
 <meta charset=utf-8>
+<link rel=icon href=data:,>
 <meta name=viewport content="width=device-width,initial-scale=1">
 <title>Markdown 编辑器 · Nova 工具</title>
 <style>
@@ -104,8 +105,10 @@ E("demo").onclick=function(){
     +"\n[\u94fe\u63a5](https://example.com)";
   render();msg("\u793a\u4f8b\u5df2\u8f7d\u5165");
 };
+function cpT(t,ok,no){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(ok,function(){lg(t)?ok():no()})}else{lg(t)?ok():no()}}
+function lg(t){var a=document.createElement("textarea");a.value=t;a.style.position="fixed";a.style.opacity="0";document.body.appendChild(a);a.select();var d=false;try{d=document.execCommand("copy")}catch(e){}document.body.removeChild(a);return d}
 E("copyhtml").onclick=function(){
-  navigator.clipboard.writeText(E("pv").innerHTML).then(function(){msg("HTML \u5df2\u590d\u5236")},function(){msg("\u590d\u5236\u5931\u8d25",1)});
+  cpT(E("pv").innerHTML,function(){msg("HTML \u5df2\u590d\u5236")},function(){msg("\u590d\u5236\u5931\u8d25",1)});
 };
 E("clr").onclick=function(){E("ed").value="";render();msg("\u5df2\u6e05\u7a7a")};
 render();
