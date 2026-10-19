@@ -165,7 +165,7 @@ function renderSteps(){var box=$('stepList'),h='';
   else if(st.t==='split')cfg='<input data-k="col" value="'+esc(st.col||'')+'" placeholder="列名" style="width:120px"><input data-k="delim" value="'+esc(st.delim||'')+'" placeholder="分隔符 如 |" style="width:110px">';
   h+='<div class="step" data-i="'+i+'"><span class="lbl">'+LBL[st.t]+'</span><span class="stepcfg">'+cfg+'</span><span class="stepbtns"><button class="mini" data-up="'+i+'">↑</button><button class="mini" data-dn="'+i+'">↓</button><button class="mini danger" data-rm="'+i+'">✕</button></span></div>'});
  box.innerHTML=cur.steps.length?h:'<p class="tiny muted">暂无步骤,点下方按钮添加。</p>'}
-function openEditor(id){
+function openEditor(id){try{var __cs=document.querySelectorAll('.wfrow');for(var __i=0;__i<__cs.length;__i++)__cs[__i].style.outline='';var __be=document.querySelector("[data-edit='"+id+"']");if(__be&&__be.closest){var __wr=__be.closest('.wfrow');if(__wr)__wr.style.outline='2px solid #4d6ed8'}}catch(__e){}setTimeout(function(){var __ed=document.getElementById('editor');if(__ed&&__ed.scrollIntoView){try{__ed.scrollIntoView({behavior:'smooth',block:'start'})}catch(__e3){}}},80)
  if(id){cur=null;for(var i=0;i<WFS.length;i++)if(WFS[i].id===id)cur=WFS[i];if(!cur)return}
  else{cur={id:uid(),name:'未命名工作流',desc:'',steps:[{t:'dropEmpty'},{t:'dedup'}],runs:[]};WFS.unshift(cur);persist();renderList()}
  $('wfName').value=cur.name||'';$('wfDesc').value=cur.desc||'';
@@ -189,7 +189,8 @@ $('tplClean').addEventListener('click',function(){WFS.unshift({id:uid(),name:'�
 $('tplSplit').addEventListener('click',function(){WFS.unshift({id:uid(),name:'拆列整理',desc:'按分隔符拆列→去重',steps:[{t:'split',col:'备注',delim:'|'},{t:'dedup'}],runs:[]});persist();renderList();openEditor(WFS[0].id);toast('已从模板创建')});
 $('wfList').addEventListener('click',function(e){var el=e.target&&e.target.closest?e.target.closest('button'):null;if(!el)return;
  var id=el.getAttribute('data-run')||el.getAttribute('data-edit')||el.getAttribute('data-copy2')||el.getAttribute('data-del');if(!id)return;
- if(el.hasAttribute('data-run')||el.hasAttribute('data-edit')){openEditor(id);return}
+ if(el.hasAttribute('data-edit')){openEditor(id);return}
+if(el.hasAttribute('data-run')){openEditor(id);try{$('runBtn').click()}catch(__e){}setTimeout(function(){var __r=document.getElementById('runOut');if(__r&&!__r.hidden&&__r.scrollIntoView){try{__r.scrollIntoView({behavior:'smooth',block:'start'})}catch(__e2){}}},400);return}
  if(el.hasAttribute('data-copy2')){for(var i=0;i<WFS.length;i++)if(WFS[i].id===id){var cp=JSON.parse(JSON.stringify(WFS[i]));cp.id=uid();cp.name=cp.name+' 副本';cp.runs=[];WFS.unshift(cp);persist();renderList();toast('已复制')}return}
  if(el.hasAttribute('data-del')){if(!confirm('删除该工作流?'))return;var out=[];for(var j=0;j<WFS.length;j++)if(WFS[j].id!==id)out.push(WFS[j]);WFS=out;if(cur&&cur.id===id){cur=null;$('editor').hidden=true}persist();renderList();toast('已删除')}});
 $('stepList').addEventListener('input',function(e){var t=e.target;if(!t.getAttribute||!t.getAttribute('data-k'))return;var card=t.closest?t.closest('.step'):null;if(!card)return;var i=+card.getAttribute('data-i');if(cur&&cur.steps[i])cur.steps[i][t.getAttribute('data-k')]=t.value});
@@ -224,32 +225,19 @@ function aiUserMsg(need){var sc=aiSchema();var m=need;
  else{m+='\n\n[表格信息] 暂无可靠列名,只输出无需列名的步骤(dedup/dropEmpty/stats)。'}
  return m}
 $('aiGo').addEventListener('click',function(){
- var need=$('aiNeed').value;var chk=need.split(' ').join('');
- if(!chk){toast('请先输入需求',true);return}
- if(!cur){toast('请先新建或选择工作流',true);return}
- $('aiGo').disabled=true;$('aiStat').textContent='AI 思考中…';
- fetch('/api/llm/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify((function(){var g0=need;$('aiStat').textContent='意图确认中…';return fetch('/api/llm/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:'判断任务是否属于表格数据清洗整理(如去重、筛选、排序、删空行、选列、拆列、统计)。只回答:是 或 否。任务:'+g0}],maxTokens:6})}).then(function(r0){return r0.json()}).then(function(j0){if(j0&&j0.ok===false){throw new Error(j0.error||'代理失败')}var a0=String(j0.content||'');if(a0.indexOf('否')>=0||a0.indexOf('不是')>=0){throw new Error('NOT_DATA_TASK')}$('aiStat').textContent='需求确认,规划步骤中…';return fetch('/api/llm/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'system',content:AIP},{role:'user',content:aiUserMsg(need)}],maxTokens:900})})})})())})
- .then(function(r){return r.json().then(function(j){if(!r.ok||(j&&j.ok===false))throw new Error((j&&j.error)||('HTTP '+r.status));return j})})
- .then(function(j){
-  var txt=String(j.content||'');
-  var b=txt.indexOf('{'),e=txt.lastIndexOf('}');
-  if(b<0||e<=b)throw new Error('AI 未返回 JSON');
-  var plan=JSON.parse(txt.slice(b,e+1));if(plan&&plan.error){throw new Error('NOT_DATA_TASK')}
-  if(!plan||!plan.steps||!plan.steps.length)throw new Error('方案中没有步骤');
-  var out=[];
-  for(var i=0;i<plan.steps.length&&out.length<12;i++){
-   var st=plan.steps[i];if(AIT.indexOf(st.t)<0)continue;var cl={t:st.t};
-   if(st.t==='filter'){cl.kw=String(st.kw==null?'':st.kw)}
-   else if(st.t==='sort'){cl.col=String(st.col==null?'':st.col);cl.dir=(+st.dir===-1)?-1:1}
-   else if(st.t==='keep'){cl.names=String(st.names==null?'':st.names)}
-   else if(st.t==='split'){cl.col=String(st.col==null?'':st.col);cl.delim=String(st.delim==null?'':st.delim)}
-   out.push(cl)}
-  if(!out.length)throw new Error('方案步骤均不在支持类型内');
-  cur.steps=out;renderSteps();persist();
-  $('aiStat').textContent='已生成 '+out.length+' 步,可继续手调';
-  toast('AI 拆解完成,共 '+out.length+' 步')})
- .catch(function(e){$('aiStat').textContent='';var em=String(e.message);toast(em.indexOf('NOT_DATA_TASK')>=0?'这不是针对表格的数据需求——请输入清洗类需求,如:去掉空行和重复,按工资从高到低排序,只留姓名和工资':('AI 拆解失败:'+em),true)})
- .then(function(){$('aiGo').disabled=false})});
+var need=$('aiNeed').value;var chk=need.split(' ').join('');
+if(!chk){toast('请先输入需求',true);return}
+if(!cur){toast('请先新建或选择工作流',true);return}
+window._aiNeed=need;aiIntentGate()});
+function aiIntentGate(){var need=String(window._aiNeed||'');var btn=$('aiGo');var st=$('aiStat');
+btn.disabled=true;st.textContent='意图确认中…';
+fetch('/api/llm/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:'判断任务是否属于表格数据清洗整理,如去重、筛选、排序、删空行、选列、拆列、统计。只回答:是 或 否。任务:'+need}],maxTokens:6})})
+.then(function(r0){return r0.json()})
+.then(function(j0){if(j0&&j0.ok===false){throw new Error(j0.error||'代理失败')}var a0=String(j0.content||'');if(a0.indexOf('否')>=0||a0.indexOf('不是')>=0){throw new Error('NOT_DATA_TASK')}st.textContent='需求确认,规划步骤中…';return fetch('/api/llm/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'system',content:AIP},{role:'user',content:aiUserMsg(need)}],maxTokens:900})})})
+.then(function(r){return r.json().then(function(j){if(!r.ok||(j&&j.ok===false))throw new Error((j&&j.error)||('HTTP '+r.status));return j})})
+.then(function(j){var txt=String(j.content||'');var b=txt.indexOf('{'),e=txt.lastIndexOf('}');if(b<0||e<=b)throw new Error('AI 未返回 JSON');var plan=JSON.parse(txt.slice(b,e+1));if(plan&&plan.error){throw new Error('NOT_DATA_TASK')}if(!plan||!plan.steps||!plan.steps.length)throw new Error('方案中没有步骤');var out=[];for(var i=0;i<plan.steps.length&&out.length<12;i++){var s2=plan.steps[i];if(AIT.indexOf(s2.t)<0)continue;var cl={t:s2.t};if(s2.t==='filter'){cl.kw=String(s2.kw==null?'':s2.kw)}else if(s2.t==='sort'){cl.col=String(s2.col==null?'':s2.col);cl.dir=(+s2.dir===-1)?-1:1}else if(s2.t==='keep'){cl.names=String(s2.names==null?'':s2.names)}else if(s2.t==='split'){cl.col=String(s2.col==null?'':s2.col);cl.delim=String(s2.delim==null?'':s2.delim)}out.push(cl)}if(!out.length)throw new Error('方案步骤均不在支持类型内');cur.steps=out;renderSteps();persist();st.textContent='已生成 '+out.length+' 步,可继续手调';toast('AI 拆解完成,共 '+out.length+' 步')})
+.catch(function(e){st.textContent='';var em=String(e.message);toast(em.indexOf('NOT_DATA_TASK')>=0?'这不是针对表格的数据需求,请输入清洗类需求':('AI 拆解失败:'+em),true)})
+.then(function(){btn.disabled=false})};
 renderList();
 </script>
 <script>window.addEventListener("error",function(e){try{var d=document.createElement("div");d.textContent="页面错误:"+(e&&e.message?e.message:"未知");d.style.cssText="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#e5484d;color:#fff;padding:8px 18px;border-radius:8px;z-index:99999;font-size:13px";document.body.appendChild(d);setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},6000)}catch(x){}});</script></body></html>
