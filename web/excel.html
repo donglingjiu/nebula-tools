@@ -71,7 +71,7 @@ caption{caption-side:top;text-align:left;color:#98a2b8;padding:8px 4px;font-size
 var wb=null,rows=[],name='data';
 function $(id){return document.getElementById(id)}
 function esc(s){return String(s).replace(/[&<>"]/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]})}
-function setStatus(m,e,sl){var s=$('status');s.textContent=m;s.className=e?'status err':'status';if(sl)return;var c=e?'#e5484d':'#188a54';var d=document.createElement('div');d.textContent=m;d.style.cssText='position:fixed;top:16px;left:50%;transform:translateX(-50%);background:'+c+';color:#fff;padding:9px 20px;border-radius:8px;font-size:14px;z-index:999;box-shadow:0 4px 14px rgba(0,0,0,.25)';document.body.appendChild(d);setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},1800)}
+function setStatus(m,e,sl){var s=$('status');s.textContent=m;s.className=e?'status err':'status';if(sl)return;var c=e?'#e5484d':'#188a54';var d=document.createElement('div');d.textContent=m;d.style.cssText='position:fixed;top:56px;left:50%;transform:translateX(-50%);background:'+c+';color:#fff;padding:9px 20px;border-radius:8px;font-size:14px;z-index:999;box-shadow:0 4px 14px rgba(0,0,0,.25)';document.body.appendChild(d);setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},1800)}
 $('file').addEventListener('change',function(){
   var f=this.files[0];if(!f)return;
   name=f.name.replace(/\.(xlsx|xls|csv)$/i,'');
@@ -165,7 +165,7 @@ function splitNow(){
   if(mx===1){setStatus('分隔符 ['+d+'] 未在任何单元格命中,已取消拆分',true);return}
   var base=(rows[0][ci]!==''&&rows[0][ci]!=null)?String(rows[0][ci]):('列'+(ci+1));
   for(var i=0;i<rows.length;i++){
-    if(i===0){for(var j=1;j<=mx;j++)rows[0].push(base+'-'+j);continue}
+    if(i===0){for(var j=1;j<=mx;j++){var nm2=base+'-'+j,n2=2;while(rows[0].indexOf(nm2)>=0){nm2=base+'-'+j+'('+n2+')';n2++}rows[0].push(nm2)}continue}
     var ps=parts[i];
     for(var j=0;j<mx;j++)rows[i].push(ps[j]!==undefined?ps[j]:'');
   }
