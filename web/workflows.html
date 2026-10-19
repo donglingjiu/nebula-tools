@@ -71,6 +71,10 @@ hr{border:0;border-top:1px solid #edf1f7;margin:14px 0}
    <button class="btn2" data-add="split">＋ 拆列</button>
    <button class="btn2" data-add="stats">＋ 统计</button>
   </div>
+    <hr>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px"><b>AI 拆解</b><span class="tiny muted">自然语言到步骤链草稿,生成后可手调</span></div>
+  <textarea id="aiNeed" placeholder="例:去掉空行和重复的,按工资从高到低排序,只保留姓名和工资两列" style="min-height:54px"></textarea>
+  <div style="display:flex;gap:8px;align-items:center;margin:8px 0"><button class="btn2" id="aiGo">AI 拆解为步骤链</button><span class="tiny muted" id="aiStat"></span></div>
   <div style="margin-top:12px"><button class="btn" id="saveWf">保存工作流</button></div>
  </div>
  <div class="panel">
@@ -209,6 +213,35 @@ $('exJson').addEventListener('click',function(){if(!lastRun)return;var arr=[];fo
 $('exMd').addEventListener('click',function(){if(!lastRun)return;function c2(v){return String(v==null?'':v).split('|').join('\\|').split('\n').join(' ')}
  var s='| '+lastRun.head.map(c2).join(' | ')+' |\n| --- | --- |\n'+lastRun.data.map(function(r){return '| '+r.map(c2).join(' | ')+' |'}).join('\n');
  dl((cur?cur.name:'工作流')+'-结果.md',s,'text/markdown');toast('已导出 Markdown ✓')});
+var AIT=['filter','dedup','dropEmpty','sort','keep','split','stats'];
+var AIP='你是数据清洗步骤规划器。根据用户需求只输出一个JSON对象,格式:{"steps":[{"t":"类型",其他参数}]}。可用类型:filter(参数kw,任一列包含该关键字则保留该行)、dedup(无参数)、dropEmpty(无参数,删除整行全空的行)、sort(参数col列名,dir为1升序或-1降序)、keep(参数names,逗号分隔的列名)、split(参数col列名,delim单个分隔符)、stats(无参数)。规则:1.只输出JSON,禁止解释,禁止markdown;2.最多8步;3.列名从需求中提取,需求未提到的列名用空字符串;4.需求说从高到低、从大到小、降序时dir为-1,否则排序默认dir为1;5.合理顺序:先dropEmpty和dedup,再filter,再split,再sort,最后keep。示例:需求"按工资从高到低排序,只要姓名和工资两列",输出{"steps":[{"t":"sort","col":"工资","dir":-1},{"t":"keep","names":"姓名,工资"}]}';
+$('aiGo').addEventListener('click',function(){
+ var need=$('aiNeed').value;var chk=need.split(' ').join('');
+ if(!chk){toast('请先输入需求',true);return}
+ if(!cur){toast('请先新建或选择工作流',true);return}
+ $('aiGo').disabled=true;$('aiStat').textContent='AI 思考中…';
+ fetch('/api/llm/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'system',content:AIP},{role:'user',content:need}],maxTokens:900})})
+ .then(function(r){return r.json().then(function(j){if(!r.ok||(j&&j.ok===false))throw new Error((j&&j.error)||('HTTP '+r.status));return j})})
+ .then(function(j){
+  var txt=String(j.content||'');
+  var b=txt.indexOf('{'),e=txt.lastIndexOf('}');
+  if(b<0||e<=b)throw new Error('AI 未返回 JSON');
+  var plan=JSON.parse(txt.slice(b,e+1));
+  if(!plan||!plan.steps||!plan.steps.length)throw new Error('方案中没有步骤');
+  var out=[];
+  for(var i=0;i<plan.steps.length&&out.length<12;i++){
+   var st=plan.steps[i];if(AIT.indexOf(st.t)<0)continue;var cl={t:st.t};
+   if(st.t==='filter'){cl.kw=String(st.kw==null?'':st.kw)}
+   else if(st.t==='sort'){cl.col=String(st.col==null?'':st.col);cl.dir=(+st.dir===-1)?-1:1}
+   else if(st.t==='keep'){cl.names=String(st.names==null?'':st.names)}
+   else if(st.t==='split'){cl.col=String(st.col==null?'':st.col);cl.delim=String(st.delim==null?'':st.delim)}
+   out.push(cl)}
+  if(!out.length)throw new Error('方案步骤均不在支持类型内');
+  cur.steps=out;renderSteps();persist();
+  $('aiStat').textContent='已生成 '+out.length+' 步,可继续手调';
+  toast('AI 拆解完成,共 '+out.length+' 步')})
+ .catch(function(e){$('aiStat').textContent='';toast('AI 拆解失败:'+e.message,true)})
+ .then(function(){$('aiGo').disabled=false})});
 renderList();
 </script>
 </body></html>
