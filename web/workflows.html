@@ -203,7 +203,7 @@ $('runBtn').addEventListener('click',function(){
  if(m==='sample'){doRun(parseCSV(SAMPLE,','));return}
  if(m==='paste'){var t=$('pasteBox').value;if(!t.replace(/\s/g,'')){toast('请粘贴 CSV 文本',true);return}var d=(t.indexOf('\t')>=0&&t.indexOf(',')<0)?'\t':',';doRun(parseCSV(t,d));return}
  var f=$('srcFile').files[0];if(!f){toast('请先选择 CSV 文件',true);return}
- var fr=new FileReader();fr.onload=function(){doRun(parseCSV(fr.result,\.tsv$?'\t':','))};fr.onerror=function(){toast('读取失败',true)};fr.readAsText(f,'utf-8')});
+ var fr=new FileReader();fr.onload=function(){doRun(parseCSV(fr.result,f.name.slice(-4).toLowerCase()==='.tsv'?'\t':','))};fr.onerror=function(){toast('读取失败',true)};fr.readAsText(f,'utf-8')});
 $('exCsv').addEventListener('click',function(){if(!lastRun)return;var s=lastRun.head.map(csvCell).join(',')+'\n'+lastRun.data.map(function(r){return r.map(csvCell).join(',')}).join('\n');dl((cur?cur.name:'工作流')+'-结果.csv','\ufeff'+s,'text/csv');toast('已导出 CSV ✓')});
 $('exJson').addEventListener('click',function(){if(!lastRun)return;var arr=[];for(var i=0;i<lastRun.data.length;i++){var ob={};for(var c=0;c<lastRun.head.length;c++){var hn=String(lastRun.head[c]||('列'+(c+1)));ob[hn]=lastRun.data[i][c]==null?'':lastRun.data[i][c]}arr.push(ob)}dl((cur?cur.name:'工作流')+'-结果.json',JSON.stringify(arr,null,2),'application/json');toast('已导出 JSON ✓')});
 $('exMd').addEventListener('click',function(){if(!lastRun)return;function c2(v){return String(v==null?'':v).split('|').join('\\|').split('\n').join(' ')}
