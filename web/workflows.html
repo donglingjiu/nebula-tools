@@ -41,7 +41,7 @@ textarea{width:100%;min-height:88px;font:12px/1.6 Consolas,monospace}
 hr{border:0;border-top:1px solid #edf1f7;margin:14px 0}
 </style></head>
 <body data-page="workflows">
-<nav class="nova-nav"><b>Nova 工具</b><span class="grp">文档</span><a href="pdf2word.html">PDF转Word</a><a href="word2pdf.html">Word转PDF</a><a href="pdf.html">PDF工具箱</a><a href="markdown.html">Markdown</a><a href="mindmap.html">脑图</a><a href="imgtool.html">图片压缩</a><a href="excel.html">Excel洞察</a><span class="grp">开发</span><a href="json.html">JSON工具</a><a href="jsonx.html">JSON转换</a><a href="regex.html">正则测试</a><a href="base64.html">编码</a><span class="grp">数据</span><a href="excel.html">数据洞察</a><a href="llm.html">模型设置</a><a href="aiworkflow.html" style="color:#ffd54f">★ 阶段式AI工作流</a><a href="workflows.html" style="margin-left:auto;color:#fff">▶ 智能工作流</a><a href="tools.html">☰ 全部工具</a></nav>
+<nav class="nova-nav"><b>Nova 工具</b><span class="grp">文档</span><a href="pdf2word.html">PDF转Word</a><a href="word2pdf.html">Word转PDF</a><a href="pdf.html">PDF工具箱</a><a href="markdown.html">Markdown</a><a href="mindmap.html">脑图</a><a href="imgtool.html">图片压缩</a><a href="excel.html">Excel洞察</a><span class="grp">开发</span><a href="json.html">JSON工具</a><a href="jsonx.html">JSON转换</a><a href="regex.html">正则测试</a><a href="base64.html">编码</a><span class="grp">数据</span><a href="excel.html">数据洞察</a><a href="llm.html">模型设置</a><a href="aiworkflow.html" style="color:#ffd54f">AI 项目流水线</a><a href="workflows.html" style="margin-left:auto;color:#fff">▶ 智能工作流</a><a href="tools.html">☰ 全部工具</a></nav>
 <div class="wrap">
 <a class="back" href="tools.html">← 返回工具大全</a>
 <h1>智能工作流</h1>
@@ -228,7 +228,7 @@ $('aiGo').addEventListener('click',function(){
  if(!chk){toast('请先输入需求',true);return}
  if(!cur){toast('请先新建或选择工作流',true);return}
  $('aiGo').disabled=true;$('aiStat').textContent='AI 思考中…';
- fetch('/api/llm/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'system',content:AIP},{role:'user',content:aiUserMsg(need)}],maxTokens:900})})
+ fetch('/api/llm/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify((function(){var g0=need;$('aiStat').textContent='意图确认中…';return fetch('/api/llm/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:'判断任务是否属于表格数据清洗整理(如去重、筛选、排序、删空行、选列、拆列、统计)。只回答:是 或 否。任务:'+g0}],maxTokens:6})}).then(function(r0){return r0.json()}).then(function(j0){if(j0&&j0.ok===false){throw new Error(j0.error||'代理失败')}var a0=String(j0.content||'');if(a0.indexOf('否')>=0||a0.indexOf('不是')>=0){throw new Error('NOT_DATA_TASK')}$('aiStat').textContent='需求确认,规划步骤中…';return fetch('/api/llm/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'system',content:AIP},{role:'user',content:aiUserMsg(need)}],maxTokens:900})})})})())})
  .then(function(r){return r.json().then(function(j){if(!r.ok||(j&&j.ok===false))throw new Error((j&&j.error)||('HTTP '+r.status));return j})})
  .then(function(j){
   var txt=String(j.content||'');
@@ -252,4 +252,4 @@ $('aiGo').addEventListener('click',function(){
  .then(function(){$('aiGo').disabled=false})});
 renderList();
 </script>
-</body></html>
+<script>window.addEventListener("error",function(e){try{var d=document.createElement("div");d.textContent="页面错误:"+(e&&e.message?e.message:"未知");d.style.cssText="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#e5484d;color:#fff;padding:8px 18px;border-radius:8px;z-index:99999;font-size:13px";document.body.appendChild(d);setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},6000)}catch(x){}});</script></body></html>
