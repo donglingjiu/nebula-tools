@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nova · 阶段式 AI 工作流</title><link rel=icon href=data:,>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nova · AI 项目流水线</title><link rel=icon href=data:,>
 <style>
 *{box-sizing:border-box}body{margin:0;font:14px/1.65 system-ui,'PingFang SC','Microsoft YaHei',sans-serif;background:#f3f6fb;color:#26324a}
 .nova-nav{position:sticky;top:0;z-index:99;background:#1a2233;color:#cdd5e8;font-size:13px;padding:8px 16px;display:flex;gap:12px;flex-wrap:wrap}
 .nova-nav a{color:#cdd5e8;text-decoration:none}.nova-nav a:hover{color:#fff}.nova-nav b{color:#fff}
 .wrap{max-width:900px;margin:0 auto;padding:22px 18px 80px}h1{font-size:22px;margin:6px 0 4px}
-.sub{color:#7a8499;margin:0 0 16px}.panel{background:#fff;border:1px solid #e6ecf5;border-radius:12px;padding:14px 16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(23,43,99,.06)}
+.sub{color:#7a8499;margin:0 0 14px}.panel{background:#fff;border:1px solid #e6ecf5;border-radius:12px;padding:14px 16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(23,43,99,.06)}
 .btn{background:#4d6ed8;border:0;color:#fff;border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer}.btn:hover{background:#3f5ec4}
 .btn2{background:#eef2ff;color:#3b5bd0;border:0;border-radius:8px;padding:7px 12px;font:inherit;cursor:pointer}
 .mini{background:transparent;border:1px solid #d8e0ee;border-radius:7px;padding:3px 8px;font-size:12px;cursor:pointer;color:#44536f}.mini.danger{color:#c0392b;border-color:#eecfcb}
@@ -13,64 +13,114 @@ textarea{width:100%;border:1px solid #d8e0ee;border-radius:8px;padding:8px 10px;
 select,input[type=file]{border:1px solid #d8e0ee;border-radius:8px;padding:6px 8px;font:inherit;background:#fff}
 .srow{border:1px solid #edf1f7;border-radius:10px;padding:10px 12px;margin:10px 0}
 .shead{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:7px}
-.chip{display:inline-block;background:#f1f3f7;color:#7a8499;border-radius:999px;padding:1px 9px;font-size:12px}
+.chip{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px}
+.c0{background:#f1f3f7;color:#8a97ad}.c1{background:#eef2ff;color:#3b5bd0}.c2{background:#e6f7ef;color:#188a54}.c3{background:#fdecec;color:#c0392b}
 .outta{min-height:90px;font:13px/1.7 Consolas,monospace}.tpta{min-height:64px;font:12px/1.6 Consolas,monospace;background:#fbfcff;margin-top:7px}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0}
-.tiny{font-size:12px;color:#7a8499}hr{border:0;border-top:1px dashed #e2e8f4;margin:12px 0}
+.tiny{font-size:12px;color:#7a8499}ol.tips{margin:6px 0;padding-left:20px}ol.tips li{margin:3px 0}
+#pipe{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
 </style></head>
 <body>
-<nav class="nova-nav"><b>Nova</b><a href="workflows.html">数据流水线</a><a href="aiworkflow.html" style="color:#fff">阶段式工作流</a><a href="llm.html">模型设置</a><a href="tools.html" style="margin-left:auto">全部工具</a></nav>
+<nav class="nova-nav"><b>Nova</b><a href="workflows.html">数据流水线</a><a href="aiworkflow.html" style="color:#fff">AI 项目流水线</a><a href="llm.html">模型设置</a><a href="tools.html" style="margin-left:auto">全部工具</a></nav>
 <div class="wrap">
-<h1>阶段式 AI 工作流</h1>
-<p class="sub">输入任意材料(需求文本/表格摘要/文档内容),经六个默认阶段(需求分析→技术调研→方案设计→代码实现→流水线测试→交付评审)顺序过脑;每阶段产出可手改,改后自动作为下一阶段输入;全程走服务器代理,Key 不落浏览器。</p>
+<h1>AI 项目流水线</h1>
+<p class="sub">把一次大提问拆成六次专家会诊:每次纪要你都能改,改完才进入下一科,最后导出完整文档包。</p>
+<section class="panel"><b>这是什么(三句话)</b>
+<ol class="tips"><li><b>输入</b>:任何材料——需求文本 / 表格粘贴 / 文档片段 / 会议记录(.txt .md .csv 可直接载入)</li>
+<li><b>加工</b>:默认六个专家阶段顺序调用模型,上一阶段产出自动成为下一阶段输入,每个产出框都可手改</li>
+<li><b>产出</b>:一份 .md 项目文档包,全程可人工介入。与「数据流水线」的区别:那边表格进表格出,这边需求进文档包出</li></ol>
+</section>
 <section class="panel"><b>输入材料</b>
- <textarea id="need" style="min-height:70px;margin-top:8px" placeholder="原始需求。例:做一个团队情绪晴雨表小工具,每周收集成员情绪并自动生成报告"></textarea>
- <textarea id="extra" style="min-height:56px;margin-top:8px" placeholder="附加材料(可选):粘贴表格列名与样例行 / 文档片段 / 会议记录 / 脑图大纲文本"></textarea>
- <div class="row"><label class="tiny">载入材料文件(txt/md/csv):</label><input type="file" id="matFile" accept=".txt,.md,.csv">
- <span class="tiny">模型:</span><select id="profSel" style="min-width:200px"><option value="">加载中…</option></select></div>
+<div class="row"><button class="btn2" id="demoBtn">一键填入示例</button><span class="tiny">不知道填什么?点它,再点下方「全流水线自动跑」</span></div>
+<textarea id="need" style="min-height:70px;margin-top:8px" placeholder="原始需求。例:做一个团队情绪晴雨表小工具,每周五收集成员情绪打分,自动生成周报与趋势"></textarea>
+<textarea id="extra" style="min-height:52px;margin-top:8px" placeholder="附加材料(可选):表格列名与样例 / 文档片段 / 会议记录 / 脑图大纲文本"></textarea>
+<div class="row"><label class="tiny">载入文件:</label><input type="file" id="matFile" accept=".txt,.md,.csv">
+<span class="tiny">模板:</span><select id="tplSel"></select>
+<span class="tiny">模型:</span><select id="profSel" style="min-width:190px"><option value="">加载中…</option></select></div>
 </section>
 <section class="panel"><div class="row" style="justify-content:space-between"><b>阶段流水线</b>
- <span><button class="btn" id="runAllBtn">▶ 全流水线自动跑</button> <button class="btn2" id="addStage">＋添加阶段</button> <button class="btn2" id="expBtn">导出 .md 报告</button> <button class="mini" id="resetBtn">恢复默认</button></span></div>
- <div id="stageList"></div>
- <p class="tiny">跑的顺序=从上到下;每一阶段的用户消息=原始需求+附加材料+上一阶段产出。点「模板」可改各阶段提示词(用「模板」旁的▶可单跑某阶段)。</p>
+<span><button class="btn" id="runAllBtn">▶ 全流水线自动跑</button> <button class="btn2" id="addStage">＋添加阶段</button> <button class="btn2" id="expBtn">导出 .md 报告</button> <button class="mini" id="resetBtn">恢复默认</button></span></div>
+<div id="pipe"></div>
+<div id="stageList"></div>
+<p class="tiny">顺序=从上到下;每阶段用户消息=原始需求+附加材料+上一阶段产出。「模板」展开可改提示词;「▶ 跑这步」单跑该阶段。</p>
 </section>
 </div>
+<!--NOVA_CHUNK_1_END-->
 <script>
 var NL=String.fromCharCode(10);
-var DEF=[['需求分析','你是资深需求分析师。基于材料输出:一、核心目标;二、目标用户与场景;三、关键功能清单(编号);四、非功能需求;五、风险与假设。用简洁markdown,不要客套。'],
-['技术调研','你是技术调研专家。基于材料与上一阶段产出输出:一、候选方案对比表(方案/优点/风险/适配度);二、推荐结论与理由;三、待验证的技术风险点。简洁markdown。'],
-['方案设计','你是系统架构师。基于上一阶段产出输出:一、总体架构与模块划分;二、关键数据结构与流程;三、页面或接口清单;四、里程碑计划。简洁markdown。'],
-['代码实现','你是资深工程师。基于方案输出:关键代码骨架(真实可用风格)+文件清单+实现说明;复杂处给伪代码并注明;不虚构不存在的依赖。'],
+var TKEY='nova_aiwf_v1';
+var TPL={
+dev:[
+['需求分析','你是资深需求分析师。基于材料输出:一、核心目标;二、目标用户与场景;三、关键功能清单(编号);四、非功能需求;五、风险与假设。用简洁markdown,不要客套。'],
+['技术调研','你是技术调研专家。基于材料与上一阶段产出输出:一、候选方案对比表(方案/优点/风险/适配度);二、推荐结论与理由;三、待验证的技术风险点。用简洁markdown。'],
+['方案设计','你是系统架构师。基于上一阶段产出输出:一、总体架构与模块划分;二、关键数据结构与流程;三、页面或接口清单;四、里程碑计划。用简洁markdown。'],
+['代码实现','你是资深工程师。基于方案输出:关键代码骨架+文件清单+实现说明;复杂处给伪代码并注明;不虚构不存在的依赖。'],
 ['流水线测试','你是测试负责人。基于前序产出输出:一、测试用例表(编号/前置/步骤/预期);二、边界与异常场景;三、自动化与回归建议。'],
-['交付评审','你是交付评审官。基于全部前序产出输出:一、交付物核对清单;二、质量评估(通过项/待改进项);三、上线建议与回滚预案;四、最终结论(通过/有条件通过/退回)。']];
+['交付评审','你是交付评审官。基于全部前序产出输出:一、交付物核对清单;二、质量评估(通过项/待改进项);三、上线建议与回滚预案;四、最终结论(通过/有条件通过/退回)。']],
+event:[
+['需求分析','你是活动策划专家。基于材料输出:一、活动目标;二、参与人群与规模;三、核心环节设计;四、成功指标。用简洁markdown。'],
+['创意策划','你是创意总监。基于前序产出输出:一、主题与亮点;二、环节流程表;三、物料与创意清单。用简洁markdown。'],
+['预算与资源','你是项目经理。输出:一、预算明细表(项/金额/备注);二、人力分工表;三、场地与物资清单。用简洁markdown。'],
+['执行排期','你是排期负责人。输出:倒排时间表(日期/事项/负责人/交付物)与关键节点提醒。用简洁markdown。'],
+['风险预案','你是风控专家。输出:一、风险清单(风险/概率/影响/对策);二、不可控因素的B方案。用简洁markdown。'],
+['复盘框架','你是复盘教练。输出:活动后复盘模板(数据收集项/满意度调研题/复盘会议程)。用简洁markdown。']],
+//NOVA_CHUNK_2_END
+research:[
+['选题聚焦','你是研究总监。基于材料输出:一、研究问题定义;二、范围边界(纳入/排除);三、关键假设。用简洁markdown。'],
+['资料框架','你是研究员。输出:一、资料来源清单;二、检索关键词组合;三、收集优先级。用简洁markdown。'],
+['数据与案例','你是分析师。基于前序产出输出:一、所需关键数据点清单;二、典型案例选取标准;三、数据缺口与补齐途径。用简洁markdown。'],
+['分析与洞察','你是分析专家。输出:一、发现与模式;二、对比与趋势;三、反例与例外;区分事实与推断。用简洁markdown。'],
+['结论建议','你是顾问。输出:一、核心结论(编号);二、可执行建议(责任方/时间);三、局限性与后续研究。用简洁markdown。'],
+['附录清单','你是编辑。输出:附录结构(引用格式/数据表/访谈提纲)与全文校对清单。用简洁markdown。']],
+content:[
+['选题与受众','你是内容主编。基于材料输出:一、选题定位;二、目标受众画像;三、差异化角度;四、成功指标。用简洁markdown。'],
+['大纲设计','你是结构专家。输出:一、标题候选(3个);二、章节大纲(每节要点与字数);三、钩子与结尾设计。用简洁markdown。'],
+['初稿撰写','你是资深作者。按大纲输出初稿,语言平实有细节,不堆砌形容词,每节给出实质内容。'],
+['润色优化','你是文字编辑。在初稿基础上输出:一、精简后的终稿;二、修改说明(删了什么/为什么)。'],
+['发布渠道','你是分发负责人。输出:各渠道(公众号/知乎/内网Wiki等)格式改写要点与发布时间建议。用简洁markdown。'],
+['数据复盘','你是增长分析。输出:发布后一周数据复盘模板(指标/采集方式/判断标准/迭代动作)。用简洁markdown。']]};
 var stages=[],outs=[],stat=[];
 function el(id){return document.getElementById(id)}
 function esc(s){s=String(s==null?'':s);return s.split('&').join('&amp;').split('<').join('&lt;').split('>').join('&gt;')}
 function toast(m,err){var d=document.createElement('div');d.textContent=m;d.style.cssText='position:fixed;top:56px;left:50%;transform:translateX(-50%);background:'+(err?'#e5484d':'#188a54')+';color:#fff;padding:9px 20px;border-radius:8px;z-index:999;box-shadow:0 4px 14px rgba(0,0,0,.25)';document.body.appendChild(d);setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},2400)}
-function init(){stages=[];outs=[];stat=[];for(var i=0;i<DEF.length;i++){stages.push({t:DEF[i][0],p:DEF[i][1]});outs.push('');stat.push('待跑')}render();loadProfiles()}
-function render(){var h='';for(var i=0;i<stages.length;i++){h+='<div class="srow"><div class="shead"><b>'+(i+1)+'. '+esc(stages[i].t)+'</b><span class="chip" id="st'+i+'">'+esc(stat[i])+'</span><span style="flex:1"></span><button class="mini" data-act="tpl" data-i="'+i+'">模板</button><button class="mini" data-act="one" data-i="'+i+'">▶ 跑这步</button><button class="mini" data-act="up" data-i="'+i+'">↑</button><button class="mini" data-act="dn" data-i="'+i+'">↓</button><button class="mini danger" data-act="del" data-i="'+i+'">×</button></div><textarea id="out'+i+'" class="outta" placeholder="该阶段产出(可手改,改后作为后续阶段输入)">'+esc(outs[i])+'</textarea><textarea id="tp'+i+'" class="tpta" hidden>'+esc(stages[i].p)+'</textarea></div>'}el('stageList').innerHTML=h}
-function setStat(i){var x=el('st'+i);if(x)x.textContent=stat[i]}
+function save(){try{localStorage.setItem(TKEY,JSON.stringify({need:el('need').value,extra:el('extra').value,stages:stages,outs:outs}))}catch(x){}}
+function chipCls(t){if(String(t).indexOf('思考')>=0)return 'c1';if(String(t).indexOf('完成')>=0)return 'c2';if(String(t).indexOf('失败')>=0)return 'c3';return 'c0'}
+//NOVA_CHUNK_3_END
+function renderPipe(){var h='';for(var i=0;i<stages.length;i++){h+='<span class="chip '+chipCls(stat[i])+'">'+(i+1)+' '+esc(stages[i].t)+' · '+esc(stat[i])+'</span>'}el('pipe').innerHTML=h}
+function render(){var h='';for(var i=0;i<stages.length;i++){h+='<div class="srow" id="row'+i+'"><div class="shead"><b>'+(i+1)+'. '+esc(stages[i].t)+'</b><span class="chip '+chipCls(stat[i])+'">'+esc(stat[i])+'</span><span style="flex:1"></span><button class="mini" data-act="tpl" data-i="'+i+'">模板</button><button class="mini" data-act="one" data-i="'+i+'">▶ 跑这步</button><button class="mini" data-act="up" data-i="'+i+'">↑</button><button class="mini" data-act="dn" data-i="'+i+'">↓</button><button class="mini danger" data-act="del" data-i="'+i+'">×</button></div><textarea id="out'+i+'" class="outta" placeholder="该阶段产出(可手改,改后自动作为下一阶段输入)">'+esc(outs[i])+'</textarea><textarea id="tp'+i+'" class="tpta" hidden>'+esc(stages[i].p)+'</textarea></div>'}el('stageList').innerHTML=h;renderPipe();save()}
+function setStat(i){renderPipe();var r=el('row'+i);if(r){var c=r.querySelector('.shead .chip');if(c){c.className='chip '+chipCls(stat[i]);c.textContent=stat[i]}}}
+var TNAME={dev:'软件开发流程',event:'活动策划流程',research:'调研报告流程',content:'内容创作流程'};
+function fillTpl(){var s=el('tplSel');s.innerHTML=Object.keys(TPL).map(function(k){return '<option value="'+k+'">'+TNAME[k]+'</option>'}).join('')}
+function loadTpl(k){stages=[];outs=[];stat=[];for(var i=0;i<TPL[k].length;i++){stages.push({t:TPL[k][i][0],p:TPL[k][i][1]});outs.push('');stat.push('待跑')}}
 function loadProfiles(){fetch('/api/llm/profiles').then(function(r){return r.json()}).then(function(j){var ps=(j.profiles||[]).filter(function(p){return p.enabled});var s=el('profSel');s.innerHTML=ps.length?ps.map(function(p){return '<option value="'+esc(p.id)+'">'+esc(p.name)+' · '+esc(p.model)+'</option>'}).join(''):'<option value="">(无启用档案,请去模型设置添加)</option>'}).catch(function(){el('profSel').innerHTML='<option value="">(档案加载失败)</option>'})}
+function init(){var restored=false;var raw=null;try{raw=localStorage.getItem(TKEY)}catch(x){}
+if(raw){try{var o=JSON.parse(raw);if(o&&o.stages&&o.stages.length){stages=o.stages;outs=o.outs||[];while(outs.length<stages.length)outs.push('');stat=[];for(var i=0;i<stages.length;i++)stat.push('待跑');el('need').value=o.need||'';el('extra').value=o.extra||'';restored=true}}catch(x){}}
+if(!restored)loadTpl('dev');
+fillTpl();render();loadProfiles()}
 function buildUser(i){var u='【原始需求】'+el('need').value;var ex=el('extra').value;if(ex)u+=NL+'【附加材料】'+ex;if(i>0&&outs[i-1])u+=NL+'【上一阶段产出·'+stages[i-1].t+'】'+outs[i-1];u+=NL+NL+'请现在完成「'+stages[i].t+'」阶段的任务。';return u}
 function runStage(i){var pid=el('profSel').value;if(!pid){toast('请先在模型设置添加并启用档案',true);return Promise.reject(new Error('无可用档案'))}
- var chk=el('need').value.split(' ').join('');if(!chk){toast('请先填写原始需求',true);return Promise.reject(new Error('需求为空'))}
- stat[i]='思考中…';setStat(i);var t0=Date.now();
- return fetch('/api/llm/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({profileId:pid,messages:[{role:'system',content:stages[i].p},{role:'user',content:buildUser(i)}],maxTokens:1600})})
- .then(function(r){return r.json().then(function(j){if(!r.ok||(j&&j.ok===false))throw new Error((j&&j.error)||('HTTP '+r.status));return j})})
- .then(function(j){outs[i]=String(j.content||'');stat[i]='完成 '+(Date.now()-t0)+'ms';setStat(i);el('out'+i).value=outs[i]})
- .catch(function(e){stat[i]='失败';setStat(i);throw e})}
-function runAll(){var i=0;function nxt(){if(i>=stages.length){toast('全部 '+stages.length+' 个阶段完成');return Promise.resolve()}return runStage(i).then(function(){i++;return nxt()})}nxt().catch(function(e){toast('流水线在第 '+(Math.min(i+1,stages.length))+' 阶段中断:'+e.message,true)})}
+var chk=el('need').value.split(' ').join('');if(!chk){toast('请先填写原始需求',true);return Promise.reject(new Error('需求为空'))}
+stat[i]='思考中…';setStat(i);var r=el('row'+i);if(r&&r.scrollIntoView){try{r.scrollIntoView({behavior:'smooth',block:'center'})}catch(x){}}
+var t0=Date.now();
+return fetch('/api/llm/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({profileId:pid,messages:[{role:'system',content:stages[i].p},{role:'user',content:buildUser(i)}],maxTokens:1600})})
+.then(function(r2){return r2.json()})
+.then(function(j){if(j&&j.ok===false){throw new Error(j.error||'代理返回失败')}outs[i]=String(j.content||'');stat[i]='完成 '+((Date.now()-t0)/1000).toFixed(1)+'s';setStat(i);var t=el('out'+i);if(t)t.value=outs[i];save()})
+.catch(function(e){stat[i]='失败';setStat(i);throw e})}
+function runAll(){var i=0;function nxt(){if(i>=stages.length){toast('全部 '+stages.length+' 个阶段完成');return Promise.resolve()}return runStage(i).then(function(){i++;return nxt()})}nxt().catch(function(e){var at=Math.min(i,stages.length-1);toast('在第 '+(at+1)+' 阶段('+stages[at].t+')中断:'+e.message,true)})}
+el('demoBtn').addEventListener('click',function(){el('need').value='做一个团队情绪晴雨表小工具:每周五收集 30 名成员的情绪打分(1-5 分)与一句话留言,支持匿名提交,自动生成周报与月度趋势图,数据只存内网服务器';save();toast('示例已填入,点「全流水线自动跑」体验')});
 el('runAllBtn').addEventListener('click',runAll);
 el('addStage').addEventListener('click',function(){var nm=window.prompt('新阶段名称','自定义阶段');if(!nm)return;stages.push({t:nm,p:'你是专家。基于材料与上一阶段产出完成「'+nm+'」阶段任务,输出结构化markdown。'});outs.push('');stat.push('待跑');render()});
-el('expBtn').addEventListener('click',function(){var s='AI 工作流报告'+NL+'================'+NL+NL+'原始需求:'+NL+el('need').value+NL;var ex=el('extra').value;if(ex)s+=NL+'附加材料:'+NL+ex+NL;for(var i=0;i<stages.length;i++){s+=NL+'## '+(i+1)+'. '+stages[i].t+NL+NL+(outs[i]||'(未运行)')+NL}var b=new Blob([s],{type:'text/markdown'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='ai-workflow-report.md';document.body.appendChild(a);a.click();document.body.removeChild(a)});
-el('resetBtn').addEventListener('click',function(){if(confirm('恢复默认六阶段并清空产出?'))init()});
-el('matFile').addEventListener('change',function(){var f=this.files&&this.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){el('extra').value=String(rd.result||'');toast('已载入 '+f.name)};rd.readAsText(f)});
+el('expBtn').addEventListener('click',function(){var s='AI 项目流水线报告'+NL+'================'+NL+'模板:'+(el('tplSel').selectedOptions[0]?el('tplSel').selectedOptions[0].textContent:'-')+NL+NL+'原始需求:'+NL+el('need').value+NL;var ex=el('extra').value;if(ex)s+=NL+'附加材料:'+NL+ex+NL;for(var i=0;i<stages.length;i++){s+=NL+'## '+(i+1)+'. '+stages[i].t+NL+NL+(outs[i]||'(未运行)')+NL}var b=new Blob([s],{type:'text/markdown'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='ai-pipeline-report.md';document.body.appendChild(a);a.click();document.body.removeChild(a)});
+el('resetBtn').addEventListener('click',function(){if(!confirm('恢复默认六阶段并清空产出与本地存档?'))return;try{localStorage.removeItem(TKEY)}catch(x){}loadTpl('dev');render();toast('已恢复默认')});
+el('tplSel').addEventListener('change',function(){var k=this.value;if(!confirm('切换模板将替换全部阶段并清空产出,继续?')){fillTpl();return}loadTpl(k);render();toast('已切换模板')});
+el('matFile').addEventListener('change',function(){var f=this.files&&this.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){el('extra').value=String(rd.result||'');save();toast('已载入 '+f.name)};rd.readAsText(f)});
+el('need').addEventListener('input',save);el('extra').addEventListener('input',save);
 el('stageList').addEventListener('click',function(e){var b=e.target;while(b&&b!==this&&!(b.getAttribute&&b.getAttribute('data-act')))b=b.parentNode;if(!b||b===this)return;var act=b.getAttribute('data-act'),i=+b.getAttribute('data-i');
- if(act==='tpl'){var t=el('tp'+i);t.hidden=!t.hidden}
- else if(act==='one'){b.disabled=true;runStage(i).then(function(){toast('阶段 '+(i+1)+' 完成')}).catch(function(e2){toast('失败:'+e2.message,true)}).then(function(){b.disabled=false})}
- else if(act==='up'&&i>0){var a1=stages[i-1];stages[i-1]=stages[i];stages[i]=a1;var b1=outs[i-1];outs[i-1]=outs[i];outs[i]=b1;var c1=stat[i-1];stat[i-1]=stat[i];stat[i]=c1;render()}
- else if(act==='dn'&&i<stages.length-1){var a2=stages[i+1];stages[i+1]=stages[i];stages[i]=a2;var b2=outs[i+1];outs[i+1]=outs[i];outs[i]=b2;var c2=stat[i+1];stat[i+1]=stat[i];stat[i]=c2;render()}
- else if(act==='del'){if(stages.length<=1){toast('至少保留一个阶段',true);return}stages.splice(i,1);outs.splice(i,1);stat.splice(i,1);render()}});
-el('stageList').addEventListener('change',function(e){var t=e.target;if(!t||!t.id)return;if(t.id.indexOf('tp')===0){stages[+t.id.slice(2)].p=t.value}else if(t.id.indexOf('out')===0){outs[+t.id.slice(3)]=t.value}});
+if(act==='tpl'){var t=el('tp'+i);t.hidden=!t.hidden}
+else if(act==='one'){b.disabled=true;runStage(i).then(function(){toast('阶段 '+(i+1)+' 完成')}).catch(function(e2){toast('失败:'+e2.message,true)}).then(function(){b.disabled=false})}
+else if(act==='up'&&i>0){var a1=stages[i-1];stages[i-1]=stages[i];stages[i]=a1;var b1=outs[i-1];outs[i-1]=outs[i];outs[i]=b1;var c1=stat[i-1];stat[i-1]=stat[i];stat[i]=c1;render()}
+else if(act==='dn'&&i<stages.length-1){var a2=stages[i+1];stages[i+1]=stages[i];stages[i]=a2;var b2=outs[i+1];outs[i+1]=outs[i];outs[i]=b2;var c2=stat[i+1];stat[i+1]=stat[i];stat[i]=c2;render()}
+else if(act==='del'){if(stages.length<=1){toast('至少保留一个阶段',true);return}stages.splice(i,1);outs.splice(i,1);stat.splice(i,1);render()}});
+el('stageList').addEventListener('change',function(e){var t=e.target;if(!t||!t.id)return;if(t.id.indexOf('tp')===0){stages[+t.id.slice(2)].p=t.value;save()}else if(t.id.indexOf('out')===0){outs[+t.id.slice(3)]=t.value;save()}});
 init();
 </script></body></html>
