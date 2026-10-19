@@ -214,19 +214,27 @@ $('exMd').addEventListener('click',function(){if(!lastRun)return;function c2(v){
  var s='| '+lastRun.head.map(c2).join(' | ')+' |\n| --- | --- |\n'+lastRun.data.map(function(r){return '| '+r.map(c2).join(' | ')+' |'}).join('\n');
  dl((cur?cur.name:'工作流')+'-结果.md',s,'text/markdown');toast('已导出 Markdown ✓')});
 var AIT=['filter','dedup','dropEmpty','sort','keep','split','stats'];
-var AIP='你是数据清洗步骤规划器。根据用户需求只输出一个JSON对象,格式:{"steps":[{"t":"类型",其他参数}]}。可用类型:filter(参数kw,任一列包含该关键字则保留该行)、dedup(无参数)、dropEmpty(无参数,删除整行全空的行)、sort(参数col列名,dir为1升序或-1降序)、keep(参数names,逗号分隔的列名)、split(参数col列名,delim单个分隔符)、stats(无参数)。规则:1.只输出JSON,禁止解释,禁止markdown;2.最多8步;3.列名从需求中提取,需求未提到的列名用空字符串;4.需求说从高到低、从大到小、降序时dir为-1,否则排序默认dir为1;5.合理顺序:先dropEmpty和dedup,再filter,再split,再sort,最后keep。示例:需求"按工资从高到低排序,只要姓名和工资两列",输出{"steps":[{"t":"sort","col":"工资","dir":-1},{"t":"keep","names":"姓名,工资"}]}';
+var AIP='你是表格数据清洗步骤规划器。规则:1.若需求与该表格的清洗整理无关(写文章/做产品/回答问题/聊天等),只输出 {"error":"not_data_task"},禁止编造步骤;2.否则只输出一个JSON对象 {"steps":[{"t":"类型",其他参数}]}:filter(参数kw,任一列含关键字则保留该行)、dedup、dropEmpty、sort(参数col,dir为1升序-1降序)、keep(参数names逗号分隔)、split(参数col,delim)、stats;3.列名必须严格从用户消息末尾[表格信息]给出的真实列名中选择,禁止虚构列名,需求未指明列时省略参数;4.最多8步,只输出JSON,禁止解释禁止markdown;5.顺序先dropEmpty和dedup,再filter,再split,再sort,最后keep;6.无[表格信息]时只允许dedup/dropEmpty/stats这类无需列名的步骤。';
+function aiTrim(x){var a=0,b=x.length;while(a<b&&(x.charAt(a)==' '||x.charAt(a)=='\t'||x.charAt(a)=='\r'))a++;while(b>a&&(x.charAt(b-1)==' '||x.charAt(b-1)=='\t'||x.charAt(b-1)=='\r'))b--;return x.slice(a,b)}
+function aiSchema(){try{var mode=$('srcMode')?$('srcMode').value:'sample';
+ if(mode==='paste'){var t=document.querySelector('#srcPaste')||document.querySelector('textarea[id*="aste"]');if(t&&t.value&&t.value.indexOf('\n')>=0){var ln=t.value.split('\n')[0];var sep=ln.indexOf('\t')>=0?'\t':',';var cs=ln.split(sep);var cols=[];for(var q=0;q<cs.length;q++){var cc=aiTrim(cs[q]);if(cc)cols.push(cc)}if(cols.length>1)return {cols:cols,n:Math.max(0,t.value.split('\n').length-1)}}}
+ return {cols:['姓名','部门','工资','备注'],n:7}}catch(e){return null}}
+function aiUserMsg(need){var sc=aiSchema();var m=need;
+ if(sc&&sc.cols&&sc.cols.length>1){m+='\n\n[表格信息] 列名: '+sc.cols.join(', ')+'; 约 '+sc.n+' 行。步骤中的列名只能从以上列名中选择。'}
+ else{m+='\n\n[表格信息] 暂无可靠列名,只输出无需列名的步骤(dedup/dropEmpty/stats)。'}
+ return m}
 $('aiGo').addEventListener('click',function(){
  var need=$('aiNeed').value;var chk=need.split(' ').join('');
  if(!chk){toast('请先输入需求',true);return}
  if(!cur){toast('请先新建或选择工作流',true);return}
  $('aiGo').disabled=true;$('aiStat').textContent='AI 思考中…';
- fetch('/api/llm/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'system',content:AIP},{role:'user',content:need}],maxTokens:900})})
+ fetch('/api/llm/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'system',content:AIP},{role:'user',content:aiUserMsg(need)}],maxTokens:900})})
  .then(function(r){return r.json().then(function(j){if(!r.ok||(j&&j.ok===false))throw new Error((j&&j.error)||('HTTP '+r.status));return j})})
  .then(function(j){
   var txt=String(j.content||'');
   var b=txt.indexOf('{'),e=txt.lastIndexOf('}');
   if(b<0||e<=b)throw new Error('AI 未返回 JSON');
-  var plan=JSON.parse(txt.slice(b,e+1));
+  var plan=JSON.parse(txt.slice(b,e+1));if(plan&&plan.error){throw new Error('NOT_DATA_TASK')}
   if(!plan||!plan.steps||!plan.steps.length)throw new Error('方案中没有步骤');
   var out=[];
   for(var i=0;i<plan.steps.length&&out.length<12;i++){
@@ -240,7 +248,7 @@ $('aiGo').addEventListener('click',function(){
   cur.steps=out;renderSteps();persist();
   $('aiStat').textContent='已生成 '+out.length+' 步,可继续手调';
   toast('AI 拆解完成,共 '+out.length+' 步')})
- .catch(function(e){$('aiStat').textContent='';toast('AI 拆解失败:'+e.message,true)})
+ .catch(function(e){$('aiStat').textContent='';var em=String(e.message);toast(em.indexOf('NOT_DATA_TASK')>=0?'这不是针对表格的数据需求——请输入清洗类需求,如:去掉空行和重复,按工资从高到低排序,只留姓名和工资':('AI 拆解失败:'+em),true)})
  .then(function(){$('aiGo').disabled=false})});
 renderList();
 </script>
