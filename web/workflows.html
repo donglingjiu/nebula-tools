@@ -1,4 +1,214 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#172b66"><meta name="description" content="将多个工具连接为工作流。"><title>Nova · 智能工作流</title><link rel="stylesheet" href="assets/styles.css"><link rel="stylesheet" href="assets/experiences.css"><link rel="stylesheet" href="assets/nova-finishing.css"><link rel="icon" type="image/svg+xml" href="assets/nova-mark.svg"><link rel="stylesheet" href="assets/nova-v4.css"><link rel="stylesheet" href="assets/nova-v5.css">
-<link rel="stylesheet" href="assets/nova-v6.css"><style>.nova-nav{position:sticky;top:0;z-index:99;background:#1a2233;color:#cdd5e8;font-size:13px;padding:8px 16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}.nova-nav a{color:#cdd5e8;text-decoration:none}.nova-nav a:hover{color:#fff}.nova-nav .grp{color:#8fa3ff;font-weight:600;margin-left:6px}.nova-nav b{color:#fff}</style></head><body data-page="workflows"><nav class="nova-nav"><b>Nova 工具</b><span class="grp">文档</span><a href="pdf2word.html">PDF转Word</a><a href="word2pdf.html">Word转PDF</a><a href="pdf.html">PDF工具箱</a><a href="markdown.html">Markdown</a><a href="mindmap.html">脑图</a><a href="imgtool.html">图片压缩</a><a href="excel.html">Excel洞察</a><span class="grp">开发</span><a href="json.html">JSON工具</a><a href="jsonx.html">JSON转换</a><a href="regex.html">正则测试</a><a href="base64.html">编码</a><span class="grp">数据</span><a href="excel.html">数据洞察</a><a href="tools.html" style="margin-left:auto">☰ 全部工具</a></nav><div id="app"><div style="min-height:100vh;display:grid;place-items:center;color:#7483a4;font:13px system-ui">正在准备 Nova 工作空间…</div></div><div class="toast-stack" aria-live="polite"></div><script src="assets/app.js" defer></script>
-<script src="assets/wf-real.js" defer></script></body></html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#172b66"><title>Nova · 智能工作流</title><link rel=icon href=data:,>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.65 system-ui,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#f3f6fb;color:#26324a}
+.nova-nav{position:sticky;top:0;z-index:99;background:#1a2233;color:#cdd5e8;font-size:13px;padding:8px 16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.nova-nav a{color:#cdd5e8;text-decoration:none}.nova-nav a:hover{color:#fff}
+.nova-nav .grp{color:#8fa3ff;font-weight:600;margin-left:6px}.nova-nav b{color:#fff}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 18px 70px}
+.back{display:inline-block;color:#4d6ed8;text-decoration:none;font-size:13px;margin-bottom:6px}
+h1{font-size:24px;margin:8px 0 4px}
+.sub{color:#7a8499;margin:0 0 20px;max-width:860px}
+.grid2{display:grid;grid-template-columns:360px minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.panel{background:#fff;border:1px solid #e6ecf5;border-radius:12px;padding:16px 18px;box-shadow:0 1px 4px rgba(23,43,99,.06);margin-bottom:16px}
+.btn{background:#4d6ed8;border:0;color:#fff;border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer}
+.btn:hover{background:#3f5ec4}
+.btn2{background:#eef2ff;color:#3b5bd0;border:0;border-radius:8px;padding:7px 12px;font:inherit;cursor:pointer}
+.btn2:hover{background:#e2e9ff}
+.mini{background:transparent;border:1px solid #d8e0ee;border-radius:7px;padding:4px 9px;font-size:12px;cursor:pointer;color:#44536f}
+.mini:hover{border-color:#9db1d8}
+.mini.danger{color:#c0392b;border-color:#eecfcb}
+.mini.danger:hover{background:#fdf1ef}
+input,select,textarea{border:1px solid #d8e0ee;border-radius:8px;padding:7px 9px;font:inherit;background:#fff;color:inherit}
+textarea{width:100%;min-height:88px;font:12px/1.6 Consolas,monospace}
+.wfrow{border:1px solid #edf1f7;border-radius:10px;padding:10px 12px;margin:9px 0;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.rowbtns{display:flex;gap:6px;flex-wrap:wrap}
+.step{border:1px solid #e3eaf6;border-radius:10px;padding:10px 12px;margin:9px 0;background:#fbfcff;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.step .lbl{font-weight:600;color:#31436b;min-width:62px}
+.stepcfg{display:flex;gap:7px;flex:1;flex-wrap:wrap;align-items:center}
+.stepbtns{display:flex;gap:4px;margin-left:auto}
+.tag{display:inline-block;background:#eef2ff;color:#3b5bd0;border-radius:999px;padding:2px 10px;font-size:12px}
+.muted{color:#7a8499}.tiny{font-size:12px}
+.tbl{border-collapse:collapse;width:100%;font-size:13px}
+.tbl th,.tbl td{border:1px solid #edf1f7;padding:7px 10px;text-align:left}
+.tbl th{background:#f6f9ff}
+.tblwrap{max-height:420px;overflow:auto;border:1px solid #edf1f7;border-radius:10px}
+.log{background:#0f1526;color:#c7d2ee;border-radius:10px;padding:12px 14px;font:12px/1.9 Consolas,monospace;white-space:pre-wrap;margin:10px 0}
+.edrow{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}
+.edrow input{flex:1;min-width:150px}
+hr{border:0;border-top:1px solid #edf1f7;margin:14px 0}
+</style></head>
+<body data-page="workflows">
+<nav class="nova-nav"><b>Nova 工具</b><span class="grp">文档</span><a href="pdf2word.html">PDF转Word</a><a href="word2pdf.html">Word转PDF</a><a href="pdf.html">PDF工具箱</a><a href="markdown.html">Markdown</a><a href="mindmap.html">脑图</a><a href="imgtool.html">图片压缩</a><a href="excel.html">Excel洞察</a><span class="grp">开发</span><a href="json.html">JSON工具</a><a href="jsonx.html">JSON转换</a><a href="regex.html">正则测试</a><a href="base64.html">编码</a><span class="grp">数据</span><a href="excel.html">数据洞察</a><a href="workflows.html" style="margin-left:auto;color:#fff">▶ 智能工作流</a><a href="tools.html">☰ 全部工具</a></nav>
+<div class="wrap">
+<a class="back" href="tools.html">← 返回工具大全</a>
+<h1>智能工作流</h1>
+<p class="sub">真实可跑的数据流水线:选择数据 → 组合步骤链 → 一键运行 → 导出结果,执行全程在浏览器内。对标 Zapier / n8n 的本地最小内核;定时触发与 AI 节点需要后端,本页不做假按钮。</p>
+<div class="grid2">
+<section class="panel">
+ <div style="display:flex;justify-content:space-between;align-items:center"><b>我的工作流</b><span class="tag" id="wfCount">0 个</span></div>
+ <div style="display:flex;gap:8px;margin:12px 0;flex-wrap:wrap">
+  <button class="btn" id="newWf">＋ 新建工作流</button>
+  <button class="btn2" id="tplClean">模板 · 数据清洗</button>
+  <button class="btn2" id="tplSplit">模板 · 拆列整理</button>
+ </div>
+ <div id="wfList"></div>
+</section>
+<section id="editor" hidden>
+ <div class="panel">
+  <div style="display:flex;justify-content:space-between;align-items:center"><b>编辑器</b><button class="mini" id="closeEd">收起</button></div>
+  <div class="edrow"><input id="wfName" placeholder="工作流名称"><input id="wfDesc" placeholder="一句话描述(可选)"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px"><b>步骤链</b><span class="tiny muted">自上而下依次执行</span></div>
+  <div id="stepList"></div>
+  <div style="display:flex;gap:7px;flex-wrap:wrap">
+   <button class="btn2" data-add="filter">＋ 筛选</button>
+   <button class="btn2" data-add="dedup">＋ 去重</button>
+   <button class="btn2" data-add="dropEmpty">＋ 删空行</button>
+   <button class="btn2" data-add="sort">＋ 排序</button>
+   <button class="btn2" data-add="keep">＋ 选列</button>
+   <button class="btn2" data-add="split">＋ 拆列</button>
+   <button class="btn2" data-add="stats">＋ 统计</button>
+  </div>
+  <div style="margin-top:12px"><button class="btn" id="saveWf">保存工作流</button></div>
+ </div>
+ <div class="panel">
+  <b>运行</b>
+  <div class="edrow"><select id="srcMode" style="width:140px"><option value="sample">示例数据</option><option value="file">上传 CSV</option><option value="paste">粘贴 CSV</option></select><input type="file" id="srcFile" accept=".csv,.tsv,.txt" style="flex:1"></div>
+  <textarea id="pasteBox" placeholder="粘贴 CSV 文本(首行为表头),例如:&#10;姓名,工资&#10;张三,20000"></textarea>
+  <div style="margin:10px 0"><button class="btn" id="runBtn">▶ 运行</button></div>
+  <div id="runOut" hidden>
+   <div class="log" id="runLog"></div>
+   <div class="tiny muted" id="runCap"></div>
+   <div class="tblwrap" style="margin-top:8px"><table class="tbl" id="runTbl"></table></div>
+   <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+    <button class="btn2" id="exCsv">导出 CSV</button>
+    <button class="btn2" id="exJson">导出 JSON</button>
+    <button class="btn2" id="exMd">导出 Markdown</button>
+   </div>
+  </div>
+  <div id="histBox" style="margin-top:12px"></div>
+ </div>
+</section>
+</div>
+<p class="tiny muted" style="margin-top:4px">边界说明:执行引擎 = 浏览器内的线性数据流水线(CSV/TSV 输入);XLSX 请先在「Excel洞察」导出为 CSV。定时触发、Webhook、AI 节点需要后端服务,属后续版本。</p>
+</div>
+<script>
+var KEY='nova_flow_v1';
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]})}
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return[]}}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(WFS))}catch(e){}}
+function toast(m,err){var d=document.createElement('div');d.textContent=m;d.style.cssText='position:fixed;top:56px;left:50%;transform:translateX(-50%);background:'+(err?'#e5484d':'#188a54')+';color:#fff;padding:9px 20px;border-radius:8px;font-size:14px;z-index:999;box-shadow:0 4px 14px rgba(0,0,0,.25)';document.body.appendChild(d);setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},1800)}
+function dl(nm,text,mime){var b=new Blob([text],{type:mime+';charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=nm;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.parentNode.removeChild(a)},300)}
+function uid(){return 'wf'+(new Date()).getTime()+'_'+Math.floor(Math.random()*900+100)}
+function fmtTs(ts){var d=new Date(ts);return (d.getMonth()+1)+'-'+d.getDate()+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)}
+function parseCSV(text,delim){text=String(text||'').replace(/^\ufeff/,'');delim=delim||',';var rows=[],row=[],cur='',q=false,i=0,c;
+ while(i<text.length){c=text[i];
+  if(q){if(c==='"'){if(text[i+1]==='"'){cur+='"';i+=2;continue}q=false;i++;continue}cur+=c;i++;continue}
+  if(c==='"'){q=true;i++;continue}
+  if(c===delim){row.push(cur);cur='';i++;continue}
+  if(c==='\n'){row.push(cur);rows.push(row);row=[];cur='';i++;continue}
+  if(c==='\r'){i++;continue}
+  cur+=c;i++}
+ if(cur!==''||row.length){row.push(cur);rows.push(row)}
+ return rows.filter(function(r){return r.length>1||(r.length===1&&r[0]!=='')})}
+var LBL={filter:'筛选行',dedup:'去重行',dropEmpty:'删除空行',sort:'排序',keep:'选列',split:'拆列',stats:'统计摘要'};
+function colIdx(head,name){name=String(name==null?'':name);for(var i=0;i<head.length;i++)if(String(head[i])===name)return i;return -1}
+function normDelim(d){var M={'\uff5c':'|','\uff0c':',','\uff1b':';','\uff1a':':'};return M[d]||d}
+function runSteps(steps,rows){var head=rows[0]||[],data=rows.slice(1),log=[];
+ function L(s){log.push(s)}
+ for(var i=0;i<steps.length;i++){var st=steps[i],t=st.t,n0=data.length;
+  if(t==='dropEmpty'){data=data.filter(function(r){return r.some(function(v){return v!==''&&v!=null})});L('删除空行: '+n0+' → '+data.length+' 行')}
+  else if(t==='dedup'){var seen={},out=[];data.forEach(function(r){var k=JSON.stringify(r);if(!seen[k]){seen[k]=1;out.push(r)}});data=out;L('去重: '+n0+' → '+data.length+' 行')}
+  else if(t==='filter'){var kw=String(st.kw||'').toLowerCase();if(!kw){L('筛选: 未配置关键字,跳过')}else{data=data.filter(function(r){return r.some(function(v){return String(v==null?'':v).toLowerCase().indexOf(kw)>=0})});L('筛选含「'+st.kw+'」: '+n0+' → '+data.length+' 行')}}
+  else if(t==='sort'){var ci=colIdx(head,st.col);if(ci<0){L('排序: 未找到列「'+st.col+'」,跳过')}else{var dr=+st.dir||1;data=data.slice().sort(function(a,b){var x=a[ci],y=b[ci],nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny))return (nx-ny)*dr;return (String(x)>String(y)?1:String(x)<String(y)?-1:0)*dr});L('按「'+st.col+'」'+(dr>0?'升序':'降序'))}}
+  else if(t==='keep'){var names=String(st.names||'').replace(/\uff0c/g,',').split(','),idxs=[],miss=[];names.forEach(function(nm){nm=nm.replace(/^\s+|\s+$/g,'');if(!nm)return;var k=colIdx(head,nm);if(k>=0)idxs.push(k);else miss.push(nm)});
+   if(!idxs.length){L('选列: 无有效列,跳过')}else{head=idxs.map(function(k){return head[k]});data=data.map(function(r){return idxs.map(function(k){return r[k]==null?'':r[k]})});L('保留 '+idxs.length+' 列'+(miss.length?'(未找到: '+miss.join(',')+')':''))}}
+  else if(t==='split'){var c2=colIdx(head,st.col),d2=normDelim(String(st.delim||''));
+   if(c2<0){L('拆列: 未找到列「'+st.col+'」,跳过')}
+   else if(!d2){L('拆列: 未配置分隔符,跳过')}
+   else{var mx=1,parts=[];data.forEach(function(r){var ps=String(r[c2]==null?'':r[c2]).split(d2);parts.push(ps);if(ps.length>mx)mx=ps.length});
+    if(mx===1){L('拆列: 分隔符「'+d2+'」未在任何单元格命中,跳过')}
+    else{var base=String(head[c2]||'列'),nh=[];for(var j=1;j<=mx;j++)nh.push(base+'-'+j);
+     head=head.slice(0,c2).concat([head[c2]],nh,head.slice(c2+1));
+     data=data.map(function(r,ri){var ps=parts[ri],arr=r.slice(0,c2+1);for(var j2=0;j2<mx;j2++)arr.push(ps[j2]!==undefined?ps[j2]:'');return arr.concat(r.slice(c2+1))});
+     L('拆列「'+st.col+'」: 新增 '+mx+' 列')}}}
+  else if(t==='stats'){
+   for(var c=0;c<head.length;c++){var vals=[],empty=0;(function(cc){data.forEach(function(r){var v=r[cc];if(v===''||v==null)empty++;else vals.push(v)})})(c);
+    var nums=vals.map(parseFloat).filter(function(n){return !isNaN(n)});var nm=String(head[c]||('列'+(c+1)));
+    if(nums.length&&nums.length>=vals.length*0.6){var mn=Math.min.apply(0,nums),mx2=Math.max.apply(0,nums),sm=nums.reduce(function(a,b){return a+b},0);L('统计 '+nm+': min '+mn+' / max '+mx2+' / avg '+(sm/nums.length).toFixed(2))}
+    else{L('统计 '+nm+': 非空 '+vals.length+(empty?' / 空 '+empty:''))}}
+   if(!head.length)L('统计: 无列')}
+ }
+ return {head:head,data:data,log:log}}
+var WFS=load(),cur=null,lastRun=null;
+var SAMPLE='姓名,部门,工资,备注\n张三,研发,20000,优秀\n李四,研发,18000,\n张三,研发,20000,优秀\n王五,市场,15000,兼职\n,后勤,12000,\n赵六,研发,25000,优秀|骨干\n钱七,研发,21000,骨干';
+function renderList(){var box=$('wfList');
+ if(!WFS.length){box.innerHTML='<p class="muted">还没有工作流。点「新建工作流」或选模板开始。</p>';$('wfCount').textContent='0 个';return}
+ $('wfCount').textContent=WFS.length+' 个';
+ var h='';WFS.forEach(function(w){var last=(w.runs&&w.runs[0])||null;
+  h+='<div class="wfrow"><div style="min-width:150px"><b>'+esc(w.name)+'</b><div class="tiny muted">'+w.steps.length+' 步'+(last?' · 上次 '+esc(fmtTs(last.ts))+' · '+last.inRows+'→'+last.outRows+' 行':' · 未运行')+'</div></div><div class="rowbtns"><button class="btn2" data-run="'+w.id+'">运行</button><button class="mini" data-edit="'+w.id+'">编辑</button><button class="mini" data-copy2="'+w.id+'">复制</button><button class="mini danger" data-del="'+w.id+'">删除</button></div></div>'});
+ box.innerHTML=h}
+function renderHist(){var b=$('histBox'),rs=(cur&&cur.runs)||[];if(!rs.length){b.innerHTML='';return}
+ var h='<b class="tiny">运行历史</b>';rs.forEach(function(r){h+='<div class="tiny muted">'+esc(fmtTs(r.ts))+' · '+r.inRows+' → '+r.outRows+' 行 · '+r.ms+' ms</div>'});b.innerHTML=h}
+function renderSteps(){var box=$('stepList'),h='';
+ cur.steps.forEach(function(st,i){var cfg='';
+  if(st.t==='filter')cfg='<input data-k="kw" value="'+esc(st.kw||'')+'" placeholder="关键字(任一列包含)" style="flex:1;min-width:150px">';
+  else if(st.t==='sort')cfg='<input data-k="col" value="'+esc(st.col||'')+'" placeholder="列名" style="width:130px"><select data-k="dir"><option value="1"'+(String(st.dir)!=='-1'?' selected':'')+'>升序</option><option value="-1"'+(String(st.dir)==='-1'?' selected':'')+'>降序</option></select>';
+  else if(st.t==='keep')cfg='<input data-k="names" value="'+esc(st.names||'')+'" placeholder="保留的列名,逗号分隔" style="flex:1;min-width:180px">';
+  else if(st.t==='split')cfg='<input data-k="col" value="'+esc(st.col||'')+'" placeholder="列名" style="width:120px"><input data-k="delim" value="'+esc(st.delim||'')+'" placeholder="分隔符 如 |" style="width:110px">';
+  h+='<div class="step" data-i="'+i+'"><span class="lbl">'+LBL[st.t]+'</span><span class="stepcfg">'+cfg+'</span><span class="stepbtns"><button class="mini" data-up="'+i+'">↑</button><button class="mini" data-dn="'+i+'">↓</button><button class="mini danger" data-rm="'+i+'">✕</button></span></div>'});
+ box.innerHTML=cur.steps.length?h:'<p class="tiny muted">暂无步骤,点下方按钮添加。</p>'}
+function openEditor(id){
+ if(id){cur=null;for(var i=0;i<WFS.length;i++)if(WFS[i].id===id)cur=WFS[i];if(!cur)return}
+ else{cur={id:uid(),name:'未命名工作流',desc:'',steps:[{t:'dropEmpty'},{t:'dedup'}],runs:[]};WFS.unshift(cur);persist();renderList()}
+ $('wfName').value=cur.name||'';$('wfDesc').value=cur.desc||'';
+ renderSteps();renderHist();$('runOut').hidden=true;$('editor').hidden=false;window.scrollTo(0,0)}
+function doRun(rows){if(!rows.length){toast('没有有效数据行',true);return}
+ if(!rows[0].length){toast('表头为空',true);return}
+ var t0=(new Date()).getTime(),r=runSteps(cur.steps,rows),ms=(new Date()).getTime()-t0,n=r.data.length;
+ lastRun=r;$('runOut').hidden=false;
+ $('runLog').textContent='输入 '+(rows.length-1)+' 行 · 耗时 '+ms+' ms\n─ 步骤日志 ─\n'+r.log.join('\n');
+ var h='<tr>'+r.head.map(function(x){return '<th>'+esc(x)+'</th>'}).join('')+'</tr>';
+ r.data.slice(0,50).forEach(function(row){h+='<tr>'+r.head.map(function(_,ci){return '<td>'+esc(row[ci]==null?'':row[ci])+'</td>'}).join('')+'</tr>'});
+ $('runTbl').innerHTML=h;
+ $('runCap').textContent=n>50?('预览前 50 行 · 共 '+n+' 行'):('共 '+n+' 行');
+ cur.runs=cur.runs||[];cur.runs.unshift({ts:(new Date()).getTime(),inRows:rows.length-1,outRows:n,ms:ms});if(cur.runs.length>8)cur.runs.length=8;
+ persist();renderList();renderHist();toast('运行完成 ✓ 输出 '+n+' 行')}
+function csvCell(v){v=String(v==null?'':v);return /[",\n]/.test(v)?'"'+v.split('"').join('""')+'"':v}
+$('newWf').addEventListener('click',function(){openEditor(null)});
+$('closeEd').addEventListener('click',function(){$('editor').hidden=true;cur=null});
+$('saveWf').addEventListener('click',function(){if(!cur)return;cur.name=($('wfName').value||'').replace(/^\s+|\s+$/g,'')||'未命名工作流';cur.desc=$('wfDesc').value||'';persist();renderList();toast('已保存 ✓')});
+$('tplClean').addEventListener('click',function(){WFS.unshift({id:uid(),name:'数据清洗流水线',desc:'删空行→去重→按列排序',steps:[{t:'dropEmpty'},{t:'dedup'},{t:'sort',col:'工资',dir:1}],runs:[]});persist();renderList();openEditor(WFS[0].id);toast('已从模板创建')});
+$('tplSplit').addEventListener('click',function(){WFS.unshift({id:uid(),name:'拆列整理',desc:'按分隔符拆列→去重',steps:[{t:'split',col:'备注',delim:'|'},{t:'dedup'}],runs:[]});persist();renderList();openEditor(WFS[0].id);toast('已从模板创建')});
+$('wfList').addEventListener('click',function(e){var el=e.target&&e.target.closest?e.target.closest('button'):null;if(!el)return;
+ var id=el.getAttribute('data-run')||el.getAttribute('data-edit')||el.getAttribute('data-copy2')||el.getAttribute('data-del');if(!id)return;
+ if(el.hasAttribute('data-run')||el.hasAttribute('data-edit')){openEditor(id);return}
+ if(el.hasAttribute('data-copy2')){for(var i=0;i<WFS.length;i++)if(WFS[i].id===id){var cp=JSON.parse(JSON.stringify(WFS[i]));cp.id=uid();cp.name=cp.name+' 副本';cp.runs=[];WFS.unshift(cp);persist();renderList();toast('已复制')}return}
+ if(el.hasAttribute('data-del')){if(!confirm('删除该工作流?'))return;var out=[];for(var j=0;j<WFS.length;j++)if(WFS[j].id!==id)out.push(WFS[j]);WFS=out;if(cur&&cur.id===id){cur=null;$('editor').hidden=true}persist();renderList();toast('已删除')}});
+$('stepList').addEventListener('input',function(e){var t=e.target;if(!t.getAttribute||!t.getAttribute('data-k'))return;var card=t.closest?t.closest('.step'):null;if(!card)return;var i=+card.getAttribute('data-i');if(cur&&cur.steps[i])cur.steps[i][t.getAttribute('data-k')]=t.value});
+$('stepList').addEventListener('click',function(e){var el=e.target&&e.target.closest?e.target.closest('button'):null;if(!el||!this.contains(el))return;
+ var act=el.hasAttribute('data-up')?'up':el.hasAttribute('data-dn')?'dn':el.hasAttribute('data-rm')?'rm':null;if(!act||!cur)return;
+ var i=+el.getAttribute('data-'+act),s=cur.steps;
+ if(act==='up'&&i>0){var a=s[i];s[i]=s[i-1];s[i-1]=a;renderSteps()}
+ else if(act==='dn'&&i<s.length-1){var b2=s[i];s[i]=s[i+1];s[i+1]=b2;renderSteps()}
+ else if(act==='rm'){s.splice(i,1);renderSteps()}});
+var adds=document.querySelectorAll('[data-add]');for(var ai=0;ai<adds.length;ai++)adds[ai].addEventListener('click',function(){if(!cur)return;cur.steps.push({t:this.getAttribute('data-add')});renderSteps()});
+$('runBtn').addEventListener('click',function(){
+ if(!cur){toast('请先新建或选择工作流',true);return}
+ if(!cur.steps.length){toast('步骤链为空,请先添加步骤',true);return}
+ var m=$('srcMode').value;
+ if(m==='sample'){doRun(parseCSV(SAMPLE,','));return}
+ if(m==='paste'){var t=$('pasteBox').value;if(!t.replace(/\s/g,'')){toast('请粘贴 CSV 文本',true);return}var d=(t.indexOf('\t')>=0&&t.indexOf(',')<0)?'\t':',';doRun(parseCSV(t,d));return}
+ var f=$('srcFile').files[0];if(!f){toast('请先选择 CSV 文件',true);return}
+ var fr=new FileReader();fr.onload=function(){doRun(parseCSV(fr.result,\.tsv$?'\t':','))};fr.onerror=function(){toast('读取失败',true)};fr.readAsText(f,'utf-8')});
+$('exCsv').addEventListener('click',function(){if(!lastRun)return;var s=lastRun.head.map(csvCell).join(',')+'\n'+lastRun.data.map(function(r){return r.map(csvCell).join(',')}).join('\n');dl((cur?cur.name:'工作流')+'-结果.csv','\ufeff'+s,'text/csv');toast('已导出 CSV ✓')});
+$('exJson').addEventListener('click',function(){if(!lastRun)return;var arr=[];for(var i=0;i<lastRun.data.length;i++){var ob={};for(var c=0;c<lastRun.head.length;c++){var hn=String(lastRun.head[c]||('列'+(c+1)));ob[hn]=lastRun.data[i][c]==null?'':lastRun.data[i][c]}arr.push(ob)}dl((cur?cur.name:'工作流')+'-结果.json',JSON.stringify(arr,null,2),'application/json');toast('已导出 JSON ✓')});
+$('exMd').addEventListener('click',function(){if(!lastRun)return;function c2(v){return String(v==null?'':v).split('|').join('\\|').split('\n').join(' ')}
+ var s='| '+lastRun.head.map(c2).join(' | ')+' |\n| --- | --- |\n'+lastRun.data.map(function(r){return '| '+r.map(c2).join(' | ')+' |'}).join('\n');
+ dl((cur?cur.name:'工作流')+'-结果.md',s,'text/markdown');toast('已导出 Markdown ✓')});
+renderList();
+</script>
+</body></html>
