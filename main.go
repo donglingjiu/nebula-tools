@@ -107,6 +107,7 @@ func main() {
 func newRouter(db *DB) http.Handler {
 	s := &srv{db}
 	mux := http.NewServeMux()
+    registerLLMRoutes(mux)
 
 	mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) {
 		J(w, map[string]any{"ok": true, "app": "nova", "version": Version, "db_driver": "json", "users": db.UserCount(), "uptime_sec": int(time.Since(started).Seconds())})

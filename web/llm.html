@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nova · 模型设置</title><link rel=icon href=data:,>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.65 system-ui,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#f3f6fb;color:#26324a}
+.nova-nav{position:sticky;top:0;z-index:99;background:#1a2233;color:#cdd5e8;font-size:13px;padding:8px 16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.nova-nav a{color:#cdd5e8;text-decoration:none}.nova-nav a:hover{color:#fff}
+.nova-nav .grp{color:#8fa3ff;font-weight:600;margin-left:6px}.nova-nav b{color:#fff}
+.wrap{max-width:860px;margin:0 auto;padding:24px 18px 70px}
+h1{font-size:23px;margin:8px 0 4px}
+.sub{color:#7a8499;margin:0 0 18px}
+.panel{background:#fff;border:1px solid #e6ecf5;border-radius:12px;padding:16px 18px;box-shadow:0 1px 4px rgba(23,43,99,.06);margin-bottom:16px}
+.btn{background:#4d6ed8;border:0;color:#fff;border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer}
+.btn:hover{background:#3f5ec4}
+.btn2{background:#eef2ff;color:#3b5bd0;border:0;border-radius:8px;padding:7px 12px;font:inherit;cursor:pointer}
+.mini{background:transparent;border:1px solid #d8e0ee;border-radius:7px;padding:4px 9px;font-size:12px;cursor:pointer;color:#44536f}
+.mini.danger{color:#c0392b;border-color:#eecfcb}
+input,select,textarea{border:1px solid #d8e0ee;border-radius:8px;padding:7px 9px;font:inherit;background:#fff;color:inherit}
+textarea{width:100%;min-height:70px;font:13px/1.6 Consolas,monospace}
+.frow{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}
+.frow label{display:block;font-size:12px;color:#5a6a88;margin-bottom:3px}
+.frow input{flex:1;min-width:180px}
+.prow{border:1px solid #edf1f7;border-radius:10px;padding:11px 13px;margin:9px 0;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.tag{display:inline-block;background:#eef2ff;color:#3b5bd0;border-radius:999px;padding:2px 10px;font-size:12px}
+.tag.off{background:#f1f3f7;color:#8a97ad}
+.muted{color:#7a8499}.tiny{font-size:12px}
+.out{background:#0f1526;color:#c7d2ee;border-radius:10px;padding:12px 14px;font:13px/1.8 Consolas,monospace;white-space:pre-wrap;margin:10px 0}
+kbd{background:#eef2ff;border-radius:5px;padding:1px 6px;font-size:12px}
+</style></head>
+<body>
+<nav class="nova-nav"><b>Nova 工具</b><span class="grp">数据</span><a href="excel.html">数据洞察</a><a href="workflows.html">智能工作流</a><a href="llm.html" style="color:#fff">模型设置</a><a href="tools.html" style="margin-left:auto">☰ 全部工具</a></nav>
+<div class="wrap">
+<h1>模型设置</h1>
+<p class="sub">AI 增强层的统一入口:档案手动添加、随时增删改,支持多档案自动故障切换。Key 只存服务器(data/llm_profiles.json,权限 600),浏览器与页面永不接触真 Key。其余工具均为纯本地功能,不依赖本页。</p>
+<section class="panel">
+ <div style="display:flex;justify-content:space-between;align-items:center"><b>模型档案</b><button class="btn" id="addBtn">＋ 新增档案</button></div>
+ <div id="pList"><p class="muted">加载中…</p></div>
+</section>
+<section class="panel" id="formPanel" hidden>
+ <b id="formTitle">新增档案</b>
+ <div class="frow"><div style="flex:1;min-width:160px"><label>名称</label><input id="f_name" placeholder="如:智谱 GLM"></div><div style="flex:1;min-width:160px"><label>模型名</label><input id="f_model" placeholder="如:glm-4-flash"></div></div>
+ <div class="frow"><div style="flex:2;min-width:240px"><label>Base URL(OpenAI 兼容,可填到 /v4 或完整 /chat/completions)</label><input id="f_url" placeholder="https://open.bigmodel.cn/api/paas/v4"></div></div>
+ <div class="frow"><div style="flex:2;min-width:240px"><label>API Key(编辑时留空 = 保留原 Key)</label><input id="f_key" type="password" placeholder="sk-…"></div><div style="display:flex;align-items:flex-end"><label style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="f_enabled" checked> 启用</label></div></div>
+ <div style="display:flex;gap:8px;margin-top:6px"><button class="btn" id="saveBtn">保存</button><button class="mini" id="cancelBtn">取消</button></div>
+</section>
+<section class="panel">
+ <b>试一句(走同源代理 /api/llm/chat,验证全链路)</b>
+ <div class="frow" style="margin-top:8px"><select id="chatProfile" style="flex:1;min-width:200px"></select><button class="btn2" id="reloadBtn">刷新列表</button></div>
+ <textarea id="chatIn" placeholder="输入任意问题,例如:用一句话介绍快速排序"></textarea>
+ <div style="margin:9px 0"><button class="btn" id="chatBtn">发送</button></div>
+ <div id="chatOut" hidden><div class="out" id="chatBody"></div><div class="tiny muted" id="chatMeta"></div></div>
+</section>
+<p class="tiny muted">典型 Base URL:智谱 https://open.bigmodel.cn/api/paas/v4 · DeepSeek https://api.deepseek.com · 其他 OpenAI 兼容网关均可。密钥请在该服务商开放平台申请。</p>
+</div>
+<script>
+var PROFS=[];
+function $(id){return document.getElementById(id)}
+function esc(s){s=String(s==null?'':s);return s.split('&').join('&amp;').split('<').join('&lt;').split('>').join('&gt;').split('"').join('&quot;')}
+function toast(m,err){var d=document.createElement('div');d.textContent=m;d.style.cssText='position:fixed;top:56px;left:50%;transform:translateX(-50%);background:'+(err?'#e5484d':'#188a54')+';color:#fff;padding:9px 20px;border-radius:8px;font-size:14px;z-index:999;box-shadow:0 4px 14px rgba(0,0,0,.25)';document.body.appendChild(d);setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},2200)}
+function api(path,body){var opt=body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{};return fetch('/api/llm/'+path,opt).then(function(r){return r.json().then(function(j){if(!r.ok||(j&&j.ok===false))throw new Error((j&&j.error)||('HTTP '+r.status));return j})})}
+function renderList(){var box=$('pList');
+ if(!PROFS.length){box.innerHTML='<p class="muted">还没有档案。点「新增档案」添加第一个模型。</p>';fillSelect();return}
+ var h='';PROFS.forEach(function(p){
+  h+='<div class="prow"><div><b>'+esc(p.name)+'</b> '+(p.enabled?'<span class="tag">启用</span>':'<span class="tag off">停用</span>')+'<div class="tiny muted">'+esc(p.model)+' · '+esc(p.host||p.baseUrl)+' · Key '+esc(p.keyHint)+'</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn2" data-test="'+p.id+'">测试</button><button class="mini" data-edit="'+p.id+'">编辑</button><button class="mini danger" data-del="'+p.id+'">删除</button></div></div>'});
+ box.innerHTML=h;fillSelect()}
+function fillSelect(){var s=$('chatProfile'),en=PROFS.filter(function(p){return p.enabled});var cur=s.value;
+ s.innerHTML=en.length?en.map(function(p){return '<option value="'+esc(p.id)+'">'+esc(p.name)+'('+esc(p.model)+')</option>'}).join(''):'<option value="">(无启用档案)</option>';
+ var ok=false;for(var i=0;i<s.options.length;i++)if(s.options[i].value===cur)ok=true;s.value=ok?cur:(en.length?en[0].id:'')}
+function loadList(){api('profiles').then(function(j){PROFS=j.profiles||[];renderList()}).catch(function(e){$('pList').innerHTML='<p class="muted">加载失败:'+esc(e.message)+'(若刚加的 Go 端点未部署,请先重新部署)</p>';toast(e.message,true)})}
+var editId=null;
+function openForm(p){editId=p?p.id:null;$('formTitle').textContent=p?'编辑档案':'新增档案';$('f_name').value=p?p.name:'';$('f_model').value=p?p.model:'';$('f_url').value=p?p.baseUrl:'';$('f_key').value='';$('f_enabled').checked=p?!!p.enabled:true;$('formPanel').hidden=false;window.scrollTo(0,0)}
+$('addBtn').addEventListener('click',function(){openForm(null)});
+$('cancelBtn').addEventListener('click',function(){$('formPanel').hidden=true;editId=null});
+$('saveBtn').addEventListener('click',function(){var body={id:editId||'',name:$('f_name').value,baseUrl:$('f_url').value,apiKey:$('f_key').value,model:$('f_model').value,enabled:$('f_enabled').checked};
+ api('profiles',body).then(function(j){$('formPanel').hidden=true;editId=null;toast('已保存 ✓');loadList()}).catch(function(e){toast(e.message,true)})});
+$('pList').addEventListener('click',function(e){var el=e.target&&e.target.closest?e.target.closest('button'):null;if(!el)return;
+ var id=el.getAttribute('data-test')||el.getAttribute('data-edit')||el.getAttribute('data-del');if(!id)return;
+ if(el.hasAttribute('data-edit')){for(var i=0;i<PROFS.length;i++)if(PROFS[i].id===id)openForm(PROFS[i]);return}
+ if(el.hasAttribute('data-test')){el.disabled=true;var old=el.textContent;el.textContent='测试中…';
+  api('test',{id:id}).then(function(j){toast('测试通过 · '+j.ms+' ms · 回复:'+j.content);el.textContent=old;el.disabled=false}).catch(function(e2){toast('测试失败:'+e2.message,true);el.textContent=old;el.disabled=false});return}
+ if(el.hasAttribute('data-del')){if(!confirm('删除该档案?'))return;api('profiles/delete',{id:id}).then(function(){toast('已删除');loadList()}).catch(function(e2){toast(e2.message,true)})}});
+$('reloadBtn').addEventListener('click',loadList);
+$('chatBtn').addEventListener('click',function(){var q=$('chatIn').value;if(!q.replace(/\s/g,'')){toast('请输入问题',true);return}
+ var pid=$('chatProfile').value;$('chatBtn').disabled=true;$('chatBtn').textContent='思考中…';
+ api('chat',{profileId:pid,messages:[{role:'user',content:q}],maxTokens:800}).then(function(j){
+  $('chatOut').hidden=false;$('chatBody').textContent=j.content||'(空)';$('chatMeta').textContent='档案:'+j.profile+' · '+j.ms+' ms'}).
+ catch(function(e){$('chatOut').hidden=false;$('chatBody').textContent='失败:'+e.message;$('chatMeta').textContent=''}).
+ finally(function(){$('chatBtn').disabled=false;$('chatBtn').textContent='发送'})});
+loadList();
+</script>
+</body></html>
