@@ -101,7 +101,7 @@ func main() {
 		}
 	}()
 	log.Printf("Nova Tools %s 已启动 → http://localhost:8080", Version)
-	log.Fatal(http.ListenAndServe(":8080", newRouter(db)))
+	log.Fatal(http.ListenAndServe(":8080", secMiddleware(newRouter(db))))
 }
 
 func newRouter(db *DB) http.Handler {
