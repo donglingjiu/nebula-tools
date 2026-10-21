@@ -1,0 +1,8 @@
+services:
+  nova:
+    image: ghcr.io/donglingjiu/nebula-tools:latest
+    build: .
+    ports: ["8080:8080"]
+    environment: ["PORT=8080"]
+    volumes: ["./data:/app/data"]
+    restart: unless-stopped
