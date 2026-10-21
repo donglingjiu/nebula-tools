@@ -2,6 +2,7 @@ name: CI
 on:
   push:
     branches: [ main ]
+    tags: [ "v*" ]
   workflow_dispatch:
     inputs:
       version:
@@ -26,7 +27,7 @@ jobs:
         run: go test -v ./...
   build:
     needs: test
-    if: ${{ github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name != 'push' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -47,7 +48,7 @@ jobs:
           VER_IN: ${{ github.event.inputs.version }}
         run: |
           set -x
-          VER="$VER_IN"
+          VER="$VER_IN"; [ -n "$VER" ] || VER="${GITHUB_REF_NAME:-dev}"
           # 防护1：版本号白名单，含空格/特殊字符/为空一律回退 dev
           if ! printf '%s' "$VER" | grep -qE '^[A-Za-z0-9._-]+$'; then VER="dev"; fi
           echo "构建版本: $VER"
