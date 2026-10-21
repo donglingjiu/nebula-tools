@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"embed"
 	"encoding/json"
 	"io"
@@ -101,7 +102,7 @@ func main() {
 		}
 	}()
 	log.Printf("Nova Tools %s 已启动 → http://localhost:8080", Version)
-	log.Fatal(http.ListenAndServe(":8080", secMiddleware(newRouter(db))))
+	port := os.Getenv("PORT"); if port == "" { port = "8080" }; log.Fatal(http.ListenAndServe(":"+port, secMiddleware(newRouter(db))))
 }
 
 func newRouter(db *DB) http.Handler {
