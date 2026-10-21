@@ -37,6 +37,9 @@ s := &llmStore{path: filepath.Join("data", "llm_profiles.json")}
 b, err := os.ReadFile(s.path)
 if err == nil {
 _ = json.Unmarshal(b, s)
+		for i := range s.Profiles {
+			s.Profiles[i].APIKey = decSecret(s.Profiles[i].APIKey)
+		}
 }
 if s.Profiles == nil {
 s.Profiles = []LLMProfile{}
@@ -45,7 +48,12 @@ return s
 }
 
 func (s *llmStore) flushLocked() {
-b, _ := json.MarshalIndent(s, "", "  ")
+	disk := llmDisk{Profiles: make([]LLMProfile, len(s.Profiles))}
+	for i, p := range s.Profiles {
+		p.APIKey = encSecret(p.APIKey)
+		disk.Profiles[i] = p
+	}
+	b, _ := json.MarshalIndent(disk, "", "  ")
 _ = os.MkdirAll(filepath.Dir(s.path), 0o755)
 _ = os.WriteFile(s.path, b, 0o600)
 }
@@ -56,6 +64,9 @@ defer s.mu.Unlock()
 out := make([]LLMProfile, len(s.Profiles))
 copy(out, s.Profiles)
 sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt < out[j].CreatedAt })
+	for i := range out {
+		out[i].APIKey = maskSecret(out[i].APIKey)
+	}
 return out
 }
 
