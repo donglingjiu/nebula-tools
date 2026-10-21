@@ -226,6 +226,9 @@ mux.HandleFunc("GET /api/tools", func(w http.ResponseWriter, r *http.Request) {
 		ms := time.Since(t0).Milliseconds()
 		if err != nil {
 			J(w, map[string]any{"ok": false, "error": err.Error()})
+				if u := s.user(r); u != nil {
+					go sendAlert(db.GetSettingSafe("alert_webhook"), id, u.Username, err.Error())
+				}
 			return
 		}
 		if u := s.user(r); u != nil {
