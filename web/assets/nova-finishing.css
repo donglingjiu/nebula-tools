@@ -132,3 +132,35 @@ body.is-admin{background:radial-gradient(ellipse at 100% 0%,rgba(145,169,255,.13
 @media(max-width:900px){body[data-page="home"] .hero .cosmos{transform:scale(.94)}}
 @media(max-width:580px){.brand-symbol{width:34px;height:34px}.brand-symbol::before{inset:7px 0}.modal-backdrop{padding:12px}}
 @media(prefers-reduced-motion:reduce){body[data-page="home"] .orbit,body[data-page="home"] .float-tool{animation:none!important}html:focus-within{scroll-behavior:auto}}
+
+/* == γ warm tokens (v2.4.0): amber/terracotta on cream ============
+   Same override block tail-appended to every stylesheet: cascade-safe
+   regardless of load order. Vars re-skin everything var-driven;
+   targeted rules re-skin the hardcoded identity carriers. */
+:root{
+  --nova-ink:#3a2a18;--nova-ink-2:#5c4326;--nova-muted:#9a7b5f;
+  --nova-blue:#d97706;--nova-cyan:#d4a017;--nova-violet:#c2603e;
+  --nova-line:rgba(214,186,150,.55);
+  --nova-glass:rgba(255,252,246,.80);--nova-glass-strong:rgba(255,253,248,.92);
+  --nova-shadow:0 18px 46px rgba(110,73,20,.12);
+  --ink:#33261a;--ink-2:#5c4326;--muted:#97815f;--muted-2:#ab997e;
+  --paper:#faf6ee;--surface-soft:#fbf8f1;--line:#ecdfc9;
+  --brand:#b45309;--brand-2:#c2603e;--cyan:#d4a017;
+  --navy:#241608;--navy-2:#33220f;
+  --shadow:0 20px 60px rgba(110,73,20,.10);
+  --shadow-sm:0 6px 24px rgba(110,73,20,.08);
+}
+body{color:#33261a;background:
+  radial-gradient(ellipse at 12% 0%,#f7ecd9 0,transparent 32%),
+  radial-gradient(ellipse at 91% 10%,#fbe9e0 0,transparent 28%),
+  linear-gradient(180deg,#fbf8f2,#f7f1e6 70%,#faf5ec)}
+body::before{background-image:radial-gradient(rgba(190,140,60,.18) .55px,transparent .55px)}
+.primary{background:linear-gradient(112deg,#f59e0b 0%,#e87f1e 53%,#d9542b 100%);box-shadow:0 10px 25px rgba(217,119,6,.24),inset 0 1px 0 rgba(255,255,255,.52)}
+.brand-symbol{background:linear-gradient(145deg,#4a2c0f,#d97706 55%,#c2603e);box-shadow:0 7px 18px rgba(217,119,6,.29)}
+.nav a:hover{background:#faf1e2;color:#8a5a1c}
+.nav a.active{color:#7a4c10;background:linear-gradient(180deg,#fdf3e0,#fbeed3)}
+.nav a.active:after{background:linear-gradient(90deg,#f59e0b,#d9542b)}
+.switch.on{background:linear-gradient(90deg,#f59e0b,#d9542b)}
+.soft-btn{background:linear-gradient(135deg,#fbf3e2,#f8ede2);border-color:#f0e2c8;color:#a0621c}
+.h1-gradient{background:linear-gradient(100deg,#e8b04b,#d96c3f 50%,#b8563e);color:transparent;-webkit-background-clip:text;background-clip:text}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline-color:rgba(234,138,20,.55)}
