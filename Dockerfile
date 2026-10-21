@@ -1,4 +1,5 @@
 FROM golang:1.24-alpine AS build
+ENV GOTOOLCHAIN=auto
 WORKDIR /src
 COPY . .
 RUN CGO_ENABLED=0 go mod tidy && go build -trimpath -ldflags "-s -w" -o /out/nova .
