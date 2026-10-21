@@ -517,7 +517,7 @@ mux.HandleFunc("GET /api/tools", func(w http.ResponseWriter, r *http.Request) {
 			E(w, 400, "参数错误")
 			return
 		}
-		allow := map[string]bool{"site_name": true, "allow_register": true, "ai_endpoint": true, "ai_key": true, "ai_model": true}
+		allow := map[string]bool{"site_name": true, "allow_register": true, "ai_endpoint": true, "ai_key": true, "ai_model": true, "alert_webhook": true}
 		for k, v := range req {
 			if allow[k] {
 				db.SetSetting(k, v)
