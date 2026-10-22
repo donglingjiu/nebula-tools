@@ -11,7 +11,7 @@ curl -s -c $J -X POST $B/api/auth/login -d '{"username":"admin","password":"Admi
 eq "工具数=27" "$(curl -s -b $J $B/api/tools | grep -o '"id"' | wc -l | tr -d ' ')" 27
 g "chmod 754" "$(curl -s -b $J -X POST $B/api/run/dev.chmod -d '{"input":"754","opts":{}}')" 'rwxr-xr--'
 g "subnet /26=62台" "$(curl -s -b $J -X POST $B/api/run/dev.subnet -d '{"input":"192.168.1.130/26","opts":{}}')" '62 台'
-g "yaml→json" "$(curl -s -b $J -X POST $B/api/run/dev.yaml -d '{"input":"a: 1","opts":{}}')" '"a": 1'
+g "yaml→json" "$(curl -s -b $J -X POST $B/api/run/dev.yaml -d '{"input":"a: 1","opts":{}}' | python3 -c 'import sys,json;print(json.load(sys.stdin).get("output",""))')" '"a": 1'
 gx "cron 跳周末" "$(curl -s -b $J -X POST $B/api/run/dev.cron -d '{"input":"0 9 * * 1-5","opts":{}}')" 'Mon|Tue|Wed|Thu|Fri'
 A=$(curl -s $B/assets/app.js)
 g "面板融合 NR_TOOLS" "$A" 'NR_TOOLS'

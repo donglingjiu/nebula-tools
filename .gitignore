@@ -1,7 +1,1 @@
-data/
-dist/
-*.exe
-nova.log
-nova-server-linux-amd64
-dist/
-*.bak
+*.bak*
