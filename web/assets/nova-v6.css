@@ -277,3 +277,13 @@ body .nova-nav b{color:#fff}
 .hero .lead{color:#7a6247}
 .hero-meta{color:#9a7b5f}
 .meta-item svg{color:#c2884a}
+
+/* == γ-topbar (v2.4.1): !important breaker — beats inline & specificity */
+.topbar{color:#3a2a18!important;background:linear-gradient(100deg,rgba(255,252,246,.97),rgba(251,246,236,.94) 55%,rgba(248,241,228,.92))!important;border-bottom:1px solid rgba(214,186,150,.55)!important;box-shadow:0 8px 28px rgba(110,73,20,.10)!important}
+.topbar .brand{color:#3a2a18!important}
+.topbar .brand-symbol{background:linear-gradient(145deg,#4a2c0f,#d97706 55%,#c2603e)!important}
+.topbar .nav a{color:#8a7355!important}
+.topbar .nav a:hover{background:#f7ecd9!important;color:#7a4c10!important}
+.topbar .nav a.active{color:#7a4c10!important;background:linear-gradient(180deg,#fdf3e0,#fbeed3)!important}
+.topbar .icon-btn{background:rgba(255,255,255,.85)!important;border-color:rgba(214,186,150,.6)!important;color:#8a5a1c!important}
+.topbar svg{color:#8a5a1c!important}
