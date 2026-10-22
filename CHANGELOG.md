@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.6.1 - 2026-10-22
+### Fixed
+- 补齐 v2.6.0 前端接线：4 新卡入网格、暗道直通、NR_SCHEMA 补 cron count（计数 36→40）
+
 ## v2.6.0 - 2026-10-22
 ### Added
 - P0-2 工具扩容四件套：dev.cron（5 段解析+未来运行时间）、dev.chmod（八进制↔符号双向）、dev.subnet（IPv4 CIDR）、dev.yaml（YAML↔JSON 自动识别，引入 gopkg.in/yaml.v3）
