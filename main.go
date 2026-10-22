@@ -186,7 +186,16 @@ func newRouter(db *DB) http.Handler {
 
 	
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/index.html", http.StatusFound)
+		b, err := webFS.ReadFile("web/index.html")
+		if err != nil {
+			b, _ = webFS.ReadFile("index.html")
+		}
+		if len(b) == 0 {
+			http.Redirect(w, r, "/ai.html", http.StatusFound)
+			return
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Write(b)
 	})
 mux.HandleFunc("GET /api/tools", func(w http.ResponseWriter, r *http.Request) {
 		u := s.user(r)
