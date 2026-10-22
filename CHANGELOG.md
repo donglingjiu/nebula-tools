@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.7.0 - 2026-10-22
+### Added
+- Ctrl+K 命令面板接入 14 个试炼场工具：搜索工具名/id，本页直达自动选中，跨页深链 tools.html?tool=<id>（带下拉填充重试）
+
 ## v2.6.2 - 2026-10-22
 ### Fixed
 - 前端接线真正落地（v2.6.1 因补丁断言拦截未改 app.js，实为仅 CHANGELOG 的空版本）：4 新卡入网格、暗道直通、NR_SCHEMA 补 cron count（计数 36→40）
