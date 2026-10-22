@@ -432,7 +432,7 @@ function novaLogin(e){
   document.head.appendChild(l);
 })();
 
-/* 真机试炼场：12 个文本工具直连 /api/run；卡片诚实徽章：8 可用 8 规划中 */
+/* 真机试炼场：23 个后端工具直连 /api/run；参数栏按 NR_SCHEMA 按需渲染 */
 (function(){
   if(!/tools\.html/.test(location.pathname))return;
   function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
@@ -445,16 +445,32 @@ function novaLogin(e){
       +'<select id="nr-tool" style="padding:9px 12px;border:1px solid #e2e8f4;border-radius:10px;background:#fff;font-size:13px;max-width:280px"></select>'
       +'<button id="nr-go" style="padding:9px 18px;border:0;border-radius:10px;background:#4f6ef7;color:#fff;cursor:pointer;font-size:13px">运行</button>'
       +'<span id="nr-ms" class="small muted"></span></div>'
+      +'<div id="nr-opts" style="display:none;gap:9px;flex-wrap:wrap;margin:9px 0"></div>'
       +'<textarea id="nr-in" placeholder="粘贴输入：CSV、JSON、文本、URL……" style="width:100%;box-sizing:border-box;min-height:110px;padding:12px;border:1px solid #e2e8f4;border-radius:10px;font:12px/1.6 ui-monospace,monospace;resize:vertical"></textarea>'
       +'<pre id="nr-out" style="margin:10px 0 0;padding:12px;min-height:52px;background:#f7f9fe;border:1px solid #e9eef7;border-radius:10px;font:12px/1.6 ui-monospace,monospace;white-space:pre-wrap;word-break:break-all;color:#33415e">输出将显示在这里</pre>';
     lib.parentNode.insertBefore(sec,lib.nextSibling);
     el("nr-tool").innerHTML=tools.map(function(t){return '<option value="'+esc(t.id)+'">'+esc(t.name)+' · '+esc(t.id)+'</option>'}).join("");
-    window.__nrSelect=function(id){el("nr-tool").value=id;el("nr-in").focus()};
+    var NR_SCHEMA={
+      "dev.hmac":[["key","HMAC 密钥（留空则为纯摘要）"],["alg","sha256 / sha1 / sha512（默认 sha256）"]],
+      "dev.totp":[["code","6 位校验码（留空则生成当前码）"]],
+      "dev.case":[["mode","camel / pascal / snake / kebab / upper / title"]],
+      "dev.lorem":[["paras","段数（默认 3，上限 50）"]]
+    };
+    function renderOpts(){
+      var box=el("nr-opts");if(!box)return;
+      var sc=NR_SCHEMA[el("nr-tool").value]||[];
+      if(!sc.length){box.style.display="none";box.innerHTML="";return}
+      box.style.display="flex";
+      box.innerHTML=sc.map(function(f){return '<input data-opt="'+esc(f[0])+'" placeholder="'+esc(f[1])+'" style="flex:1;min-width:180px;padding:8px 11px;border:1px solid #e2e8f4;border-radius:10px;font-size:12px;background:#fff" spellcheck="false"/>'}).join("");
+    }
+    el("nr-tool").addEventListener("change",renderOpts);
+    renderOpts();
+    window.__nrSelect=function(id){el("nr-tool").value=id;renderOpts();el("nr-in").focus()};
     el("nr-go").addEventListener("click",function(){
       var id=el("nr-tool").value,input=el("nr-in").value,out=el("nr-out");
       if(!input.trim()){try{toast("请先粘贴输入内容","error")}catch(_){}return}
       out.textContent="运行中…";el("nr-ms").textContent="";
-      fetch("/api/run/"+encodeURIComponent(id),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({input:input,opts:{}})}).then(function(r){return r.json()}).then(function(j){
+      fetch("/api/run/"+encodeURIComponent(id),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({input:input,opts:(function(){var o={},box=el("nr-opts");if(box)Array.prototype.forEach.call(box.querySelectorAll("input[data-opt]"),function(i){var v=i.value.trim();if(v)o[i.getAttribute("data-opt")]=v});return o})()})}).then(function(r){return r.json()}).then(function(j){
         if(j&&j.ok!==false&&typeof j.output!=="undefined"){out.textContent=j.output;el("nr-ms").textContent=(j.ms||0)+" ms";try{toast("运行成功","good")}catch(_){}}
         else{out.textContent="出错了："+((j&&j.error)||"未知错误");try{toast("运行失败","error")}catch(_){}}
       }).catch(function(){out.textContent="网络错误";try{toast("网络错误","error")}catch(_){}});
