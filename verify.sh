@@ -14,6 +14,8 @@ g "subnet /26=62台" "$(curl -s -b $J -X POST $B/api/run/dev.subnet -d '{"input"
 g "yaml→json" "$(curl -s -b $J -X POST $B/api/run/dev.yaml -d '{"input":"a: 1","opts":{}}' | python3 -c 'import sys,json;print(json.load(sys.stdin).get("output",""))')" '"a": 1'
 gx "cron 跳周末" "$(curl -s -b $J -X POST $B/api/run/dev.cron -d '{"input":"0 9 * * 1-5","opts":{}}')" 'Mon|Tue|Wed|Thu|Fri'
 A=$(curl -s $B/assets/app.js)
+eq "面板双join雷区" "$(printf '%s' "$A" | grep -c "join('').join('')")" 0
+eq "面板pages join" "$(printf '%s' "$A" | grep -c "join('')+nrt.map(")" 1
 g "面板融合 NR_TOOLS" "$A" 'NR_TOOLS'
 g "跨页深链" "$A" 'tools.html?tool='
 g "/ 键呼出" "$A" '呼出'
