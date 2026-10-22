@@ -579,6 +579,12 @@ mux.HandleFunc("GET /api/tools", func(w http.ResponseWriter, r *http.Request) {
 	// ---------- 静态资源（embed 进二进制，部署只需一个可执行文件） ----------
 	sub, _ := fs.Sub(webFS, "web")
 	fileServer := http.FileServer(http.FS(sub))
+	if d := os.Getenv("NOVA_WEB_DIR"); d != "" {
+		if _, err := os.Stat(d + "/assets/app.js"); err == nil {
+			log.Printf("静态资源磁盘优先: %s", d)
+			fileServer = http.FileServer(http.Dir(d))
+		}
+	}
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" {
 			b, _ := fs.ReadFile(sub, "index.html")
