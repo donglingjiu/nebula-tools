@@ -1,0 +1,39 @@
+/* ============================================================
+   nova-tokens.css — Nova 设计系统单一真源 (v2.8.0)
+   原则: 清爽(留白+克制配色) / 好用(焦点+反馈) / 高级感(柔和分层阴影+统一圆角)
+   本文件最后加载, 同特异性下覆盖旧层; 只定义变量与安全全局, 组件级微调逐批进场
+   ============================================================ */
+:root{
+  --nv-primary:#4f6ef7; --nv-primary-strong:#3d5bf0; --nv-primary-soft:#eef2ff;
+  --nv-accent:#f59e0b;
+  --nv-bg:#f6f8fb; --nv-surface:#ffffff;
+  --nv-border:#e8ecf3; --nv-border-strong:#d9dfe9;
+  --nv-text:#1b2437; --nv-text-2:#5b6472; --nv-text-3:#8a93a3;
+  --nv-ok:#16a34a; --nv-ok-soft:#e9f7ef;
+  --nv-plan:#eef0f4; --nv-plan-text:#8a93a3;
+  --nv-r-sm:8px; --nv-r-md:12px; --nv-r-lg:16px; --nv-r-full:999px;
+  --nv-sh-1:0 1px 2px rgba(16,24,40,.05);
+  --nv-sh-2:0 1px 2px rgba(16,24,40,.06),0 8px 24px -6px rgba(16,24,40,.10);
+  --nv-sh-3:0 4px 10px -2px rgba(16,24,40,.10),0 24px 48px -12px rgba(16,24,40,.18);
+  --nv-ring-color:rgba(79,110,247,.35);
+}
+/* ---- 安全全局 ---- */
+html{scroll-behavior:smooth}
+body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+::selection{background:rgba(79,110,247,.18)}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--nv-ring-color);outline-offset:2px}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#cfd7e3;border-radius:999px;border:3px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:#b7c2d4;border:3px solid transparent;background-clip:content-box}
+/* ---- 组件微调第一批(保守, 未命中类名则无害) ---- */
+.panel{border-radius:var(--nv-r-lg)}
+.chip{border-radius:var(--nv-r-full)}
+.kbd{border-radius:6px}
+.command-modal{box-shadow:var(--nv-sh-3)}
+.command-item{border-radius:10px}
+.tool-icon{border-radius:10px}
+@media (hover:hover){
+  .tool-card{transition:transform .18s ease,box-shadow .18s ease}
+  .tool-card:hover{transform:translateY(-2px);box-shadow:var(--nv-sh-2)}
+}

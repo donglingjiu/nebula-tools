@@ -16,6 +16,7 @@ gx "cron 跳周末" "$(curl -s -b $J -X POST $B/api/run/dev.cron -d '{"input":"0
 A=$(curl -s $B/assets/app.js)
 eq "面板双join雷区" "$(printf '%s' "$A" | grep -c "join('').join('')")" 0
 eq "面板pages join" "$(printf '%s' "$A" | grep -c "join('')+nrt.map(")" 1
+eq "面板Enter兜底" "$(printf '%s' "$A" | grep -cF '||items[0];t&&t.click()')" 1
 g "面板融合 NR_TOOLS" "$A" 'NR_TOOLS'
 g "跨页深链" "$A" 'tools.html?tool='
 g "/ 键呼出" "$A" '呼出'

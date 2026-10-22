@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.8.0 - 2026-10-23
+### Added
+- nova-tokens.css 设计系统单一真源：清爽（冷白底+细边框）/好用（focus-visible 焦点环+悬浮反馈）/高级感（三档分层阴影+统一圆角+细滚动条+选区色），app.js 注入器全站最后加载，11 个主航页面生效
+### Fixed
+- 命令面板 Enter 失效：纯 NR 工具命中时无 active 项（现首位自动 active + Enter 兜底 items[0]）；verify.sh 增至 13 项
+
 ## v2.7.4 - 2026-10-22
 ### Fixed
 - 命令面板页面段缺 .join('') 导致卡片间出现字面逗号（v2.7.0 起）

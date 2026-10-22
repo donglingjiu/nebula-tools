@@ -1,1 +1,4 @@
 *.bak*
+data/
+nova.log
+nova-server-linux-amd64
