@@ -135,3 +135,22 @@ body::before{background-image:radial-gradient(rgba(190,140,60,.18) .55px,transpa
 .soft-btn{background:linear-gradient(135deg,#fbf3e2,#f8ede2);border-color:#f0e2c8;color:#a0621c}
 .h1-gradient{background:linear-gradient(100deg,#e8b04b,#d96c3f 50%,#b8563e);color:transparent;-webkit-background-clip:text;background-clip:text}
 button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline-color:rgba(234,138,20,.55)}
+
+/* == γ-final (v2.4.0): specificity & late-inline strikes ========== */
+body[data-page="home"] .hero .h1-gradient{background:linear-gradient(95deg,#f59e0b 0%,#e87f1e 46%,#d9542b 77%,#c2603e 100%);-webkit-background-clip:text;background-clip:text}
+.topbar{color:#3a2a18;background:linear-gradient(100deg,rgba(255,252,246,.97),rgba(251,246,236,.94) 55%,rgba(248,241,228,.92));border-bottom:1px solid rgba(214,186,150,.55);box-shadow:0 8px 28px rgba(110,73,20,.10)}
+.topbar .icon-btn{background:rgba(255,255,255,.85);border-color:rgba(214,186,150,.6);color:#8a5a1c;box-shadow:none}
+.topbar .nav a{color:#8a7355}
+.topbar .nav a:hover{background:#f7ecd9;color:#7a4c10}
+.topbar .nav a.active{color:#7a4c10;background:linear-gradient(180deg,#fdf3e0,#fbeed3)}
+body .nova-nav{background:#241608;color:#e8d5b5}
+body .nova-nav a{color:#e8d5b5}
+body .nova-nav a:hover{color:#fff}
+body .nova-nav .grp{color:#d9a441}
+body .nova-nav b{color:#fff}
+.hero{color:#3a2a18}
+.hero .eyebrow{color:#a0621c}
+.eyebrow{color:#9a7b5f}
+.hero .lead{color:#7a6247}
+.hero-meta{color:#9a7b5f}
+.meta-item svg{color:#c2884a}

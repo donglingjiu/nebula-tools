@@ -186,7 +186,7 @@ func newRouter(db *DB) http.Handler {
 
 	
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/ai.html", http.StatusFound)
+		http.Redirect(w, r, "/index.html", http.StatusFound)
 	})
 mux.HandleFunc("GET /api/tools", func(w http.ResponseWriter, r *http.Request) {
 		u := s.user(r)
