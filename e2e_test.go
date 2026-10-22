@@ -167,8 +167,8 @@ func TestFullJourney(t *testing.T) {
 	}
 	// 04 工具列表 16 个（数组端点 → okArr）
 	tools := tc.okArr("GET", "/api/tools")
-	if len(tools) != 16 {
-		t.Fatalf("应 16 个工具: %d", len(tools))
+	if len(tools) != len(ToolRegistry) {
+		t.Fatalf("应 len(ToolRegistry) 个工具: %d", len(tools))
 	}
 	// 05 十一个文本工具逐个真实运行并校验输出特征
 	runs := map[string]struct {
