@@ -83,6 +83,9 @@ func runTool(id, in string, opts map[string]string) (string, error) {
 	case "data.json2csv":
 		return toolJSON2CSV(in)
 	}
+	if f, ok := extraRunners[id]; ok {
+		return f(in, opts)
+	}
 	return "", fmt.Errorf("未知工具: %s", id)
 }
 
