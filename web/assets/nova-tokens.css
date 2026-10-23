@@ -62,3 +62,8 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .nv-opt-input{flex:1!important;min-width:180px!important;padding:8px 11px!important;border:1px solid #e2e8f4!important;border-radius:10px!important;font-size:12px!important;background:#fff!important}
 .nv-searchbar-full{max-width:none!important;flex:1!important}
 .nv-hero-strip{margin-bottom:19px!important;background:linear-gradient(110deg,#f4f7ff,#fff 62%,#f4efff)!important}
+
+/* ---- B2: 内联收编第四批(收官批: 重复>=2 全清; B3 将字号入 typography scale、#2d3d60 核对 --nv-text 系) ---- */
+.nv-fs15{font-size:15px!important}
+.nv-fs13{font-size:13px!important}
+.nv-c-ink{color:#2d3d60!important}
