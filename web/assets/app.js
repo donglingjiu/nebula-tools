@@ -243,7 +243,7 @@ function init(){
   if(PAGE==='ai'&&saved){sessionRemove('novaPrompt');const i=$('#aiInput');if(i){i.value=saved;setTimeout(()=>$('#aiForm')?.requestSubmit(),120)}}
   if(PAGE==='tools'){
     const params=new URLSearchParams(location.search);
-    if(params.has('q')){const s=$('#toolSearch');if(s){s.value=params.get('q');s.dispatchEvent(new Event('input'))}}
+    if(params.has('q')){const s=$('#toolSearch');if(s)s.value=params.get('q')}const ts=$('#toolSearch');if(ts)setTimeout(function(){ts.dispatchEvent(new Event('input',{bubbles:true}));var ac=document.querySelector('.chip[data-filter="all"] span');if(ac)ac.textContent=String($$('[data-search-item][data-search-text]').length)},0)
   }
   if(PAGE==='developer'){updateDevMetrics();updateDevTree()}
 }

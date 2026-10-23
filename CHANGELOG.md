@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.8.7 - 2026-10-23
+### Fixed
+- ?q= 深链修复：synthetic input 事件默认 bubbles:false + 派发早于监听挂载 → 预填生效但过滤从不触发；现 bubbles:true + setTimeout 延迟派发
+- 「全部工具」计数纠偏：静态硬编码 40 与实际卡数漂移（源码三组数组初判 28），chip 与 toolsCount 改为运行时 DOM 实数
+### Added
+- verify.sh 第 20 项：深链派发冒泡静态守卫
+
 ## v2.8.6 - 2026-10-23
 ### Refactor
 - 内联收编第四批（收官批）：重复≥2 模式全清（font-size:15px×2、font-size:13px×2、color:#2d3d60×2 → .nv-fs15/.nv-fs13/.nv-c-ink）；棘轮 117→111
