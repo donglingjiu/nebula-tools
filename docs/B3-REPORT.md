@@ -1,0 +1,18 @@
+# B3 治理战役战报（v2.9.1 - v2.9.7）
+
+## 战线与终态
+- 拆甲：raw 27→19→13→12 终档。批1 八刀（mt系列/m0/mlauto/grid3/grid2，零竞争零碰撞）；批2 六刀（flex1/py4/ico32/ico31/fs15/fs13，零碰撞+六表零冲突）；批3 改判豁免 12（opt-input 7 / searchbar-full 2 / hero-strip 2 / c-ink 1）——威胁扫描 66 呈堂（.searchbar input、.x strong 家族为结构性实锤；扫描器逗号组/标签限定两类假阳自首记档），法理：组件甲是 B2 忠实翻译内联优先级的载体。tokens 终态 = 纯设计令牌 + 12 组件豁免区 + 防回潮卫兵（want=12）。
+- 9px 归一：census（全站 var 消费面=1）→ A/B → v2.9.5 采纳 10px（锚点同步）→ v2.9.7 孪生合并 s9→s10（外部引用为零实证）。
+- #2d3d60 归一：v2.9.6 新立 --nv-ink，nv-c-ink 规则值 var 化（零视觉）；第 2 处为 B2 注释提及（CTX 定性）。
+
+## 制度产出（军规 #5-#11）
+- #5 行数≠次数（grep -c vs grep -o|wc -l，三犯）；#6 附件：双引号内 $() 使内层单引号失效（安全形态=顶层赋值）；#7 禁百分号格式化构造落盘文本；#8 写盘当场 bash -n；#9 环境基线 Py3.6；#10 依赖块单块分阶段断言（①炸②照跑案）；#10 附件：python open() 不自建目录，写盘前 mkdir/os.makedirs 先行（战报首跑阵亡案）；#11 推送真相在服务端（range 行即回执）。
+
+## 闸门战果
+- POSTx27 写盘前拦截；PCT 闸自咬军规条文；假账 changelog 被 ! 引爆挡在 git 门外；RIVALS-REVIEW-NEEDED 拒绝批3 手术；push 假失败识破；docs 目录缺失拦截战报（零损伤）。
+- 全程零返工零回滚；32 发体检全绿；三页截图（analytics/workflows/ai）视觉抽验通过。
+
+## 遗留与新账
+- 仪器卫生：verify 锚点多为 grep -c 数行（单行定义下安全），可统一升级为数次；
+- B4 候选：~98 处硬编码 9px 归一到令牌（15 文件，nova-v6 40 + styles 21 主力）；
+- C 线：模型接入层已由 llm.html 交付（/api/llm/chat 同源代理 + Key 服务端保险柜 + 多档案故障切换），参考架构 ai-toolsBox（SQLite 先行/DB 地址可配/一键迁移）——C1 从 ai 工作台打头。
