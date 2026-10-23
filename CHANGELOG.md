@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.8.4 - 2026-10-23
+### Refactor
+- 内联收编第二批（标签感知合并）：18 处 → 8 个工具类（py4/mt12/mt10/mt9/mt8/ico32/ico31/mlauto）；棘轮 138→120；tokens 缓存戳 v280→v284
+### Fixed
+- 塌缩脚本升级：class 与 style 被其他属性分隔时合并进既有 class（DOUBLE-CLASS 卫兵首次拦截成功，文件零损伤）；a030d55 为半程提交（tokens+bump+棘轮），本版补齐塌缩与 changelog
+
 ## v2.8.3 - 2026-10-23
 ### Refactor
 - 内联 style 收编第一批：flex:1×11、margin:0×4、三列网格×9、两列网格×2 → .nv-flex1/.nv-m0/.nv-grid3/.nv-grid2（忠实翻译+过渡护甲，共 26 处）；verify.sh 增至 17 项

@@ -21,7 +21,7 @@ eq "独立页tokens" "$(curl -s $B/mini.html | grep -c 'nova-tokens.css')" 1
 eq "word2pdf tokens" "$(curl -s $B/word2pdf.html | grep -c 'nova-tokens.css')" 1
 eq "徽章规范" "$(printf '%s' "$A" | grep -c "info...plan")" 1
 eq "内联flex精确清零" "$(printf '%s' "$A" | grep -cF 'style="flex:1"')" 0
-eq "内联余量棘轮" "$(printf '%s' "$A" | grep -o 'style="' | wc -l)" 138
+eq "内联余量棘轮" "$(printf '%s' "$A" | grep -o 'style="' | wc -l)" 120
 g "面板融合 NR_TOOLS" "$A" 'NR_TOOLS'
 g "跨页深链" "$A" 'tools.html?tool='
 g "/ 键呼出" "$A" '呼出'
