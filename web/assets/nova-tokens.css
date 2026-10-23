@@ -43,7 +43,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 
 /* ---- B2: 内联 style 收编工具类(第一批) ----
    忠实翻译原则: 类只承载原内联样式本来的属性, 不多不少;
-   !important 为过渡护甲(原内联优先级最高, 收编后保行为不变), B3 审计后拆除 */
+   强优先 为过渡护甲(原内联优先级最高, 收编后保行为不变), B3 审计后拆除 */
 .nv-flex1{flex:1}
 .nv-m0{margin:0}
 .nv-grid3{grid-template-columns:repeat(3,minmax(0,1fr))}
