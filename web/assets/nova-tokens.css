@@ -45,19 +45,19 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
    忠实翻译原则: 类只承载原内联样式本来的属性, 不多不少;
    !important 为过渡护甲(原内联优先级最高, 收编后保行为不变), B3 审计后拆除 */
 .nv-flex1{flex:1!important}
-.nv-m0{margin:0!important}
-.nv-grid3{grid-template-columns:repeat(3,minmax(0,1fr))!important}
-.nv-grid2{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.nv-m0{margin:0}
+.nv-grid3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.nv-grid2{grid-template-columns:repeat(2,minmax(0,1fr))}
 
 /* ---- B2: 内联收编第二批(忠实翻译; B3 将把 mt 系列收敛到 spacing scale) ---- */
 .nv-py4{padding:var(--nv-s4) 0!important}
-.nv-mt12{margin-top:var(--nv-s12)!important}
-.nv-mt10{margin-top:var(--nv-s10)!important}
-.nv-mt9{margin-top:var(--nv-s9)!important}
-.nv-mt8{margin-top:var(--nv-s8)!important}
+.nv-mt12{margin-top:var(--nv-s12)}
+.nv-mt10{margin-top:var(--nv-s10)}
+.nv-mt9{margin-top:var(--nv-s9)}
+.nv-mt8{margin-top:var(--nv-s8)}
 .nv-ico32{width:32px;height:32px!important}
 .nv-ico31{width:31px;height:31px!important}
-.nv-mlauto{margin-left:auto!important}
+.nv-mlauto{margin-left:auto}
 
 /* ---- B2: 内联收编第三批(组件级; 忠实翻译+过渡护甲; B3 审计拆甲并 token 化色值) ---- */
 .nv-opt-input{flex:1!important;min-width:180px!important;padding:8px 11px!important;border:1px solid #e2e8f4!important;border-radius:10px!important;font-size:12px!important;background:#fff!important}

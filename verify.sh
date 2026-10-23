@@ -29,7 +29,7 @@ eq "面板兜底搜索" "$(printf '%s' "$A" | grep -cF '在工具大全中搜索
 eq "IME卫兵在位" "$(printf '%s' "$A" | grep -oF 'isComposing||e.keyCode===229' | wc -l)" 2
 eq "兜底原样大小写" "$(printf '%s' "$A" | grep -cF 'esc(raw)')" 1
 eq "组合期输入静默" "$(printf '%s' "$A" | grep -oE 'isComposing.return;renderCommandItems|compositionend' | wc -l)" 2
-eq "拆甲基线立账" "$(grep -oF '!important' "$(dirname "$0")/web/assets/nova-tokens.css" | wc -l)" 27
+eq "拆甲基线立账" "$(grep -oF '!important' "$(dirname "$0")/web/assets/nova-tokens.css" | wc -l)" 19
 g "面板融合 NR_TOOLS" "$A" 'NR_TOOLS'
 g "跨页深链" "$A" 'tools.html?tool='
 g "/ 键呼出" "$A" '呼出'
