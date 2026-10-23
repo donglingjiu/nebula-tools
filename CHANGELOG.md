@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.9.3 - 2026-10-23
+### Changed
+- B3 拆甲批2：nv-flex1、nv-py4、nv-ico32、nv-ico31、nv-fs15、nv-fs13 六类脱甲（6 处移除，棘轮 19→13）；前置证据：六类元素级内联零碰撞 + 六个组件样式表零定义冲突 + 静态装载 tokens 恒居末位或唯一
+
 ## v2.9.2 - 2026-10-23
 ### Changed
 - B3 拆甲批1：nv-mt12/mt10/mt9/mt8、nv-m0、nv-mlauto、nv-grid3、nv-grid2 八类脱甲（8 处移除，棘轮 27→19）；前置证据：tokens 内零竞争（注释剥离复核）+ 内联零碰撞（元素级复核）
