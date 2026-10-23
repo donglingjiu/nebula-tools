@@ -20,6 +20,8 @@ eq "面板Enter兜底" "$(printf '%s' "$A" | grep -cF '||items[0];t&&t.click()')
 eq "独立页tokens" "$(curl -s $B/mini.html | grep -c 'nova-tokens.css')" 1
 eq "word2pdf tokens" "$(curl -s $B/word2pdf.html | grep -c 'nova-tokens.css')" 1
 eq "徽章规范" "$(printf '%s' "$A" | grep -c "info...plan")" 1
+eq "内联flex清零" "$(printf '%s' "$A" | grep -c 'style=.flex:1.')" 0
+eq "内联flex清零" "$(printf '%s' "$A" | grep -c 'style=.flex:1.')" 0
 g "面板融合 NR_TOOLS" "$A" 'NR_TOOLS'
 g "跨页深链" "$A" 'tools.html?tool='
 g "/ 键呼出" "$A" '呼出'

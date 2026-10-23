@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.8.3 - 2026-10-23
+### Refactor
+- 内联 style 收编第一批：flex:1×11、margin:0×4、三列网格×9、两列网格×2 → .nv-flex1/.nv-m0/.nv-grid3/.nv-grid2（忠实翻译+过渡护甲，共 26 处）；verify.sh 增至 17 项
+
 ## v2.8.2 - 2026-10-23
 ### Fixed
 - 徽章路由 JS 补落：v2.8.1 仅落 .tag.plan 样式，toolCard 的 可用/规划中 路由因断言笔误未写盘（卫兵拦截零损伤）；现规划中徽章转灰
