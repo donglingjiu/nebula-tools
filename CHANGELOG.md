@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.8.5 - 2026-10-23
+### Refactor
+- 内联收编第三批（组件级）：试炼场参数输入框 → .nv-opt-input、搜索条全宽 → .nv-searchbar-full、英雄渐变条 → .nv-hero-strip；棘轮 120→117（战役累计 164→117）
+
 ## v2.8.4 - 2026-10-23
 ### Refactor
 - 内联收编第二批（标签感知合并）：18 处 → 8 个工具类（py4/mt12/mt10/mt9/mt8/ico32/ico31/mlauto）；棘轮 138→120；tokens 缓存戳 v280→v284
