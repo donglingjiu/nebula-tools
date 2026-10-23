@@ -25,6 +25,7 @@ eq "内联余量棘轮" "$(printf '%s' "$A" | grep -o 'style="' | wc -l)" 111
 eq "q预填在位" "$(printf '%s' "$A" | grep -cF "params.has('q')")" 1
 eq "深链派发冒泡" "$(printf '%s' "$A" | grep -cF "ts.dispatchEvent(new Event('input',{bubbles:true}))")" 1
 eq "尺度tokens在位" "$(grep -c -- '--nv-s9:9px' "$(dirname "$0")/web/assets/nova-tokens.css")" 1
+eq "面板兜底搜索" "$(printf '%s' "$A" | grep -cF '在工具大全中搜索')" 1
 g "面板融合 NR_TOOLS" "$A" 'NR_TOOLS'
 g "跨页深链" "$A" 'tools.html?tool='
 g "/ 键呼出" "$A" '呼出'

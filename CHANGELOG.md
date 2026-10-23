@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.8.9 - 2026-10-23
+### Added
+- 命令面板兜底搜索项：输入非空时末尾追加「在工具大全中搜索『q』」→ tools.html?q=词（落地即过滤）；空结果不再死胡同；verify.sh 第 22 项（面板兜底搜索）
+
 ## v2.8.8 - 2026-10-23
 ### Added
 - B3 开工：spacing/typography 尺度 tokens 化——--nv-s4/8/9/10/12/15/19 与 --nv-fs13/15 入 :root，.nv-py4/.nv-mt*/.nv-fs* 改引变量（值不变，零视觉变化）；缓存戳 v286→v288；verify.sh 第 21 项（尺度tokens在位）
