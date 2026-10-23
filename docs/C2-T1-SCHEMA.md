@@ -1,0 +1,45 @@
+# T1 Schema v1（migration 0001，驱动无关：modernc 与 mattn 均可执行）
+CREATE TABLE IF NOT EXISTS schema_migrations(
+  version INTEGER PRIMARY KEY,
+  applied_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS settings(
+  key TEXT PRIMARY KEY,
+  value TEXT
+);
+CREATE TABLE IF NOT EXISTS profiles(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  base_url TEXT NOT NULL,
+  model TEXT NOT NULL,
+  api_key TEXT NOT NULL,
+  enabled INTEGER NOT NULL DEFAULT 1,
+  priority INTEGER NOT NULL DEFAULT 100,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS conversations(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL DEFAULT '新对话',
+  profile_id INTEGER,
+  user_id TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS messages(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  conversation_id INTEGER NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+  role TEXT NOT NULL CHECK(role IN ('user','assistant','system')),
+  content TEXT NOT NULL,
+  tokens INTEGER,
+  branch_of INTEGER,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_messages_conv ON messages(conversation_id, id);
+CREATE INDEX IF NOT EXISTS idx_profiles_fallback ON profiles(enabled, priority);
+INSERT INTO schema_migrations(version) VALUES (1);
+## 落地细则
+- NOVA_DB 默认 data/nova.db；start-nova.sh 注入 NOVA_DB=${NOVA_DB:-/home/work/fanguohui/data/nova.db}
+- 权限铁律：api_key 入库后 nova.db 必须 chmod 600（继承保险柜义务）；体检候选「DB权限600」
+- JSON 迁入：首启 profiles 表空且 llm_profiles.json 存在→按序 priority=100,101... 全 enabled=1→JSON 暂留原地，T2 读切换同发再改名 .imported-bak 只读备份
+- 预留列对账：priority/enabled（兜底链）、tokens（成本）、branch_of（分支）、user_id（多用户）＝PRD v2 四钩齐活
+- 体检预告：会话持久化在位＋DB权限600，随 T1 入册 27→29
