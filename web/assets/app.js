@@ -510,4 +510,4 @@ function badges(){
 })();
 
 /* v2.8.0: tokens layer injector (last-loaded override) */
-(function(){try{var l=document.createElement("link");l.rel="stylesheet";l.href=(typeof IS_ADMIN!=="undefined"&&IS_ADMIN?"../":"")+"assets/nova-tokens.css?v=280";document.head.appendChild(l)}catch(e){}})();
+(function(){try{var l=document.createElement("link");l.rel="stylesheet";l.href=(typeof IS_ADMIN!=="undefined"&&IS_ADMIN?"../":"")+"assets/nova-tokens.css?v=284";document.head.appendChild(l)}catch(e){}})();

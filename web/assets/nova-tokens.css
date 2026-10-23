@@ -47,3 +47,13 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .nv-m0{margin:0!important}
 .nv-grid3{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 .nv-grid2{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+
+/* ---- B2: 内联收编第二批(忠实翻译; B3 将把 mt 系列收敛到 spacing scale) ---- */
+.nv-py4{padding:4px 0!important}
+.nv-mt12{margin-top:12px!important}
+.nv-mt10{margin-top:10px!important}
+.nv-mt9{margin-top:9px!important}
+.nv-mt8{margin-top:8px!important}
+.nv-ico32{width:32px;height:32px!important}
+.nv-ico31{width:31px;height:31px!important}
+.nv-mlauto{margin-left:auto!important}
