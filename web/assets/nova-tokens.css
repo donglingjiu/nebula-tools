@@ -3,7 +3,7 @@
    原则: 清爽(留白+克制配色) / 好用(焦点+反馈) / 高级感(柔和分层阴影+统一圆角)
    本文件最后加载, 同特异性下覆盖旧层; 只定义变量与安全全局, 组件级微调逐批进场
    ============================================================ */
-:root{--nv-s4:4px; --nv-s8:8px; --nv-s9:9px; --nv-s10:10px; --nv-s12:12px; --nv-s15:15px; --nv-s19:19px; --nv-fs13:13px; --nv-fs15:15px;
+:root{--nv-s4:4px; --nv-s8:8px; --nv-s9:10px; --nv-s10:10px; --nv-s12:12px; --nv-s15:15px; --nv-s19:19px; --nv-fs13:13px; --nv-fs15:15px;
   
   --nv-primary:#4f6ef7; --nv-primary-strong:#3d5bf0; --nv-primary-soft:#eef2ff;
   --nv-accent:#f59e0b;

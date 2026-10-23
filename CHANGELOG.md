@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.9.5 - 2026-10-23
+### Changed
+- B3 队列3 裁决：9px 归一 A/B 采纳 10px——--nv-s9 一行改值，verify「尺度tokens在位」锚点同步；A/B 截图对比存档
+
 ## v2.9.4 - 2026-10-23
 ### Changed
 - B3 批3改判：组件甲豁免入册——nv-opt-input(7)、nv-searchbar-full(2)、nv-hero-strip(2)、nv-c-ink(1) 十二处保留；威胁裁决实测 66 个潜在高优先级对手（含 .searchbar input、.x strong 家族等结构性实锤，另有扫描器逗号组/标签限定符两类假阳已自首记档），组件甲是 B2 忠实翻译内联优先级的载体而非技术债——拆之必改渲染

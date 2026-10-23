@@ -24,7 +24,7 @@ eq "内联flex精确清零" "$(printf '%s' "$A" | grep -cF 'style="flex:1"')" 0
 eq "内联余量棘轮" "$(printf '%s' "$A" | grep -o 'style="' | wc -l)" 111
 eq "q预填在位" "$(printf '%s' "$A" | grep -cF "params.has('q')")" 1
 eq "深链派发冒泡" "$(printf '%s' "$A" | grep -cF "ts.dispatchEvent(new Event('input',{bubbles:true}))")" 1
-eq "尺度tokens在位" "$(grep -c -- '--nv-s9:9px' "$(dirname "$0")/web/assets/nova-tokens.css")" 1
+eq "尺度tokens在位" "$(grep -c -- '--nv-s9:10px' "$(dirname "$0")/web/assets/nova-tokens.css")" 1
 eq "面板兜底搜索" "$(printf '%s' "$A" | grep -cF '在工具大全中搜索')" 1
 eq "IME卫兵在位" "$(printf '%s' "$A" | grep -oF 'isComposing||e.keyCode===229' | wc -l)" 2
 eq "兜底原样大小写" "$(printf '%s' "$A" | grep -cF 'esc(raw)')" 1
