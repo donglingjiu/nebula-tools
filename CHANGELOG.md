@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.8.1 - 2026-10-23
+### Added
+- B2 第一批：19 个独立工具页批量接入 nova-tokens.css（滚动条/选区/焦点环全站统一），verify.sh 增至 14 项
+- 徽章规范：可用=info 蓝、非可用=plan 灰（.tag.plan 入 tokens）
+
 ## v2.8.0 - 2026-10-23
 ### Added
 - nova-tokens.css 设计系统单一真源：清爽（冷白底+细边框）/好用（focus-visible 焦点环+悬浮反馈）/高级感（三档分层阴影+统一圆角+细滚动条+选区色），app.js 注入器全站最后加载，11 个主航页面生效

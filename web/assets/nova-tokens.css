@@ -37,3 +37,5 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   .tool-card{transition:transform .18s ease,box-shadow .18s ease}
   .tool-card:hover{transform:translateY(-2px);box-shadow:var(--nv-sh-2)}
 }
+/* ---- B2: 徽章规范 ---- */
+.tag.plan{background:var(--nv-plan);color:var(--nv-plan-text);border:1px solid var(--nv-border)}
