@@ -3,7 +3,8 @@
    原则: 清爽(留白+克制配色) / 好用(焦点+反馈) / 高级感(柔和分层阴影+统一圆角)
    本文件最后加载, 同特异性下覆盖旧层; 只定义变量与安全全局, 组件级微调逐批进场
    ============================================================ */
-:root{
+:root{--nv-s4:4px; --nv-s8:8px; --nv-s9:9px; --nv-s10:10px; --nv-s12:12px; --nv-s15:15px; --nv-s19:19px; --nv-fs13:13px; --nv-fs15:15px;
+  
   --nv-primary:#4f6ef7; --nv-primary-strong:#3d5bf0; --nv-primary-soft:#eef2ff;
   --nv-accent:#f59e0b;
   --nv-bg:#f6f8fb; --nv-surface:#ffffff;
@@ -49,11 +50,11 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .nv-grid2{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 
 /* ---- B2: 内联收编第二批(忠实翻译; B3 将把 mt 系列收敛到 spacing scale) ---- */
-.nv-py4{padding:4px 0!important}
-.nv-mt12{margin-top:12px!important}
-.nv-mt10{margin-top:10px!important}
-.nv-mt9{margin-top:9px!important}
-.nv-mt8{margin-top:8px!important}
+.nv-py4{padding:var(--nv-s4) 0!important}
+.nv-mt12{margin-top:var(--nv-s12)!important}
+.nv-mt10{margin-top:var(--nv-s10)!important}
+.nv-mt9{margin-top:var(--nv-s9)!important}
+.nv-mt8{margin-top:var(--nv-s8)!important}
 .nv-ico32{width:32px;height:32px!important}
 .nv-ico31{width:31px;height:31px!important}
 .nv-mlauto{margin-left:auto!important}
@@ -64,6 +65,6 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .nv-hero-strip{margin-bottom:19px!important;background:linear-gradient(110deg,#f4f7ff,#fff 62%,#f4efff)!important}
 
 /* ---- B2: 内联收编第四批(收官批: 重复>=2 全清; B3 将字号入 typography scale、#2d3d60 核对 --nv-text 系) ---- */
-.nv-fs15{font-size:15px!important}
-.nv-fs13{font-size:13px!important}
+.nv-fs15{font-size:var(--nv-fs15)!important}
+.nv-fs13{font-size:var(--nv-fs13)!important}
 .nv-c-ink{color:#2d3d60!important}

@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.8.8 - 2026-10-23
+### Added
+- B3 开工：spacing/typography 尺度 tokens 化——--nv-s4/8/9/10/12/15/19 与 --nv-fs13/15 入 :root，.nv-py4/.nv-mt*/.nv-fs* 改引变量（值不变，零视觉变化）；缓存戳 v286→v288；verify.sh 第 21 项（尺度tokens在位）
+### Corrected
+- v2.8.7 账目更正：「全部工具 40」经 DOM 实数证实准确（前判 28 系侦察脚本对 toolsData 分段截断失真）；计数已运行时化
+### Decision
+- icon 容器家族（11 种尺寸各 ×1）：按 C 方案保留单体不归一；#2d3d60 token 化 A/B 挂账
+### Process
+- 两条新军规：build 闸门必须双检（产物在盘 + changelog 在册）；REMOTE-CONFIRMED 仅在真实新提交推送后打印
+
 ## v2.8.7 - 2026-10-23
 ### Fixed
 - ?q= 深链修复：synthetic input 事件默认 bubbles:false + 派发早于监听挂载 → 预填生效但过滤从不触发；现 bubbles:true + setTimeout 延迟派发
