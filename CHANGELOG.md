@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.8.2 - 2026-10-23
+### Fixed
+- 徽章路由 JS 补落：v2.8.1 仅落 .tag.plan 样式，toolCard 的 可用/规划中 路由因断言笔误未写盘（卫兵拦截零损伤）；现规划中徽章转灰
+- word2pdf.html 补接 tokens（v2.8.1 因 head 结构跳过），独立页 19/19，verify.sh 增至 16 项
+### Corrected
+- v2.8.1 changelog「19 个独立页」实为 18，本版补齐并更正
+
 ## v2.8.1 - 2026-10-23
 ### Added
 - B2 第一批：19 个独立工具页批量接入 nova-tokens.css（滚动条/选区/焦点环全站统一），verify.sh 增至 14 项
