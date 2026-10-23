@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.9.1 - 2026-10-23
+### Added
+- B3 开工：拆甲审计第一阶段——全景侦察 + 基线立账 27 处（只降不升）；批1终审：120字符窗误报经元素级复核洗清 nv-mt12/nv-m0，批1满编 8 处零碰撞零竞争；注释剥离证实全部甲均居于 .nv-* 家族名下
+### Fixed
+- 面板打磨三连：兜底项显示原样输入；组合期 input 静默（候选条开着不重渲染）；compositionend 补刀（部分 Linux IME 结束组合不派发 input——实测截图发现）
+### Added
+- verify.sh 第 24/25/26 项
+### Process
+- 军规 #7 扩展（禁用百分号格式化构造任何落盘文本，一律拼接）；军规 #8（verify.sh 写盘当场 bash -n 自验）；军规 #9（环境基线 Python 3.6：capture_output 等 3.7+ API 禁用，subprocess 一律 stdout/stderr=PIPE）
+
 ## v2.9.0 - 2026-10-23
 ### Fixed
 - IME 组合期守卫（双点位）：命令面板与 AI 输入框的 Enter/↑↓ 处理器补 isComposing||keyCode===229——中文输入法选词的 Enter 不再误触导航/发送（截图实测发现）；守卫置顶，组合期全部按键交还输入法
