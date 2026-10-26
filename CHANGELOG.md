@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.9.9
+- T2 落地：模型档案库由 data/llm_profiles.json 迁入 SQLite profiles 表——首启表空且 JSON 存在则按 CreatedAt 序迁入（priority=100,101…，enabled 保留原值），事务成功后原 JSON 改名 .imported-bak（444 只读）。
+- 读切换：llmStore 方法改查 novaDB（新增 listChat 供兜底链取真钥），api_key 列存 encSecret 密文、读侧 decSecret，路由签名零改；list 排序改 priority 升序。
+- 顺修：/api/llm/chat 兜底候选此前取自掩码 list，密钥被 mask 存在 401 风险，现走 listChat 真钥。
+- 体检 29→30：新增「档案库SQLite化」（profiles 行数>0 且 JSON 已退役）。
+
 ## v2.9.8
 - T1 落地：内置 SQLite（modernc 纯 Go 驱动）地基——五表+两索引+迁移版本戳；NOVA_DB 可覆写（默认 data/nova.db）；DB 初始化软失败仅日志不阻断启动，v2.9.7 行为零回退。
 - 权限铁律：nova.db/-wal/-shm 落盘即 chmod 600；api_key 沿用 encSecret 密文双保险（T2 迁入对齐）。
