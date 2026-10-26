@@ -1,13 +1,13 @@
 package main
 
 import (
-	"os"
 	"embed"
 	"encoding/json"
 	"io"
 	"io/fs"
 	"log"
 	"net/http"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -26,8 +26,13 @@ func J(w http.ResponseWriter, v any) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(v)
 }
-func E(w http.ResponseWriter, code int, msg string) { w.WriteHeader(code); J(w, map[string]string{"error": msg}) }
-func body(r *http.Request, v any) error             { return json.NewDecoder(io.LimitReader(r.Body, 8<<20)).Decode(v) }
+func E(w http.ResponseWriter, code int, msg string) {
+	w.WriteHeader(code)
+	J(w, map[string]string{"error": msg})
+}
+func body(r *http.Request, v any) error {
+	return json.NewDecoder(io.LimitReader(r.Body, 8<<20)).Decode(v)
+}
 
 type sw struct {
 	http.ResponseWriter
@@ -94,6 +99,7 @@ func (s *srv) logMW(next http.Handler) http.Handler {
 }
 
 func main() {
+	openDB()
 	db := Load()
 	go func() {
 		for {
@@ -102,13 +108,17 @@ func main() {
 		}
 	}()
 	log.Printf("Nova Tools %s 已启动 → http://localhost:8080", Version)
-	port := os.Getenv("PORT"); if port == "" { port = "8080" }; log.Fatal(http.ListenAndServe(":"+port, secMiddleware(newRouter(db))))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	log.Fatal(http.ListenAndServe(":"+port, secMiddleware(newRouter(db))))
 }
 
 func newRouter(db *DB) http.Handler {
 	s := &srv{db}
 	mux := http.NewServeMux()
-    registerLLMRoutes(mux)
+	registerLLMRoutes(mux)
 
 	mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) {
 		J(w, map[string]any{"ok": true, "app": "nova", "version": Version, "db_driver": "json", "users": db.UserCount(), "uptime_sec": int(time.Since(started).Seconds())})
@@ -184,7 +194,6 @@ func newRouter(db *DB) http.Handler {
 		J(w, map[string]any{"ok": true})
 	})
 
-	
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		b, err := webFS.ReadFile("web/index.html")
 		if err != nil {
@@ -197,7 +206,7 @@ func newRouter(db *DB) http.Handler {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Write(b)
 	})
-mux.HandleFunc("GET /api/tools", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /api/tools", func(w http.ResponseWriter, r *http.Request) {
 		u := s.user(r)
 		isAdmin := u != nil && u.Role == "admin"
 		ids := make([]string, 0, len(ToolRegistry))
@@ -235,9 +244,9 @@ mux.HandleFunc("GET /api/tools", func(w http.ResponseWriter, r *http.Request) {
 		ms := time.Since(t0).Milliseconds()
 		if err != nil {
 			J(w, map[string]any{"ok": false, "error": err.Error()})
-				if u := s.user(r); u != nil {
-					go sendAlert(db.GetSettingSafe("alert_webhook"), id, u.Username, err.Error())
-				}
+			if u := s.user(r); u != nil {
+				go sendAlert(db.GetSettingSafe("alert_webhook"), id, u.Username, err.Error())
+			}
 			return
 		}
 		if u := s.user(r); u != nil {
@@ -275,9 +284,9 @@ mux.HandleFunc("GET /api/tools", func(w http.ResponseWriter, r *http.Request) {
 		ms := time.Since(t0).Milliseconds()
 		if err != nil {
 			J(w, map[string]any{"ok": false, "error": err.Error()})
-				if u := s.user(r); u != nil {
-					go sendAlert(db.GetSettingSafe("alert_webhook"), id, u.Username, err.Error())
-				}
+			if u := s.user(r); u != nil {
+				go sendAlert(db.GetSettingSafe("alert_webhook"), id, u.Username, err.Error())
+			}
 			return
 		}
 		if u := s.user(r); u != nil {

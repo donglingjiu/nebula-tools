@@ -8,19 +8,19 @@ CREATE TABLE IF NOT EXISTS settings(
   value TEXT
 );
 CREATE TABLE IF NOT EXISTS profiles(
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   base_url TEXT NOT NULL,
   model TEXT NOT NULL,
   api_key TEXT NOT NULL,
   enabled INTEGER NOT NULL DEFAULT 1,
   priority INTEGER NOT NULL DEFAULT 100,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at INTEGER NOT NULL DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS conversations(
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL DEFAULT '新对话',
-  profile_id INTEGER,
+  profile_id TEXT,
   user_id TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -36,7 +36,11 @@ CREATE TABLE IF NOT EXISTS messages(
 );
 CREATE INDEX IF NOT EXISTS idx_messages_conv ON messages(conversation_id, id);
 CREATE INDEX IF NOT EXISTS idx_profiles_fallback ON profiles(enabled, priority);
-INSERT INTO schema_migrations(version) VALUES (1);
+INSERT OR IGNORE INTO schema_migrations(version) VALUES (1);
+## v1.1 修订（T1 编码对齐，2026-10-26）
+- profiles.id 改 TEXT 主键：与现 JSON 字符串 ID 对齐，T2 迁入零 ID 折损；created_at 用 INTEGER 纪元（同源 JSON），conversations.profile_id 随之 TEXT。
+- api_key 列存 encSecret 密文（与现 JSON 同法，读侧 decSecret），0600 权限+密文双保险。
+
 ## 落地细则
 - NOVA_DB 默认 data/nova.db；start-nova.sh 注入 NOVA_DB=${NOVA_DB:-/home/work/fanguohui/data/nova.db}
 - 权限铁律：api_key 入库后 nova.db 必须 chmod 600（继承保险柜义务）；体检候选「DB权限600」
