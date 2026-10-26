@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.10.0
+- T3 落地：会话 API 六路由——conversations CRUD + messages 读写，全程 s.user(r) 鉴权按用户名隔离（消息读写前置 dbConvOwn 归属检查，跨用户一律 404）。
+- 原子性：消息追加事务三步一体（验会话在→插消息→bump updated_at）；删除走外键级联，会话删则消息自清（DSN foreign_keys(1) T1 已就位）。
+- 预留：tokens/branch_of 列 T3 恒 NULL（T4/T8 接 usage 统计时启用）；profile_id 待 T5/T6 前端接线填充。
+- 体检 30→31：新增「会话API在位」（生产二进制 api/conversations 路由字节串探针）。
+
 ## v2.9.9
 - T2 落地：模型档案库由 data/llm_profiles.json 迁入 SQLite profiles 表——首启表空且 JSON 存在则按 CreatedAt 序迁入（priority=100,101…，enabled 保留原值），事务成功后原 JSON 改名 .imported-bak（444 只读）。
 - 读切换：llmStore 方法改查 novaDB（新增 listChat 供兜底链取真钥），api_key 列存 encSecret 密文、读侧 decSecret，路由签名零改；list 排序改 priority 升序。
