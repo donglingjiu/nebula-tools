@@ -58,3 +58,37 @@ func TestConversationsCRUD(t *testing.T) {
 		t.Fatal("double delete should fail")
 	}
 }
+
+func TestUsageSummary(t *testing.T) {
+	dir := t.TempDir()
+	d, err := openDBAt(filepath.Join(dir, "nova.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	saved := novaDB
+	novaDB = d
+	defer func() { novaDB = saved; d.Close() }()
+	id, err := dbConvCreate("carol", "usage conv")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := dbMsgAppend(id, "user", "q1"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := dbMsgAppend(id, "assistant", "a1", 123); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := dbMsgAppend(id, "user", "q2"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := dbMsgAppend(id, "assistant", "a2", 77); err != nil {
+		t.Fatal(err)
+	}
+	days := dbUsageSummary("carol")
+	if len(days) != 1 || days[0].Msgs != 4 || days[0].Tokens != 200 {
+		t.Fatalf("usage=%+v", days)
+	}
+	if got := dbUsageSummary("dave"); len(got) != 0 {
+		t.Fatalf("isolation broken: %+v", got)
+	}
+}

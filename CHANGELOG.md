@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.10.1
+- T4 落地：tokens 起死回生——llmCall 改 llmCallU 四值返回并解析 OpenAI 标准 usage 三字段（prompt/completion/total_tokens），原 llmCall 薄包装保旧签名，全部旧调用点零适配。
+- /api/llm/chat 支持可选 conversationId：调用前 s.user+dbConvOwn 归属校验，LLM 成功后事务落 user+assistant 双消息（assistant 携带 usage.total_tokens，上游无 usage 降级 NULL）；registerLLMRoutes 签名扩为 (mux, s)。
+- 新路由 GET /api/usage/summary：本人维度按日聚合（消息数+token 总量，近 30 天），dbUsageSummary 单查询。
+- 体检 31→32：新增「用量API在位」（二进制 api/usage/summary 探针）。
+
 ## v2.10.0
 - T3 落地：会话 API 六路由——conversations CRUD + messages 读写，全程 s.user(r) 鉴权按用户名隔离（消息读写前置 dbConvOwn 归属检查，跨用户一律 404）。
 - 原子性：消息追加事务三步一体（验会话在→插消息→bump updated_at）；删除走外键级联，会话删则消息自清（DSN foreign_keys(1) T1 已就位）。

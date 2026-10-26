@@ -60,3 +60,8 @@ INSERT OR IGNORE INTO schema_migrations(version) VALUES (1);
 - 原子性：dbMsgAppend 事务内三步一体（验会话在→插消息→bump updated_at）；删除走外键级联（DSN 已带 foreign_keys(1)），会话删则消息自清。
 - 预留：tokens/branch_of 列 T3 恒 NULL（T4/T8 接 usage 统计时启用）；profile_id 待 T5/T6 前端接线填充。
 - 体检随 T3 增至 31 项（会话API在位，二进制路由字节串探针）。
+
+## T4 执行注记（2026-10-26）
+- tokens 列启用：dbMsgAppend 变长参数 tokens ...int64（零参=NULL 向后兼容，>0 才落库）；llmCallU 解析 usage.total_tokens，chat 带 conversationId 时事务落双消息。
+- 新路由 GET /api/usage/summary（registerUsageRoute）：按日聚合 messages，user 隔离经 conversations 子查询。
+- 体检 31→32（用量API在位）。

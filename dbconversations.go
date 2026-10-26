@@ -109,7 +109,7 @@ func dbConvDelete(id int64, user string) error {
 	return nil
 }
 
-func dbMsgAppend(convID int64, role, content string) (int64, error) {
+func dbMsgAppend(convID int64, role, content string, tokens ...int64) (int64, error) {
 	if novaDB == nil {
 		return 0, errors.New("db not ready")
 	}
@@ -129,7 +129,11 @@ func dbMsgAppend(convID int64, role, content string) (int64, error) {
 		_ = tx.Rollback()
 		return 0, errors.New("conversation not found")
 	}
-	res, err := tx.Exec("INSERT INTO messages(conversation_id, role, content) VALUES(?,?,?)", convID, role, c)
+	var tokPtr any
+	if len(tokens) > 0 && tokens[0] > 0 {
+		tokPtr = tokens[0]
+	}
+	res, err := tx.Exec("INSERT INTO messages(conversation_id, role, content, tokens) VALUES(?,?,?,?)", convID, role, c, tokPtr)
 	if err != nil {
 		_ = tx.Rollback()
 		return 0, err
@@ -169,6 +173,7 @@ func convIDFromPath(r *http.Request) (int64, error) {
 }
 
 func registerConvRoutes(mux *http.ServeMux, s *srv) {
+	registerUsageRoute(mux, s)
 	mux.HandleFunc("POST /api/conversations", func(w http.ResponseWriter, r *http.Request) {
 		u := s.user(r)
 		if u == nil {
@@ -292,5 +297,42 @@ func registerConvRoutes(mux *http.ServeMux, s *srv) {
 			return
 		}
 		J(w, map[string]any{"ok": true, "messageId": mid})
+	})
+}
+
+type usageDay struct {
+	Day    string `json:"day"`
+	Msgs   int64  `json:"msgs"`
+	Tokens int64  `json:"tokens"`
+}
+
+func dbUsageSummary(user string) []usageDay {
+	out := []usageDay{}
+	if novaDB == nil {
+		return out
+	}
+	rows, err := novaDB.Query("SELECT substr(created_at,1,10) AS d, COUNT(*) AS n, COALESCE(SUM(tokens),0) AS t FROM messages WHERE conversation_id IN (SELECT id FROM conversations WHERE user_id=?) GROUP BY d ORDER BY d DESC LIMIT 30", user)
+	if err != nil {
+		return out
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var u usageDay
+		if err := rows.Scan(&u.Day, &u.Msgs, &u.Tokens); err != nil {
+			continue
+		}
+		out = append(out, u)
+	}
+	return out
+}
+
+func registerUsageRoute(mux *http.ServeMux, s *srv) {
+	mux.HandleFunc("GET /api/usage/summary", func(w http.ResponseWriter, r *http.Request) {
+		u := s.user(r)
+		if u == nil {
+			E(w, 401, "login required")
+			return
+		}
+		J(w, map[string]any{"ok": true, "days": dbUsageSummary(u.Username)})
 	})
 }
