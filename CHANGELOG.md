@@ -5,6 +5,7 @@
 - 读切换：llmStore 方法改查 novaDB（新增 listChat 供兜底链取真钥），api_key 列存 encSecret 密文、读侧 decSecret，路由签名零改；list 排序改 priority 升序。
 - 顺修：/api/llm/chat 兜底候选此前取自掩码 list，密钥被 mask 存在 401 风险，现走 listChat 真钥。
 - 体检 29→30：新增「档案库SQLite化」（profiles 行数>0 且 JSON 已退役）。
+- 测试退役：llmsec_test.go 随 JSON 载体退役，at-rest 密文断言移植至 dbprofiles_test.go（raw nova.db/-wal 字节级明文扫描）；军规 #17/#18 入册 B3。
 
 ## v2.9.8
 - T1 落地：内置 SQLite（modernc 纯 Go 驱动）地基——五表+两索引+迁移版本戳；NOVA_DB 可覆写（默认 data/nova.db）；DB 初始化软失败仅日志不阻断启动，v2.9.7 行为零回退。
@@ -105,7 +106,7 @@
 
 ## v2.8.2 - 2026-10-23
 ### Fixed
-- 徽章路由 JS 补落：v2.8.1 仅落 .tag.plan 样式，toolCard 的 可用/规划中 路由因断言笔误未写盘（卫兵拦截零损伤）；现规划中徽章转灰
+- 徽章路由 JS 补落：v2.8.1 仅落 .tag.plan 样式，toolCard 的可用/规划中路由因断言笔误未写盘（卫兵拦截零损伤）；现规划中徽章转灰
 - word2pdf.html 补接 tokens（v2.8.1 因 head 结构跳过），独立页 19/19，verify.sh 增至 16 项
 ### Corrected
 - v2.8.1 changelog「19 个独立页」实为 18，本版补齐并更正

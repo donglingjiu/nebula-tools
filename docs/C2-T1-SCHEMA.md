@@ -44,6 +44,13 @@ INSERT OR IGNORE INTO schema_migrations(version) VALUES (1);
 ## 落地细则
 - NOVA_DB 默认 data/nova.db；start-nova.sh 注入 NOVA_DB=${NOVA_DB:-/home/work/fanguohui/data/nova.db}
 - 权限铁律：api_key 入库后 nova.db 必须 chmod 600（继承保险柜义务）；体检候选「DB权限600」
-- JSON 迁入：首启 profiles 表空且 llm_profiles.json 存在→按序 priority=100,101... 全 enabled=1→JSON 暂留原地，T2 读切换同发再改名 .imported-bak 只读备份
+- JSON 迁入：首启 profiles 表空且 llm_profiles.json 存在→按序 priority=100,101... enabled 保留 JSON 原值（缺省视为 1）→JSON 暂留原地，T2 读切换同发再改名 .imported-bak 只读备份
 - 预留列对账：priority/enabled（兜底链）、tokens（成本）、branch_of（分支）、user_id（多用户）＝PRD v2 四钩齐活
 - 体检预告：会话持久化在位＋DB权限600，随 T1 入册 27→29
+
+## T2 执行注记（2026-10-26）
+- 迁入触发点：newLLMStore 启动即调 dbProfilesMigrate（novaDB 就绪前提）——表空且 JSON 在才迁、事务包裹、成功即改名 .imported-bak 并 chmod 444。
+- 读切换：llmStore 各方法内部改查 SQLite，api_key 列密文承袭（enc 落库/dec 读取）；新增 listChat 供兜底链取真钥（顺修掩码 401 隐患）；list 排序改 priority 升序。
+- decSecret 容错明文：JSON 里明文钥迁入后读侧直返不破，下次 upsert 落库自动升级密文。
+- 体检随 T2 增至 30 项（档案库SQLite化）。
+- 测试退役：llmsec_test.go 随 JSON 载体退役（llmStore.Profiles 字段已随 T2 消失），at-rest 密文断言语义移植至 dbprofiles_test.go——新增 raw nova.db/-wal 文件字节级明文扫描，密文列与文件字节双保险。
