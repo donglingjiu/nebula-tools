@@ -31,3 +31,11 @@
 - 案：源码失踪悬案真相——find 普查接 head -20，GOROOT 的 go/test 千余 .go 按字母序占满配额，本仓 15 个 .go 被截断在证据外，误判源码不在本机；实为一直在本仓。
 - 法：普查命令（find/grep 全域扫描）先计数后输出，禁接 head/tail；head 仅许已定向下钻单文件。
 - 附记：二进制口供定驱动——CGO_ENABLED=0 烙死于构建，mattn 出局，modernc.org/sqlite（驱动名 sqlite）当选。
+
+## 附件6：军规 #14 heredoc 禁 TAB（2026-10-26）
+- 案：交互式 bash 的 heredoc 逐行经 readline，行首 TAB 触发补全并吞字（Display all 313 即列家目录），db.go 带伤写盘被 go test 编译闸当场拒收。
+- 法：粘贴内容零 TAB，Go 缩进用空格；写盘前断言内容无 TAB；gofmt 在盘上归一属安全侧。
+
+## 附件7：军规 #15 闸门环境同源（2026-10-26）
+- 案：go test 默认 CGO_ENABLED=1，拉起本机老 gcc 编 runtime/cgo，cc1 不识 -fno-stack-protector 炸膛；生产 build.sh 烙死 CGO_ENABLED=0 从未中招——闸门测的是另一种产物。
+- 法：本盒 go test/vet 一律前置 CGO_ENABLED=0 与生产同源；原则：闸门环境必须等于产物环境，否则绿灯是假绿灯。

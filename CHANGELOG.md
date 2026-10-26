@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.9.8
+- T1 落地：内置 SQLite（modernc 纯 Go 驱动）地基——五表+两索引+迁移版本戳；NOVA_DB 可覆写（默认 data/nova.db）；DB 初始化软失败仅日志不阻断启动，v2.9.7 行为零回退。
+- 权限铁律：nova.db/-wal/-shm 落盘即 chmod 600；api_key 沿用 encSecret 密文双保险（T2 迁入对齐）。
+- 体检 27→29：新增「会话持久化在位」「DB权限600」。
+
 ## v2.9.7 - 2026-10-23
 ### Changed
 - B3 收官微刀：--nv-s9 并入 --nv-s10（9px 已于 v2.9.5 归一为 10px，与 s10 同值成孪生）——删定义、nv-mt9 消费点改引 var(--nv-s10)、verify 尺度锚点随迁 s10；全站 var(--nv-s9) 外部引用为零（v2.9.5 侦察实证），零视觉变更

@@ -8,6 +8,8 @@ gx(){ if printf '%s' "$2" | grep -qE -- "$3"; then ok "$1"; else no "$1" "未命
 eq(){ if [ "$2" = "$3" ]; then ok "$1"; else no "$1" "got=[$2] want=[$3]"; fi; }
 eq "root=200" "$(curl -s -o /dev/null -w '%{http_code}' $B/)" 200
 curl -s -c $J -X POST $B/api/auth/login -d '{"username":"admin","password":"Admin123456"}' >/dev/null
+eq "DB权限600" "$(stat -c '%a' "${NOVA_DB:-/home/work/fanguohui/data/nova.db}" 2>/dev/null)" 600
+eq "会话持久化在位" "$(python3 -c "import sqlite3,os;p=os.environ.get('NOVA_DB') or '/home/work/fanguohui/data/nova.db';print(sqlite3.connect(p).execute('select count(*) from schema_migrations where version=1').fetchone()[0])" 2>/dev/null)" 1
 eq "工具数=27" "$(curl -s -b $J $B/api/tools | grep -o '"id"' | wc -l | tr -d ' ')" 27
 g "chmod 754" "$(curl -s -b $J -X POST $B/api/run/dev.chmod -d '{"input":"754","opts":{}}')" 'rwxr-xr--'
 g "subnet /26=62台" "$(curl -s -b $J -X POST $B/api/run/dev.subnet -d '{"input":"192.168.1.130/26","opts":{}}')" '62 台'
