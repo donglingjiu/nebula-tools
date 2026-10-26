@@ -54,3 +54,9 @@ INSERT OR IGNORE INTO schema_migrations(version) VALUES (1);
 - decSecret 容错明文：JSON 里明文钥迁入后读侧直返不破，下次 upsert 落库自动升级密文。
 - 体检随 T2 增至 30 项（档案库SQLite化）。
 - 测试退役：llmsec_test.go 随 JSON 载体退役（llmStore.Profiles 字段已随 T2 消失），at-rest 密文断言语义移植至 dbprofiles_test.go——新增 raw nova.db/-wal 文件字节级明文扫描，密文列与文件字节双保险。
+
+## T3 执行注记（2026-10-26）
+- 会话 API 落地：六路由（POST/GET /api/conversations、PATCH/DELETE /{id}、GET/POST /{id}/messages），s.user(r) 鉴权、user_id 取 u.Username；消息读写前置 dbConvOwn 归属检查，跨用户一律 404。
+- 原子性：dbMsgAppend 事务内三步一体（验会话在→插消息→bump updated_at）；删除走外键级联（DSN 已带 foreign_keys(1)），会话删则消息自清。
+- 预留：tokens/branch_of 列 T3 恒 NULL（T4/T8 接 usage 统计时启用）；profile_id 待 T5/T6 前端接线填充。
+- 体检随 T3 增至 31 项（会话API在位，二进制路由字节串探针）。
