@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.14.0
+- T6-D 登录打通：loginPage 加 authSwitch 注册切换；novaLogin 分流 register（后端自动发 cookie，注册即登录）；me 预检（已登录访问 login 直接跳 index）；成功跳转支持 ?next= 透传；dropdownProfile 换真人（localStorage novaUser，预 esc）+ novaLogout 真调（POST logout + 清 localStorage + 跳 login）；chat/usage 401 墙带 next。
+- 体检 36→37（登录链在位：authSwitch/register/me/novaLogout 四标记探针）；案十六入册（探针词窄+截尾——「空壳」误判险致重写双渲染器打架）。
+
 ## v2.13.0
 - T6-C 会话分叉：dbConvBranch（归属校验→分叉点校验→dbConvCreate 复用→单条 INSERT…SELECT 原子复制 id<=分叉点全部消息，branch_of=源行 id 全谱系留痕，失败补偿删新会话）；POST /api/conversations/{id}/branch（E/J/convIDFromPath 同款惯用法）；chat.js assistant 气泡加「⎇ 分叉」钮，分叉后自动跳新会话。
 - 体检 35→36（分叉通电在位，探针标记与写入文本同源——案十五法）；锚点全部来自实文口供（msgRow json tag/惯用法三件套），想象零上车。
