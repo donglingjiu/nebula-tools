@@ -65,6 +65,7 @@
 - 案十六（探针词窄+截尾）：侦察 grep 按文件名搜功能（login.html 只答文件在否，loginPage//api/auth 全在截断线后）+ head -8 截尾（500 行文件的 98% 盲区）——「登录页是空壳」误判，险致整体重写 login.html 与 loginPage() 双渲染器同抢 #app。法：功能探针跟功能词走（函数名/端点名），文件名搜索只答存在性；宽搜禁小截尾。案十对偶位：锚点要实，功能在否也要实搜。
 - 案十七：D 站零 Go 改动，②段工具链却跑裸 gofmt -w . ——全目录格式化把 9 个本就不合 gofmt 的存量 Go 文件（alerts/crypto/secmw/store 等）顺手改了格式，工作区带 9 文件 M，verify 36/1；commit 侥幸未混入（git add 列名制护住入库面）。法：gofmt 只打改动清单（git diff --name-only -- "*.go" | xargs -r gofmt -w 或明确列名），禁裸 gofmt -w . ——工具链命令宽度必须与当轮改动面同宽，扩面即引入不属于自己的变量。
 - 案十八（运行环境未口供）：subprocess.run 的 capture_output/text 是 Python≥3.7 参数，宿主是 .jumbo python3.6——崩在脚本第一次外部调用（verify 探针），零盘写、哨兵未置、闸门 GATE-BLOCKED 第 7 次真拦截，生产零伤（v2.14.0 在跑）。法：跨版本 API 先探再用（sys.version_info 或最低公分母 stdout=PIPE+universal_newlines=True）；环境口供（Python/Go/工具链版本）与功能口供同级——写盘前先问宿主。案十「口供后锚点」的运行时对偶位。
+- 案十九（FAIL归因未读详情）：D 站收口 verify 36/1，tail -2 恰吞 FAIL 详情行（内联余量棘轮 got=113 want=111），恰逢 9 文件脏同现——相关性当因果，误判「FAIL 因脏文件」并写入 c06aaea 提交信息「verify back green」（与实测相悖入库）；下轮恢复脏文件后 FAIL 仍在（隔离复现证伪归因），真因 D 站 +2 内联 style。法：FAIL 必读完整详情行（tail 窗口必须盖过详情行，或 grep FAIL 直取）；归因先隔离变量复现再断因果；提交信息只陈述已验证事实，预写结论必须随实测更新。案十六截尾家族第二案：截掉的不是上下文，是因果链。
 
 
 ## 附件10：军规 #18 部署顺序铁律（2026-10-26）

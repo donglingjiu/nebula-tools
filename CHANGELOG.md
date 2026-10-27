@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.14.1
+- 案十九修复：D 站两处新增内联样式归位——「去登录」链接删内联（回归 .dropdown 同胞样式，旧下拉 15+ 版本零内联同款实证）；authSwitch 删包裹 div，#authSwitch 规则入 nova-finishing.css（display:block/fit-content/margin auto，视觉零损）——内联余量棘轮 113→111 精确复位。
+- 关键发现：棘轮探针是 eq 精确等值非 ≤——删 2 恰好归 111，删 3 到 110 同样 FAIL；台账更正：c06aaea 提交信息「verify back green」与实测 36/1 相悖，本轮才真归绿。
+- 体检 37→38（切换钮归层在位）；案十九入册（FAIL 归因未读详情：tail -2 吞详情行+相关性当因果+提交信息预写结论）。
+
 ## v2.14.0
 - T6-D 登录打通：loginPage 加 authSwitch 注册切换；novaLogin 分流 register（后端自动发 cookie，注册即登录）；me 预检（已登录访问 login 直接跳 index）；成功跳转支持 ?next= 透传；dropdownProfile 换真人（localStorage novaUser，预 esc）+ novaLogout 真调（POST logout + 清 localStorage + 跳 login）；chat/usage 401 墙带 next。
 - 体检 36→37（登录链在位：authSwitch/register/me/novaLogout 四标记探针）；案十六入册（探针词窄+截尾——「空壳」误判险致重写双渲染器打架）。
