@@ -306,6 +306,41 @@ type usageDay struct {
 	Tokens int64  `json:"tokens"`
 }
 
+type usageProfile struct {
+	Profile string `json:"profile"`
+	Msgs    int    `json:"msgs"`
+	Tokens  int64  `json:"tokens"`
+}
+
+func dbUsageProfiles(user string) []usageProfile {
+	out := []usageProfile{}
+	if novaDB == nil {
+		return out
+	}
+	rows, err := novaDB.Query("SELECT COALESCE(NULLIF(profile,''),'(未记录)') AS p, COUNT(*) AS n, COALESCE(SUM(tokens),0) AS t FROM messages WHERE conversation_id IN (SELECT id FROM conversations WHERE user_id=?) AND role='assistant' GROUP BY p ORDER BY t DESC LIMIT 8", user)
+	if err != nil {
+		return out
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var u usageProfile
+		if err := rows.Scan(&u.Profile, &u.Msgs, &u.Tokens); err != nil {
+			continue
+		}
+		out = append(out, u)
+	}
+	return out
+}
+
+func dbMsgAppendP(convID int64, role, content, profile string, tokens ...int64) (int64, error) {
+	mid, err := dbMsgAppend(convID, role, content, tokens...)
+	if err != nil || profile == "" || novaDB == nil {
+		return mid, err
+	}
+	_, _ = novaDB.Exec("UPDATE messages SET profile=? WHERE id=?", profile, mid)
+	return mid, err
+}
+
 func dbUsageSummary(user string) []usageDay {
 	out := []usageDay{}
 	if novaDB == nil {
@@ -334,5 +369,16 @@ func registerUsageRoute(mux *http.ServeMux, s *srv) {
 			return
 		}
 		J(w, map[string]any{"ok": true, "days": dbUsageSummary(u.Username)})
+	})
+
+	mux.HandleFunc("GET /api/usage/profiles", func(w http.ResponseWriter, r *http.Request) {
+		u := s.user(r)
+		if u == nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			_, _ = w.Write([]byte(`{"ok":false,"error":"login required"}`))
+			return
+		}
+		llmWriteJSON(w, map[string]interface{}{"ok": true, "profiles": dbUsageProfiles(u.Username)})
 	})
 }

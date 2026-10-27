@@ -15,6 +15,7 @@ eq "会话API在位" "$(python3 -c "b=open('/home/work/fanguohui/nova-server-lin
 eq "用量API在位" "$(python3 -c "b=open('/home/work/fanguohui/nova-server-linux-amd64','rb').read();print(1 if b'api/usage/summary' in b else 0)" 2>/dev/null)" 1
 eq "对话页在位" "$(test -f web/chat.html && grep -q conversations web/assets/chat.js && echo 1 || echo 0)" 1
 eq "看板页在位" "$(test -f web/usage.html && grep -q usage/summary web/assets/usage.js && echo 1 || echo 0)" 1
+eq "档案记账在位" "$(grep -q dbMsgAppendP dbconversations.go && grep -q usage/profiles web/assets/usage.js && echo 1 || echo 0)" 1
 eq "工具数=27" "$(curl -s -b $J $B/api/tools | grep -o '"id"' | wc -l | tr -d ' ')" 27
 g "chmod 754" "$(curl -s -b $J -X POST $B/api/run/dev.chmod -d '{"input":"754","opts":{}}')" 'rwxr-xr--'
 g "subnet /26=62台" "$(curl -s -b $J -X POST $B/api/run/dev.subnet -d '{"input":"192.168.1.130/26","opts":{}}')" '62 台'

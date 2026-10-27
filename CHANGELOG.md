@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.12.1
+- T6-B 余件补齐（e03d85c 仅含迁移，本版补全）：GET /api/usage/profiles（assistant 行按档案聚合，空档归「(未记录)」，401 裸写 JSON）；dbMsgAppendP 薄包装（dbMsgAppend 签名零改动）+ llm chat assistant 行接 p.Name；usage.js 看板加「按档案」排行。
+- 体检 34→35（档案记账在位，探针对实文自检对齐）；案十至案十三入册；哨兵闸改 if/fi 全包。
+
+## v2.12.0
+- messages 表幂等迁移加 profile 列（pragma_table_info 存在性检查 + version 2 标记双保险）——仅此一件入库（e03d85c），部署冒烟实证：profile 列存在、旧行空串待补记。
+
 ## v2.11.2
 - T6-A 落地：web/usage.html + web/assets/usage.js 用量看板（纯静态零后端）——四张汇总卡（今日/30 天 × tokens/消息）、30 天 SVG 柱状图（手写无依赖、title 悬停明细）、明细表；消费 GET /api/usage/summary，401 登录墙。
 - app.js routes 注册「用量看板」入口；体检 33→34（看板页在位，探针对实文实跑 34/0 即对齐铁证）。

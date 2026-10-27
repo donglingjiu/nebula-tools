@@ -267,7 +267,7 @@ func registerLLMRoutes(mux *http.ServeMux, s *srv) {
 				if in.ConversationID > 0 {
 					if lu := llmLastUser(in.Messages); lu != "" {
 						_, _ = dbMsgAppend(in.ConversationID, "user", lu)
-						_, _ = dbMsgAppend(in.ConversationID, "assistant", content, tok)
+						_, _ = dbMsgAppendP(in.ConversationID, "assistant", content, p.Name, tok)
 					}
 				}
 				llmWriteJSON(w, map[string]interface{}{"ok": true, "content": content, "profile": p.Name, "ms": ms, "tokens": tok})
