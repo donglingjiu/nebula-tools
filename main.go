@@ -118,7 +118,7 @@ func main() {
 func newRouter(db *DB) http.Handler {
 	s := &srv{db}
 	mux := http.NewServeMux()
-	registerLLMRoutes(mux)
+	registerLLMRoutes(mux, s)
 	registerConvRoutes(mux, s)
 
 	mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) {

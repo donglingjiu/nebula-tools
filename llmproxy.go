@@ -82,16 +82,16 @@ func llmNormalizeBase(b string) (string, error) {
 	return b, nil
 }
 
-func llmCall(client *http.Client, p LLMProfile, msgs []map[string]string, maxTokens int) (string, int, error) {
+func llmCallU(client *http.Client, p LLMProfile, msgs []map[string]string, maxTokens int) (string, int64, int, error) {
 	if strings.TrimSpace(p.BaseURL) == "" || strings.TrimSpace(p.APIKey) == "" {
-		return "", 0, errors.New("档案不完整: baseUrl 与 apiKey 必填")
+		return "", 0, 0, errors.New("档案不完整: baseUrl 与 apiKey 必填")
 	}
 	if strings.TrimSpace(p.Model) == "" {
-		return "", 0, errors.New("档案不完整: model 必填")
+		return "", 0, 0, errors.New("档案不完整: model 必填")
 	}
 	endpoint, err := llmNormalizeBase(p.BaseURL)
 	if err != nil {
-		return "", 0, err
+		return "", 0, 0, err
 	}
 	if maxTokens <= 0 {
 		maxTokens = 1024
@@ -102,7 +102,7 @@ func llmCall(client *http.Client, p LLMProfile, msgs []map[string]string, maxTok
 	jb, _ := json.Marshal(payload)
 	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(jb))
 	if err != nil {
-		return "", 0, err
+		return "", 0, 0, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+p.APIKey)
@@ -110,17 +110,22 @@ func llmCall(client *http.Client, p LLMProfile, msgs []map[string]string, maxTok
 	resp, err := client.Do(req)
 	ms := int(time.Since(t0).Milliseconds())
 	if err != nil {
-		return "", ms, err
+		return "", 0, ms, err
 	}
 	defer resp.Body.Close()
 	rb, rerr := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
 	if rerr != nil {
-		return "", ms, rerr
+		return "", 0, ms, rerr
 	}
 	if resp.StatusCode >= 300 {
-		return "", ms, errors.New("HTTP " + fmt.Sprint(resp.StatusCode) + ": " + llmTrunc(string(rb), 180))
+		return "", 0, ms, errors.New("HTTP " + fmt.Sprint(resp.StatusCode) + ": " + llmTrunc(string(rb), 180))
 	}
 	var out struct {
+		Usage struct {
+			PromptTokens     int64 `json:"prompt_tokens"`
+			CompletionTokens int64 `json:"completion_tokens"`
+			TotalTokens      int64 `json:"total_tokens"`
+		} `json:"usage"`
 		Choices []struct {
 			Message struct {
 				Content string `json:"content"`
@@ -131,18 +136,18 @@ func llmCall(client *http.Client, p LLMProfile, msgs []map[string]string, maxTok
 		} `json:"error"`
 	}
 	if err := json.Unmarshal(rb, &out); err != nil {
-		return "", ms, errors.New("响应非 JSON: " + llmTrunc(string(rb), 120))
+		return "", 0, ms, errors.New("响应非 JSON: " + llmTrunc(string(rb), 120))
 	}
 	if out.Error != nil && out.Error.Message != "" {
-		return "", ms, errors.New(out.Error.Message)
+		return "", 0, ms, errors.New(out.Error.Message)
 	}
 	if len(out.Choices) == 0 || strings.TrimSpace(out.Choices[0].Message.Content) == "" {
-		return "", ms, errors.New("模型返回空内容")
+		return "", 0, ms, errors.New("模型返回空内容")
 	}
-	return out.Choices[0].Message.Content, ms, nil
+	return out.Choices[0].Message.Content, out.Usage.TotalTokens, ms, nil
 }
 
-func registerLLMRoutes(mux *http.ServeMux) {
+func registerLLMRoutes(mux *http.ServeMux, s *srv) {
 	st := newLLMStore()
 	client := &http.Client{Timeout: 90 * time.Second}
 
@@ -215,9 +220,10 @@ func registerLLMRoutes(mux *http.ServeMux) {
 
 	mux.HandleFunc("POST /api/llm/chat", func(w http.ResponseWriter, r *http.Request) {
 		var in struct {
-			ProfileID string              `json:"profileId"`
-			Messages  []map[string]string `json:"messages"`
-			MaxTokens int                 `json:"maxTokens"`
+			ProfileID      string              `json:"profileId"`
+			Messages       []map[string]string `json:"messages"`
+			MaxTokens      int                 `json:"maxTokens"`
+			ConversationID int64               `json:"conversationId"`
 		}
 		if err := llmReadJSON(r, &in); err != nil || len(in.Messages) == 0 {
 			llmWriteJSON(w, map[string]interface{}{"ok": false, "error": "messages 必填"})
@@ -243,19 +249,46 @@ func registerLLMRoutes(mux *http.ServeMux) {
 				cands = append(cands, p)
 			}
 		}
+		if in.ConversationID > 0 {
+			u := s.user(r)
+			if u == nil || !dbConvOwn(in.ConversationID, u.Username) {
+				llmWriteJSON(w, map[string]interface{}{"ok": false, "error": "conversation not found or login required"})
+				return
+			}
+		}
 		if len(cands) == 0 {
 			llmWriteJSON(w, map[string]interface{}{"ok": false, "error": "没有可用档案,请先在模型设置中添加并启用"})
 			return
 		}
 		var errs []string
 		for _, p := range cands {
-			content, ms, err := llmCall(client, p, in.Messages, in.MaxTokens)
+			content, tok, ms, err := llmCallU(client, p, in.Messages, in.MaxTokens)
 			if err == nil {
-				llmWriteJSON(w, map[string]interface{}{"ok": true, "content": content, "profile": p.Name, "ms": ms})
+				if in.ConversationID > 0 {
+					if lu := llmLastUser(in.Messages); lu != "" {
+						_, _ = dbMsgAppend(in.ConversationID, "user", lu)
+						_, _ = dbMsgAppend(in.ConversationID, "assistant", content, tok)
+					}
+				}
+				llmWriteJSON(w, map[string]interface{}{"ok": true, "content": content, "profile": p.Name, "ms": ms, "tokens": tok})
 				return
 			}
 			errs = append(errs, p.Name+": "+llmTrunc(err.Error(), 120))
 		}
 		llmWriteJSON(w, map[string]interface{}{"ok": false, "error": strings.Join(errs, " | ")})
 	})
+}
+
+func llmCall(client *http.Client, p LLMProfile, msgs []map[string]string, maxTokens int) (string, int, error) {
+	c, _, ms, err := llmCallU(client, p, msgs, maxTokens)
+	return c, ms, err
+}
+
+func llmLastUser(msgs []map[string]string) string {
+	for i := len(msgs) - 1; i >= 0; i-- {
+		if msgs[i]["role"] == "user" {
+			return msgs[i]["content"]
+		}
+	}
+	return ""
 }
