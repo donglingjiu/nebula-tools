@@ -1,0 +1,25 @@
+(function(){
+'use strict';
+function api(path,opts){opts=opts||{};var init={method:opts.method||'GET',headers:{'Content-Type':'application/json'},credentials:'same-origin'};return fetch('/api'+path,init).then(function(r){return r.json().then(function(j){return{status:r.status,ok:r.ok,j:j||{}}})})}
+var S={days:[]};
+function el(id){return document.getElementById(id)}
+function num(n){return String(n==null?0:n).replace(/\B(?=(\d{3})+(?!\d))/g,',')}
+function sum(key){var t=0;for(var i=0;i<S.days.length;i++)t+=(S.days[i][key]||0);return t}
+function today(key){var n=new Date();var k=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');for(var i=0;i<S.days.length;i++){if(S.days[i].day===k)return S.days[i][key]||0}return 0}
+function chart(){var box=el('chart');var days=S.days.slice().reverse();if(!days.length){box.innerHTML='<div class="tiny muted" style="padding:30px;text-align:center">暂无数据——去 <a href="chat.html">AI 对话</a> 聊几句,趋势明天就有了。</div>';return}
+var W=860,H=240,P=36;var n=days.length;var gap=(W-P*2)/n;var bw=Math.min(28,gap*0.62);
+var maxT=1;for(var i=0;i<n;i++)if(days[i].tokens>maxT)maxT=days[i].tokens;
+var bars='';var labels='';var step=Math.ceil(n/15);
+for(var i=0;i<n;i++){
+ var h=Math.round((days[i].tokens||0)/maxT*(H-70));
+ var x=(P+i*gap+(gap-bw)/2).toFixed(1);var y=(H-30-h).toFixed(1);
+ bars+='<rect x="'+x+'" y="'+y+'" width="'+bw.toFixed(1)+'" height="'+h+'" rx="4" fill="#3b6ef5" opacity="0.85"><title>'+days[i].day+' | '+days[i].msgs+' 条 | '+days[i].tokens+' tokens</title></rect>';
+ if(i%step===0){labels+='<text x="'+(P+i*gap+gap/2).toFixed(1)+'" y="'+(H-10)+'" font-size="10" fill="#8a94a6" text-anchor="middle">'+days[i].day.slice(5)+'</text>'}
+}
+var grid='';for(var g=0;g<=3;g++){var gy=(H-30)-Math.round((H-70)*g/3);grid+='<line x1="'+P+'" y1="'+gy+'" x2="'+(W-8)+'" y2="'+gy+'" stroke="#eef2f9"/><text x="4" y="'+(gy+3)+'" font-size="9" fill="#b3bccb">'+Math.round(maxT*g/3)+'</text>'}
+box.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+grid+bars+labels+'</svg>'}
+function table(){var box=el('rows');box.innerHTML='';if(!S.days.length){box.innerHTML='<tr><td colspan="3" class="tiny muted">暂无记录</td></tr>';return}S.days.forEach(function(d){var tr=document.createElement('tr');tr.style.borderBottom='1px solid #eef2f9';tr.innerHTML='<td style="padding:8px 6px">'+d.day+'</td><td style="padding:8px 6px">'+(d.msgs||0)+'</td><td style="padding:8px 6px">'+num(d.tokens||0)+'</td>';box.appendChild(tr)})}
+function boot(){var app=el('app');app.innerHTML='<div style="max-width:1000px;margin:0 auto;padding:24px 20px 60px"><div style="margin-bottom:16px"><h1 style="font-size:22px;margin:0">用量看板</h1><p style="color:#7483a4;font-size:13px;margin:4px 0 0">近 30 天对话消息与 token 消耗 · 本地日界聚合</p></div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px"><div class="panel" style="padding:14px"><div class="tiny muted">今日 tokens</div><div style="font-size:22px;font-weight:700;margin-top:4px" id="k-tt">0</div></div><div class="panel" style="padding:14px"><div class="tiny muted">今日消息</div><div style="font-size:22px;font-weight:700;margin-top:4px" id="k-tm">0</div></div><div class="panel" style="padding:14px"><div class="tiny muted">30 天 tokens</div><div style="font-size:22px;font-weight:700;margin-top:4px" id="k-at">0</div></div><div class="panel" style="padding:14px"><div class="tiny muted">30 天消息</div><div style="font-size:22px;font-weight:700;margin-top:4px" id="k-am">0</div></div></div><div class="panel" style="padding:16px;margin-bottom:16px"><div style="font-weight:600;margin-bottom:8px">每日 tokens</div><div id="chart"></div></div><div class="panel" style="padding:16px"><div style="font-weight:600;margin-bottom:8px">明细(近 30 天)</div><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="color:#8a94a6;text-align:left"><th style="padding:6px">日期</th><th style="padding:6px">消息数</th><th style="padding:6px">tokens</th></tr></thead><tbody id="rows"></tbody></table></div></div>';
+api('/usage/summary').then(function(x){if(x.status===401){el('chart').innerHTML='<div class="tiny muted" style="padding:20px;text-align:center">请先 <a href="login.html">登录</a> 查看用量。</div>';return}if(!x.ok)return;S.days=x.j.days||[];el('k-tt').textContent=num(today('tokens'));el('k-tm').textContent=num(today('msgs'));el('k-at').textContent=num(sum('tokens'));el('k-am').textContent=num(sum('msgs'));chart();table()})}
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',boot)}else{boot()}
+})();

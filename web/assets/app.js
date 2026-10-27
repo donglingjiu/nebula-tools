@@ -82,6 +82,7 @@ const paths={
 function icon(name,size=18){return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]||paths.sparkles}</svg>`}
 function href(route){if(IS_ADMIN)return route.startsWith('admin/')?route.slice(6):'../'+route;return route.startsWith('admin/')?route:route}
 const routes=[
+{id:'usage',label:'用量看板',desc:'30 天 token 趋势',icon:'chart',href:'usage.html'},
 {id:'chat',label:'AI 对话',desc:'持久化会话 · token 用量',icon:'message',href:'chat.html'},
  {id:'home',label:'首页',href:'index.html',icon:'home',desc:'AI 工作空间总览'},
  {id:'tools',label:'工具大全',href:'tools.html',icon:'grid',desc:'探索 100+ 实用工具'},
