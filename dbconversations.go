@@ -247,6 +247,32 @@ func registerConvRoutes(mux *http.ServeMux, s *srv) {
 		J(w, map[string]any{"ok": true})
 	})
 
+	mux.HandleFunc("POST /api/conversations/{id}/branch", func(w http.ResponseWriter, r *http.Request) {
+		u := s.user(r)
+		if u == nil {
+			E(w, 401, "login required")
+			return
+		}
+		id, err := convIDFromPath(r)
+		if err != nil {
+			E(w, 400, "bad id")
+			return
+		}
+		var req struct {
+			MsgID int64 `json:"msgId"`
+		}
+		if body(r, &req) != nil || req.MsgID <= 0 {
+			E(w, 400, "bad request")
+			return
+		}
+		nid, err := dbConvBranch(id, req.MsgID, u.Username)
+		if err != nil {
+			E(w, 404, err.Error())
+			return
+		}
+		J(w, map[string]any{"ok": true, "conversationId": nid})
+	})
+
 	mux.HandleFunc("GET /api/conversations/{id}/messages", func(w http.ResponseWriter, r *http.Request) {
 		u := s.user(r)
 		if u == nil {
@@ -339,6 +365,41 @@ func dbMsgAppendP(convID int64, role, content, profile string, tokens ...int64) 
 	}
 	_, _ = novaDB.Exec("UPDATE messages SET profile=? WHERE id=?", profile, mid)
 	return mid, err
+}
+
+func dbConvBranch(srcID, untilMsg int64, user string) (int64, error) {
+	if novaDB == nil {
+		return 0, errors.New("db not ready")
+	}
+	if !dbConvOwn(srcID, user) {
+		return 0, errors.New("not found")
+	}
+	var n int
+	if err := novaDB.QueryRow("SELECT COUNT(*) FROM messages WHERE id=? AND conversation_id=?", untilMsg, srcID).Scan(&n); err != nil {
+		return 0, err
+	}
+	if n != 1 {
+		return 0, errors.New("bad branch point")
+	}
+	var title string
+	if err := novaDB.QueryRow("SELECT title FROM conversations WHERE id=?", srcID).Scan(&title); err != nil {
+		return 0, err
+	}
+	newID, err := dbConvCreate(user, title+" ⎇")
+	if err != nil {
+		return 0, err
+	}
+	res, err := novaDB.Exec("INSERT INTO messages(conversation_id, role, content, tokens, branch_of, profile, created_at) SELECT ?, role, content, tokens, id, profile, created_at FROM messages WHERE conversation_id=? AND id<=?", newID, srcID, untilMsg)
+	if err != nil {
+		_ = dbConvDelete(newID, user)
+		return 0, err
+	}
+	aff, _ := res.RowsAffected()
+	if aff == 0 {
+		_ = dbConvDelete(newID, user)
+		return 0, errors.New("no messages to branch")
+	}
+	return newID, nil
 }
 
 func dbUsageSummary(user string) []usageDay {

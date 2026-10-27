@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.13.0
+- T6-C 会话分叉：dbConvBranch（归属校验→分叉点校验→dbConvCreate 复用→单条 INSERT…SELECT 原子复制 id<=分叉点全部消息，branch_of=源行 id 全谱系留痕，失败补偿删新会话）；POST /api/conversations/{id}/branch（E/J/convIDFromPath 同款惯用法）；chat.js assistant 气泡加「⎇ 分叉」钮，分叉后自动跳新会话。
+- 体检 35→36（分叉通电在位，探针标记与写入文本同源——案十五法）；锚点全部来自实文口供（msgRow json tag/惯用法三件套），想象零上车。
+
 ## v2.12.1
 - T6-B 余件补齐（e03d85c 仅含迁移，本版补全）：GET /api/usage/profiles（assistant 行按档案聚合，空档归「(未记录)」，401 裸写 JSON）；dbMsgAppendP 薄包装（dbMsgAppend 签名零改动）+ llm chat assistant 行接 p.Name；usage.js 看板加「按档案」排行。
 - 体检 34→35（档案记账在位，探针对实文自检对齐）；案十至案十三入册；哨兵闸改 if/fi 全包。
