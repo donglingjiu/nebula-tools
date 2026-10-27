@@ -68,5 +68,17 @@ func dbMigrate(d *sql.DB) error {
 			return err
 		}
 	}
+	var hasProfile int
+	if err := d.QueryRow("SELECT COUNT(*) FROM pragma_table_info('messages') WHERE name='profile'").Scan(&hasProfile); err != nil {
+		return err
+	}
+	if hasProfile == 0 {
+		if _, err := d.Exec("ALTER TABLE messages ADD COLUMN profile TEXT NOT NULL DEFAULT ''"); err != nil {
+			return err
+		}
+	}
+	if _, err := d.Exec("INSERT OR IGNORE INTO schema_migrations(version) VALUES (2)"); err != nil {
+		return err
+	}
 	return nil
 }
