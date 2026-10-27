@@ -311,7 +311,7 @@ func dbUsageSummary(user string) []usageDay {
 	if novaDB == nil {
 		return out
 	}
-	rows, err := novaDB.Query("SELECT substr(created_at,1,10) AS d, COUNT(*) AS n, COALESCE(SUM(tokens),0) AS t FROM messages WHERE conversation_id IN (SELECT id FROM conversations WHERE user_id=?) GROUP BY d ORDER BY d DESC LIMIT 30", user)
+	rows, err := novaDB.Query("SELECT strftime('%Y-%m-%d',created_at,'localtime') AS d, COUNT(*) AS n, COALESCE(SUM(tokens),0) AS t FROM messages WHERE conversation_id IN (SELECT id FROM conversations WHERE user_id=?) GROUP BY d ORDER BY d DESC LIMIT 30", user)
 	if err != nil {
 		return out
 	}

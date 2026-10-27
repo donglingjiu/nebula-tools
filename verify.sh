@@ -13,6 +13,7 @@ eq "会话持久化在位" "$(python3 -c "import sqlite3,os;p=os.environ.get('NO
 eq "档案库SQLite化" "$(python3 -c "import sqlite3,os;p=os.environ.get('NOVA_DB') or '/home/work/fanguohui/data/nova.db';n=sqlite3.connect(p).execute('select count(*) from profiles').fetchone()[0];j=not os.path.exists('/home/work/fanguohui/data/llm_profiles.json');print(1 if n>0 and j else 0)" 2>/dev/null)" 1
 eq "会话API在位" "$(python3 -c "b=open('/home/work/fanguohui/nova-server-linux-amd64','rb').read();print(1 if b'api/conversations' in b else 0)" 2>/dev/null)" 1
 eq "用量API在位" "$(python3 -c "b=open('/home/work/fanguohui/nova-server-linux-amd64','rb').read();print(1 if b'api/usage/summary' in b else 0)" 2>/dev/null)" 1
+eq "对话页在位" "$(test -f web/chat.html && grep -q api/conversations web/assets/chat.js && echo 1 || echo 0)" 1
 eq "工具数=27" "$(curl -s -b $J $B/api/tools | grep -o '"id"' | wc -l | tr -d ' ')" 27
 g "chmod 754" "$(curl -s -b $J -X POST $B/api/run/dev.chmod -d '{"input":"754","opts":{}}')" 'rwxr-xr--'
 g "subnet /26=62台" "$(curl -s -b $J -X POST $B/api/run/dev.subnet -d '{"input":"192.168.1.130/26","opts":{}}')" '62 台'

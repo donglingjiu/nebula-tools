@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.11.0
+- T5 落地：web/chat.html + web/assets/chat.js（llm.html 独立页模式）——会话列表（新建/切换/删除）、消息线程（本地时间+tokens 徽章）、发送框（无会话自动建、conversationId+profileId）、档案选择器、今日用量条；六路由首次有前端消费者。
+- app.js routes 注册「AI 对话」入口（侧边栏+导航），壳层零逻辑改动。
+- usage 日界修正：dbUsageSummary 聚合改 strftime localtime（原 UTC 日界把本地 00:00-08:00 记入昨天）；chat 页 createdAt 补 Z 解析转本地。
+- 体检 32→33：新增「对话页在位」（chat.html 存在 + chat.js 含 api/conversations）。
+
 ## v2.10.1
 - T4 落地：tokens 起死回生——llmCall 改 llmCallU 四值返回并解析 OpenAI 标准 usage 三字段（prompt/completion/total_tokens），原 llmCall 薄包装保旧签名，全部旧调用点零适配。
 - /api/llm/chat 支持可选 conversationId：调用前 s.user+dbConvOwn 归属校验，LLM 成功后事务落 user+assistant 双消息（assistant 携带 usage.total_tokens，上游无 usage 降级 NULL）；registerLLMRoutes 签名扩为 (mux, s)。
