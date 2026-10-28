@@ -218,10 +218,8 @@ function bindUsersEvents(root){
       adminUserAction('del',name,null).then(function(res){if(res.ok){toast('已删除 '+name);refreshUsers()}else toast('失败：'+(res.err||'未知'))});
     }
     if(t.hasAttribute('data-export-csv')){
-      const rows=(ADMIN_USERS_LIVE||[]).map(function(u){return [u.username,u.role,(u.created_at||'').slice(0,10)].join(',')}).join('
-');
-      const blob=new Blob(['username,role,created_at
-'+rows],{type:'text/csv'});
+      const rows=(ADMIN_USERS_LIVE||[]).map(function(u){return [u.username,u.role,(u.created_at||'').slice(0,10)].join(',')}).join('\n');
+      const blob=new Blob(['username,role,created_at\n'+rows],{type:'text/csv'});
       const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='nova-users.csv';a.click();
     }
     if(t.hasAttribute('data-door-toggle')){

@@ -114,3 +114,10 @@
 - 修法：userRows 定义段整删（弹药库清空）· 128,436→0（假数退位，dashboard 真接线留 W3）· 演示账户→真实账户；三词 count 归零，style 111 无伤
 - 棘轮口径校准：users真接线 12→10——grep -c 数行数、v.count 数次数，写阈值前必先实测口径（案二十八）
 - 案二十八入册：拍脑袋阈值×口径错位——棘轮值必须来自实测（先跑 grep -c 拿读数，再把读数写进 eq），不是来自「感觉该有 12 个」
+
+## 增补十：W2 语法热修与语法门上岗（2026-10-28 · 第 68 发）
+
+- 浏览器首访立功：users.html 白屏卡死（boot 前水帖）+ 控制台 app.js:221:132 SyntaxError——六十七发 grep 棘轮全绿照不出的真伤，用户亲验第一眼就揪出
+- 病根：W2 heredoc 非原始 Python 串嵌 JS，join(\n) 的 \n 被解释成真换行写进文件——JS 单引号串断行、V8 parse 期即死、整页 app.js 不执行；伤处 2 处（rows join + CSV blob 头），修法=补成 \n 两字符转义；全文 quote-LF-quote 清零、style 111 无伤
+- 案二十九：grep 棘轮测文本不测语法——语法只有 parser 说了算；verify 新增 JS 语法门（node --check 优先，缺 node 则 quote-LF-quote 扫描兜底）——文本棘轮+语法门双层合围才算数
+- W3 脚本自身 TypeError 断在写前（%s 格式化撞上健康面板 CSS 的 100%; ）零副作用——且重审发现其表格行拼接缺 + 号，即便格式化成功也是坏 JS；W3 下轮重发：弃 %-format 改 token 替换、JS 段一律 r-string、代码段不过 N()
