@@ -28,7 +28,7 @@ eq "users真接线棘轮" "$(grep -c 'ADMIN_USERS_LIVE\|refreshUsers\|adminUserA
 eq "JS语法门" "$(python3 js_gate.py web/assets/app.js)" ok
 eq "语法门在岗" "$(test -f js_gate.py && echo 1 || echo 0)" 1
 eq "admin壳全接线" "$(grep -L data-admin-req web/admin/*.html 2>/dev/null | wc -l)" 0
-eq "admin路由活变棘轮" "$(grep -c computeCurrentID web/assets/app.js)" 3
+eq "admin路由活变棘轮" "$(grep -o computeCurrentID web/assets/app.js | wc -l)" 3
 eq "重启契约在册" "$(grep -c '重启必须携带 NOVA_WEB_DIR' DEPLOY.md)" 1
 eq "工具数=27" "$(curl -s -b $J $B/api/tools | grep -o '"id"' | wc -l | tr -d ' ')" 27
 g "chmod 754" "$(curl -s -b $J -X POST $B/api/run/dev.chmod -d '{"input":"754","opts":{}}')" 'rwxr-xr--'
