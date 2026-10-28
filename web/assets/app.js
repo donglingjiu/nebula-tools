@@ -110,7 +110,7 @@ const adminRoutes=[
  {id:'admin-settings',label:'系统设置',href:'admin/settings.html',icon:'settings',desc:'安全、服务与配置'},
 ];
 const currentAdminPage=document.body.dataset.adminPage||'index';
-const currentID=IS_ADMIN?(currentAdminPage==='index'?'admin-dashboard':'admin-'+currentAdminPage):(PAGE==='home'?'home':PAGE);
+function computeCurrentID(){var p=document.body.dataset.adminPage||'index';return IS_ADMIN?(p==='index'?'admin-dashboard':'admin-'+p):(PAGE==='home'?'home':PAGE)}var currentID=computeCurrentID();
 function logo(){return `<a class="brand" href="${href('index.html')}" aria-label="Nova 首页"><span class="brand-symbol">${icon('planet',23)}</span><span>Nova</span></a>`}
 function dropdownProfile(){var u=null;try{u=JSON.parse(localStorage.getItem('novaUser')||'null')}catch(e){}
   var name=u&&u.name?u.name:'';
@@ -583,7 +583,7 @@ function badges(){
     }).catch(function(){});
   }
   function boot(){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init)}else{init()}}
-if(ADMIN_REQ){fetch('/api/auth/me').then(function(r){return r.ok?r.json():null}).then(function(j){if(j&&j.role==='admin'){document.body.dataset.admin='true';IS_ADMIN=true;ME_CACHE=j;if(document.body.dataset.adminPage==='users'){refreshUsers();refreshDoor()}boot()}else{location.href='../login.html'}}).catch(function(){location.href='../login.html'})}else{boot()}
+if(ADMIN_REQ){fetch('/api/auth/me').then(function(r){return r.ok?r.json():null}).then(function(j){if(j&&j.role==='admin'){document.body.dataset.admin='true';IS_ADMIN=true;ME_CACHE=j;currentID=computeCurrentID();if(document.body.dataset.adminPage==='users'){refreshUsers();refreshDoor()}boot()}else{location.href='../login.html'}}).catch(function(){location.href='../login.html'})}else{boot()}
 })();
 
 /* v2.8.0: tokens layer injector (last-loaded override) */

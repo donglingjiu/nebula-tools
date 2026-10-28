@@ -151,3 +151,10 @@
 - 案三十三（异步时序×顶层 const 冻结·逻辑链破案法）：W1b（8d4855b）的 me precheck 把身份判定推迟到异步回包，currentID 却在顶层 const 同步冻结——先来的把后到的锁在门外；admin 分支自 W1b 起从未在浏览器存活（curl 验端点不验渲染·白屏掩护语法·壳病顶罪两轮）。破案靠否定性证据：地址未跳 → me 必成功 → boot 必执行 → home 必出自冻结路由——五行证词未出庭而案已破
 - 会话名册：nova.json Sessions 153 枚（admin×152 + 占位遗老「<你的名>」×1——清 Users 未清 Sessions 的第二次现身；遗老用户已死 token 必 401，无害，卫生队列 +1）；终端贴探针五连 syntax error——控制台的证词要在控制台取，法庭不容串场
 - 复验令：④绿后浏览器 Ctrl+F5 强刷 /admin/users.html——应见「用户管理」真表（admin×1·四列·四钮活）——这是 W2 真正的终点
+
+## 增补十五：解冻手术 v2 落刀（2026-10-28 · 第 74 发）
+
+- 定谳复核与手术 v2：上轮 cinit=2 守卫拦下——文件存在两处 function init(){（行号 294,577），「init 唯一」锚过严；改锚身份翻转现场——me precheck 的 IS_ADMIN=true;ME_CACHE=j;（全文件唯一）之后一行重算 currentID，顶层 line 113 改 computeCurrentID 定义+初算。时序论证：ADMIN_REQ 页 init 永远在 me 回包后被 boot() 调起，身份翻转处重算即可被 init 消费；顶层初算仅供非 admin 页。computeCurrentID×3 在册·语法门过·style 111 无伤
+- 账目自省：05be1ec 的 commit message 写「routing unfrozen」而实际内容系 pending 档案——消息先于内容，案三十二在 commit 域复发；修法：message 以实际落刀为准，本轮如实；档案诚实不豁免信封诚实
+- 双 init 悬案：第二处 function init(){ 行号 294,577——本轮注入点与 init 位置解耦，不受其影响；其身份留 ①回显定谳（若系组件内部初始化则无碍，若系另一入口则另立档案）
+- 复验令：④绿后浏览器 Ctrl+F5 强刷 /admin/users.html——应见「用户管理」真表（admin×1·四列·四钮活）——W2 的终点线仍在等
