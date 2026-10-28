@@ -121,3 +121,19 @@
 - 病根：W2 heredoc 非原始 Python 串嵌 JS，join(\n) 的 \n 被解释成真换行写进文件——JS 单引号串断行、V8 parse 期即死、整页 app.js 不执行；伤处 2 处（rows join + CSV blob 头），修法=补成 \n 两字符转义；全文 quote-LF-quote 清零、style 111 无伤
 - 案二十九：grep 棘轮测文本不测语法——语法只有 parser 说了算；verify 新增 JS 语法门（node --check 优先，缺 node 则 quote-LF-quote 扫描兜底）——文本棘轮+语法门双层合围才算数
 - W3 脚本自身 TypeError 断在写前（%s 格式化撞上健康面板 CSS 的 100%; ）零副作用——且重审发现其表格行拼接缺 + 号，即便格式化成功也是坏 JS；W3 下轮重发：弃 %-format 改 token 替换、JS 段一律 r-string、代码段不过 N()
+
+## 增补十一：语法门 v2——正则态上岗与会话复活注记（2026-10-28 · 第 70 发）
+
+- 案三十一定谳：v1 门首巡抓 line 11 col 117 系假阳——V8 首错次序为证（上轮全文件首报 221，若 11 行真断必先报 11；本轮控制台零错）；真凶是正则字面量：escapeHtml 的 replace(/'/g,...) 模式——正则内引号把 v1 词法器踢进字符串态，后续真换行被冤判。正则是 JS 第三种串，词法器不认它就会冤枉好人
+- v2 修法：正则态上岗——prev-token 启发（值后为除·op 后为正则·return/typeof 等关键词后为正则）·正则内裸换行=bad·跳过类处理并入跳字；夹具扩编至双向七枚（esc 全家桶/模板/除链/关键词正则 → 好样本；串内换行/未闭合/正则内换行×2 → 坏样本）——门上岗前先过门的仪式自此固化
+- 会话复活注记：A 清库清 Users 未清 Sessions——旧 admin 的会话键在同名新 admin 复活后自动再挂，浏览器旧 cookie 直接获得新账号身份（本例无害且便利）；工法挂账：清用户应连 Sessions 一并清，否则同名账号继承旧钥匙（Go 侧卫生项，候 W 系列后议）
+- login 跳转定谳：login.html 检 me=200 即送回首页——「已登录」标准行为非 bug；用户持活会话直开 /admin/users.html 即见 W2 真表
+- W3 现场在档（/tmp/nv-w3pre.txt）：logs 形状实测为 at/user/method/path/status/ms——下轮硬编码映射（事件=path·范围=user·时间=at·状态=status），自适应猜测彻底退役；JS 段一律 r-string、弃 %-format（案二十七/二十九遗训）
+
+## 增补十二：admin 壳全接线——首页拷贝病（2026-10-28 · 第 71 发）
+
+- 浏览器第三庭：地址栏停在 /admin/users.html、渲染的是完整营销首页、控制台零错——非跳转（跳转会改地址）非崩溃（崩溃会报错），是壳原地启动常规应用画了 home：users.html 系首页拷贝，data-admin-req/data-admin-page 旗标从未存在，app.js 无旗标 → 常规 boot → 默认 home
+- W2 盲区定谳：接线层（app.js）与壳层（HTML 旗标）双层，curl 验了 200+app.js 字节+端点，从没验过壳的属性——此前白屏反而掩护了它（app.js 没跑，壳病无从暴露）；浏览器法庭三连审（断串→热修无罪→壳病），每层真相都是 F12 先看到
+- 修法：以 index 壳 body 标签为模板（旗标拼写与 index 严格一致），全 admin/*.html 缺旗标者整签替换、admin-page 按文件名赋值；全壳 census 后置断言（data-admin-req 全员在册）；棘轮「admin壳全接线」=grep -L 计无旗标文件数=0
+- 案三十/三十一补入 B3 台账（上轮 A30 断言拦下坏锚点——案三十被引用却从未落刀；守卫零伤，先落锚再引用的纪律入册）
+- 挂账：侧栏曝出 admin/usage.html 链接（底部状态栏）——壳清单待对照，缺件则 404；W4 队列核对导航全链接
