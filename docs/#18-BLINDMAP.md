@@ -53,3 +53,13 @@
 - paas 定谳：llm.html 两处命中均文档文案（placeholder 示例+脚注典型 Base URL），非调用——无害
 - 口径自省（续）：六=动态拼接（api('/api/llm/'+path)——chat/usage/llm 三份助手）；七=SPA 模板串（卡片与文案活在 app.js 反引号里）——静态普查三层盲区至此闭合
 - 卫生挂签：web/assets 下 app.js.bak~bak6 六代备份与 nova-v4/v5/v6.css 多代样式共存——删除决策缓行另案（防误伤在役引用）
+
+## 增补三：W0 撤案与 W1b 落刀（2026-10-28 · 第 61 发）
+
+- W0 撤案：live 五路 401 + 静态双证（s.admin 包装、u.Role!="admin" 守卫、e2e 十三管理流程）——服务端墙一直在岗；自省第 6 条定稿：「后端本有 auth」由怀疑转实锤，且是活体探针证实的
+- me 带 role：main.go me handler 系内联闭包（无具名函数——上轮 HANDLER=func 伪名根源），:173 响应体含 username/role/created_at——W1b 纯 web 可当轮落刀，二进制不动
+- 首用户 bootstrap：store.go 首注册者即 admin；allow_register 可关注册——账号权属与测试路径依据
+- TN 图定谳：工具名展示图早备 fx:pdf-split/compress——fx接线棘轮=4 即 EP2+TN2，「展示名先于接线」；FB 兜底假说证伪备案
+- W1b（additive-only）：十壳 data-admin="true"→data-admin-req="true"（身份硬编码降格为门槛声明）；app.js ADMIN_REQ 异步门——admin 页先打 /api/auth/me，role==admin 注旗 boot，否则 ../login.html；tokens 注入器改读 body.dataset（作用域无关，贴合作者本意的 ../ 前缀）；代价：admin 页首帧白屏一个 me 往返（可接受，骨架屏缓行）
+- 棘轮×2：admin旗硬编码=0、adminReq=10——客户端半边有绊线；服务端半边由 e2e 全流程覆盖在案
+- 伪影二连（glob 抢答 + 引号字形不合）→ 案二十三；0 旗必问干草堆，正则必贴字形

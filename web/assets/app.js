@@ -5,7 +5,8 @@ if(typeof window.toast!=='function'){window.toast=function(m,t){var bad=/失败|
 'use strict';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const PAGE=document.body.dataset.page||'home';
-const IS_ADMIN=document.body.dataset.admin==='true';
+const ADMIN_REQ=document.body.dataset.adminReq==='true';
+let IS_ADMIN=document.body.dataset.admin==='true';
 const ROOT=$('#app');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function sessionGet(key){try{return window.sessionStorage.getItem(key)}catch{return null}}
@@ -518,8 +519,9 @@ function badges(){
       if(ts.length)build(lib,ts);
     }).catch(function(){});
   }
-  if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init)}else{init()}
+  function boot(){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init)}else{init()}}
+if(ADMIN_REQ){fetch('/api/auth/me').then(function(r){return r.ok?r.json():null}).then(function(j){if(j&&j.role==='admin'){document.body.dataset.admin='true';IS_ADMIN=true;boot()}else{location.href='../login.html'}}).catch(function(){location.href='../login.html'})}else{boot()}
 })();
 
 /* v2.8.0: tokens layer injector (last-loaded override) */
-(function(){try{var l=document.createElement("link");l.rel="stylesheet";l.href=(typeof IS_ADMIN!=="undefined"&&IS_ADMIN?"../":"")+"assets/nova-tokens.css?v=288";document.head.appendChild(l)}catch(e){}})();
+(function(){try{var l=document.createElement("link");l.rel="stylesheet";l.href=(document.body.dataset.admin==='true'||document.body.dataset.adminReq==='true'?"../":"")+"assets/nova-tokens.css?v=288";document.head.appendChild(l)}catch(e){}})();

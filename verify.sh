@@ -21,6 +21,8 @@ eq "登录链在位" "$(grep -q authSwitch web/assets/app.js && grep -q auth/reg
 eq "切换钮归层在位" "$(grep -c '^#authSwitch{' web/assets/nova-finishing.css)" 1
 eq "app页普查棘轮" "$(grep -l 'id="app"' web/*.html | wc -l)" 15
 eq "fx接线棘轮" "$(grep -oE 'pdf-(compress|split)' web/assets/app.js | wc -l)" 4
+eq "admin旗硬编码棘轮" "$(grep -l 'data-admin="true"' web/admin/*.html 2>/dev/null | wc -l)" 0
+eq "adminReq旗棘轮" "$(grep -l 'data-admin-req="true"' web/admin/*.html 2>/dev/null | wc -l)" 10
 eq "工具数=27" "$(curl -s -b $J $B/api/tools | grep -o '"id"' | wc -l | tr -d ' ')" 27
 g "chmod 754" "$(curl -s -b $J -X POST $B/api/run/dev.chmod -d '{"input":"754","opts":{}}')" 'rwxr-xr--'
 g "subnet /26=62台" "$(curl -s -b $J -X POST $B/api/run/dev.subnet -d '{"input":"192.168.1.130/26","opts":{}}')" '62 台'
