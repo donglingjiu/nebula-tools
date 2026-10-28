@@ -84,3 +84,15 @@
 - 断链注记：上轮 DEPLOY.md 缺件（①回显早有预报「没有那个文件或目录」，未读成信号）——FileNotFoundError 断在第一写之前，工作区零污染（receipt 实证），门闸按设计拦下第 64 发；本轮改 create-if-missing 落刀——断在写前的失败是最便宜的失败
 - DEPLOY.md 重启契约入册（承重条款+标准配方+自检）；verify 43 棘轮「重启契约在册」上岗
 - W2 图纸在案：usersPage:167（演示数据全量）、GET /api/admin/users 形状 [{username,role,created_at}]、三 mutator 全 e2e 覆盖——下轮纯 web 零 Go 落刀；列瘦身（套餐/状态/AI 调用三列无数据源——裁到 username/role/created_at 或挂演示牌位）
+
+## 增补七：十月十七悬案破案与占位号终局（2026-10-28 · 第 65 发）
+
+- 破案：census 揪出 10-17 admin（role=admin · 2026-10-17T14:41:50）——DB 系 11 天在役库（History 416·Logs 500·Sessions 136·ToolState 27），「DB 非空」是文件历史非昨夜抢注；增补六「首用户 (?)」至此有名有姓
+- A 外科执行战报：只清 Users（四段全保）·.bak 在册（原 10-17 admin 备份可考）·fresh bootstrap 生效——但占位符第三次被字面执行（<真名>/<真密码> 入库为唯一 admin）
+- **阶梯终局（本发核心战果）**：login 占位→register 真（用户亲赋真值，具体值不入册）→promote→login 真→delete 占位→关门 allow_register=0——LADDER-OK sole-admin=admin，占位号消解，真号即唯一管理员，注册门已关
+- 系统性对策三件套（全部实战验证）：①REFUSE 守卫首战告捷（用户首版赋值含 <> 被拒，二次真值通过）；②凭据前置赋值（真值由用户先赋 RN/RP，脚本本体占位字面仅用于靶账号）；③子壳包裹（两次守卫 exit 均未杀会话——案二十六修法当轮兑现）
+- 案二十五入册：判决正则字段近视——weight 找 Runs/Workflows/LLMKeys 而 schema 实文 History/Logs/Sessions/ToolState，? 误读为轻；幸清库脚本外科边界独立自守（只清 Users），重数据无伤
+- 案二十六入册：顶层 exit 陷阱——交互壳裸跑 exit 1 连 SSH 会话一起杀；凡含 exit 的执行段必须整体包 ( ) 子壳
+- 案二十七入册：walrus 语法门·解析期中止·零副作用——:= 需 Python≥3.8，本机 3.7 拒解析——SyntaxError 炸在 parse 期、先于任何执行：文件零写入、哨兵零生成、commit 零发生，重跑完全幂等（本次即验证：同段原样重跑成功）
+- 挂账待考：data/ 并见 nova.db（45K·10-26）+shm（32K）+wal（745K）与 nova.json（233K 在写）——store.go:74 字面系 nova.json，db 系另一实现或遗留组件；与本刀无关（阶梯走 API 层），列入后续考古队列
+- 复跑双拦：旧定位器 miss data/（零伤）·死 PID readlink 空（零伤）——guard 再两次兑现；写死 PID 时代结束：后续一律 pgrep -f nova-server-linux 动态解析
