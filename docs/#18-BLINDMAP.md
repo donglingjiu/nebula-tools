@@ -76,3 +76,11 @@
 - 服务模型定谳（精化第 60 发「磁盘直服坐实」注记）：main.go //go:embed web 默认烤进二进制（部署=单可执行），NOVA_WEB_DIR 环境变量覆盖为 http.Dir 磁盘直服（dev 模式）——现役 38593 environ 实读携带 NOVA_WEB_DIR——env 门控磁盘直服实锤；重启配方漏 env 即回退烤盘旧资产，NOVA_WEB_DIR 系承重墙（重启配方据此为契约件）
 - 301 定性：Go FileServer index 规范化重定向（/admin/index.html → ./ → /admin/；/index.html → / 同理）——标准行为零改动；案二十四脚注：谜底良性收案，教训保留（传输层三证 301/空体/Location 本可一轮定谳）
 - 决策点移交：首注册者即 admin（store.go bootstrap）——管理台真接线联测前，第一枚账号注册权属由你定夺（建议亲手注册）
+
+## 增补六：DB 非空与部署契约入册（2026-10-28 · 第 64 发）
+
+- 注册探针回读 role=user——DB 非空，bootstrap admin 已被领走（首用户 (?) · census users_total=0，时间戳可判是昨夜服务首启后注册还是更早遗留）；占位账号「<你的名>」入库（密码字面已知）——权属确认后阶梯清理或随清库消解
+- 注册门：allow_register=未见键——实读自 census settings；真 admin 落定后建议 POST /api/admin/settings 关门（e2e:272 同款）
+- 断链注记：上轮 DEPLOY.md 缺件（①回显早有预报「没有那个文件或目录」，未读成信号）——FileNotFoundError 断在第一写之前，工作区零污染（receipt 实证），门闸按设计拦下第 64 发；本轮改 create-if-missing 落刀——断在写前的失败是最便宜的失败
+- DEPLOY.md 重启契约入册（承重条款+标准配方+自检）；verify 43 棘轮「重启契约在册」上岗
+- W2 图纸在案：usersPage:167（演示数据全量）、GET /api/admin/users 形状 [{username,role,created_at}]、三 mutator 全 e2e 覆盖——下轮纯 web 零 Go 落刀；列瘦身（套餐/状态/AI 调用三列无数据源——裁到 username/role/created_at 或挂演示牌位）
