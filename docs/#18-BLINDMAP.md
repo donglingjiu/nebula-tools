@@ -69,3 +69,10 @@
 - 活体定谳：/admin/index.html 返回 301 重定向——浏览器真实路径以 Location/followed 回显为准；W1c 开案：循重定向补刀活体验收
 - 五探针四绿在案：app.js gate=2、ratchet=111、me 401、盘面双棘轮 PASS——JS 门与 API 墙活体俱在，悬而未决的只是 HTML body 的传输 provenance
 - 棘轮辖区注记：verify 双棘轮系盘面管辖（grep web/admin/*.html），活体传输层不在其辖——盘面绿+活体红不矛盾，是两层各说各话
+
+## 增补五：W1c 收案与服务模型定谳（2026-10-28 · 第 63 发）
+
+- W1c 收案：循 301 补刀——/admin/ code=200、body md5 与盘面新版一致（a137f8a1）、data-admin-req 活体命中；analytics.html 直达同验——W1b 客户端半墙端到端生效（浏览器级最后一步留你亲验：未登录开 /admin/ 应落 login.html）
+- 服务模型定谳（精化第 60 发「磁盘直服坐实」注记）：main.go //go:embed web 默认烤进二进制（部署=单可执行），NOVA_WEB_DIR 环境变量覆盖为 http.Dir 磁盘直服（dev 模式）——现役 38593 environ 实读携带 NOVA_WEB_DIR——env 门控磁盘直服实锤；重启配方漏 env 即回退烤盘旧资产，NOVA_WEB_DIR 系承重墙（重启配方据此为契约件）
+- 301 定性：Go FileServer index 规范化重定向（/admin/index.html → ./ → /admin/；/index.html → / 同理）——标准行为零改动；案二十四脚注：谜底良性收案，教训保留（传输层三证 301/空体/Location 本可一轮定谳）
+- 决策点移交：首注册者即 admin（store.go bootstrap）——管理台真接线联测前，第一枚账号注册权属由你定夺（建议亲手注册）
