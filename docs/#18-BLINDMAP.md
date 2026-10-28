@@ -107,3 +107,10 @@
 - me precheck 扩展：ADMIN_REQ 分支里 me 成功且 adminPage==='users' 时 refreshUsers+refreshDoor——数据在 boot 前到位
 - 棘轮×2：users演示数据=0（128,436/userRows/演示账户全退役）· users真接线≥12（ADMIN_USERS_LIVE/refreshUsers/adminUserAction 等标识在案）——W2 完成的绊线
 - 兼容性纪律：Python 3.6.4 本机实测——heredoc 全段无 walrus、无 f-string =、无海象——案二十七修法沿用
+
+## 增补九：W2 收尾——弹药库清除与口径校准（2026-10-28 · 第 67 发）
+
+- 换段边界教训：外科刀只切了 usersPage 渲染函数，userRows 全局数据常量在换段外幸存——渲染退役不等于数据退役；另 128,436（adminDashboard metric 同伙）与「演示账户」字样各 1 处散落——共 3 处残留触发演示数据棘轮 FAIL
+- 修法：userRows 定义段整删（弹药库清空）· 128,436→0（假数退位，dashboard 真接线留 W3）· 演示账户→真实账户；三词 count 归零，style 111 无伤
+- 棘轮口径校准：users真接线 12→10——grep -c 数行数、v.count 数次数，写阈值前必先实测口径（案二十八）
+- 案二十八入册：拍脑袋阈值×口径错位——棘轮值必须来自实测（先跑 grep -c 拿读数，再把读数写进 eq），不是来自「感觉该有 12 个」
