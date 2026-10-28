@@ -5,7 +5,7 @@ if(typeof window.toast!=='function'){window.toast=function(m,t){var bad=/失败|
 'use strict';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const PAGE=document.body.dataset.page||'home';
-const ADMIN_REQ=document.body.dataset.adminReq==='true';
+var ME_CACHE=null;var ADMIN_USERS_LIVE=[];var DOOR_STATE="unknown";const ADMIN_REQ=document.body.dataset.adminReq==='true';
 let IS_ADMIN=document.body.dataset.admin==='true';
 const ROOT=$('#app');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -164,7 +164,73 @@ function adminShell(inner){return `<div class="admin-shell">${adminHeader()}<div
 function adminPageTitle(eyebrow,title,sub,action=''){return pageTitle(eyebrow,title,sub,action)}
 function adminDashboard(){return `${adminPageTitle('ADMIN / OVERVIEW','管理总览','平台运行情况、工具使用和用户活跃度的统一视图。',`<button class="secondary" data-open-modal="date-range">${icon('calendar',14)} 最近 30 天</button><button class="primary" data-export-csv>${icon('download',14)} 导出概览</button>`)}<div class="metric-grid">${metric('注册用户','128,436','12.5%','users')}${metric('本月工具调用','3,678,920','18.2%','zap','violet')}${metric('任务完成率','98.6%','1.4%','check','mint')}${metric('平均响应时间','142 ms','8.1%','clock','peach')}</div><div class="section chart-layout"><section class="panel chart-card"><div class="chart-title"><div><h3>平台活跃与调用趋势</h3><p>按日汇总的调用与用户趋势</p></div><button class="secondary btn-sm" data-open-modal="date-range">${icon('calendar',12)} 调整周期</button></div>${lineChart('adminUsage',true)}<div class="legend"><span><i></i>工具调用</span><span><i class="purple"></i>活跃用户</span></div></section><section class="panel chart-card"><div class="chart-title"><div><h3>工具类别分布</h3><p>近 30 天使用占比</p></div></div>${donut()}<a class="text-link" href="tools.html">前往工具管理 ${icon('arrow',13)}</a></section></div><div class="section split"><section class="table-card"><div class="table-toolbar"><div><h3>最近系统事件</h3><span class="tiny muted">实时活动流（演示）</span></div><a class="text-link" href="logs.html">查看日志 ${icon('arrow',12)}</a></div><div class="table-wrap"><table><thead><tr><th>事件</th><th>范围</th><th>时间</th><th>状态</th></tr></thead><tbody>${[['批量文件转换完成','文件处理','14:32','成功'],['工具目录更新','工具管理','14:21','成功'],['新用户注册','用户管理','13:58','成功'],['运营报告已生成','数据分析','13:40','成功'],['AI 服务响应波动','服务监控','12:52','已恢复']].map(r=>`<tr><td><strong style="color:#2a3a5e">${r[0]}</strong></td><td>${r[1]}</td><td>${r[2]}</td><td><span class="status ${r[3]==='已恢复'?'processing':''}">${r[3]}</span></td></tr>`).join('')}</tbody></table></div></section><section class="panel"><div class="panel-head"><div><h3>平台健康度</h3><p>静态演示指标</p></div><span class="tag good">运行平稳</span></div>${[['API 可用性','99.98%','good'],['文件队列','42 个任务','good'],['AI 调用延迟','142 ms','good'],['通知服务','正常','good']].map(x=>`<div class="settings-row"><div><strong>${x[0]}</strong><p>最近监测值</p></div><span class="status">${x[1]}</span></div>`).join('')}<a class="secondary" href="settings.html" style="width:100%;margin-top:15px">系统设置 ${icon('arrow',13)}</a></section></div>`}
 const userRows=[['林晓雨','lin.xiaoyu@example.com','Pro','正常','2026-04-12'],['周启明','zhou.qiming@example.com','Free','正常','2026-04-11'],['苏可欣','su.kexin@example.com','Pro','正常','2026-04-10'],['陈一诺','chen.yinuo@example.com','Team','待验证','2026-04-09'],['许嘉言','xu.jiayan@example.com','Free','正常','2026-04-08'],['沈知夏','shen.zhixia@example.com','Team','已暂停','2026-04-07'],['林予安','lin.yuan@example.com','Free','正常','2026-04-06']];
-function usersPage(){return `${adminPageTitle('ADMIN / USERS','用户管理','搜索账户、查看套餐与状态；所有用户操作在当前原型中仅本地演示。',`<button class="secondary" data-export-csv>${icon('download',14)} 导出用户</button><button class="primary" data-open-modal="add-user">${icon('plus',14)} 添加用户</button>`)}<div class="metric-grid nv-grid3">${metric('全部用户','128,436','12.5%','users')}${metric('活跃用户','86,421','8.6%','activity','mint')}${metric('待验证','1,206','2.3%','mail','peach')}</div><section class="section table-card"><div class="table-toolbar"><div><h3>用户列表</h3><span class="tiny muted">共 128,436 个演示账户</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><input class="field" style="width:240px" data-table-search="usersTable" placeholder="搜索名称、邮箱…"><select class="select" style="width:130px" data-table-filter="usersTable"><option value="all">全部状态</option><option>正常</option><option>待验证</option><option>已暂停</option></select></div></div><div class="table-wrap"><table id="usersTable"><thead><tr><th>用户</th><th>套餐</th><th>状态</th><th>注册日期</th><th>AI 调用</th><th>操作</th></tr></thead><tbody>${userRows.map((r,i)=>`<tr><td><div class="user-cell"><span class="user-dot">${r[0].slice(0,1)}</span><span><strong style="display:block;color:#293b60">${r[0]}</strong><small class="muted">${r[1]}</small></span></div></td><td><span class="tag ${r[2]==='Pro'?'info':r[2]==='Team'?'warm':''}">${r[2]}</span></td><td><span class="status ${r[3]==='正常'?'':r[3]==='待验证'?'processing':'idle'}">${r[3]}</span></td><td>${r[4]}</td><td>${(832-i*87).toLocaleString()}</td><td><button class="ghost-btn btn-sm" data-user-detail="${r[0]}">查看</button><button class="icon-btn" style="width:29px;height:29px" data-open-modal="user-actions" data-user-name="${r[0]}">${icon('more',13)}</button></td></tr>`).join('')}</tbody></table></div><div class="pagination"><button class="page-num active">1</button><button class="page-num" data-toast="已切换到第 2 页（演示）">2</button><button class="page-num" data-toast="已切换到第 3 页（演示）">3</button><button class="page-num" data-toast="已跳至下一页（演示）">${icon('chevron',12)}</button></div></section>`}
+function usersPage(){
+  const shell=adminPageTitle('ADMIN / USERS','用户管理','账户搜索、角色改派、密码重置与删除——全部真实操作。',`<button class="secondary" data-export-csv>${icon('download',14)} 导出用户</button>`);
+  return shell+`<div id="usersLive"><div class="section table-card" style="padding:32px;text-align:center"><span class="muted">正在加载用户…</span></div></div>`;
+}
+function renderUsersLive(users){
+  const box=document.getElementById('usersLive');
+  if(!box)return;
+  const me=(typeof ME_CACHE!=='undefined')?ME_CACHE.username:'';
+  if(!users||!users.length){box.innerHTML='<div class="section table-card" style="padding:32px;text-align:center"><span class="muted">暂无用户</span></div>';return}
+  const rows=users.map(u=>{
+    const self=u.username===me;
+    const roleTag=u.role==='admin'?'<span class="tag info">admin</span>':'<span class="tag">user</span>';
+    const btns=self
+      ?'<span class="muted" style="font-size:12px">当前登录（自我保护）</span>'
+      :`<button class="ghost-btn btn-sm" data-user-view="${u.username}">查看</button> <button class="ghost-btn btn-sm" data-user-role="${u.username}">${u.role==='admin'?'降为 user':'升为 admin'}</button> <button class="ghost-btn btn-sm" data-user-reset="${u.username}">重置密码</button> <button class="ghost-btn btn-sm" style="color:#c0392b" data-user-del="${u.username}">删除</button>`;
+    return `<tr><td><strong>${u.username}</strong></td><td>${roleTag}${self?' <span class="muted" style="font-size:11px">(me)</span>':''}</td><td>${(u.created_at||'').slice(0,10)}</td><td>${btns}</td></tr>`;
+  }).join('');
+  box.innerHTML=`<div class="metric-grid nv-grid3">${metric('全部用户',String(users.length),'','users')}${metric('管理员',String(users.filter(u=>u.role==='admin').length),'','shield')}${metric('注册门',DOOR_STATE==='closed'?'已关闭':'开放','','lock')}</div><section class="section table-card"><div class="table-toolbar"><div><h3>用户列表</h3><span class="tiny muted">共 ${users.length} 个真实账户</span></div></div><div class="table-wrap"><table><thead><tr><th>用户</th><th>角色</th><th>注册日期</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table></div></section>`;
+}
+function refreshUsers(){fetch('/api/admin/users').then(function(r){return r.ok?r.json():[]}).then(function(list){ADMIN_USERS_LIVE=list;renderUsersLive(list)}).catch(function(){renderUsersLive([])})}
+function refreshDoor(){fetch('/api/admin/settings').then(function(r){return r.ok?r.json():null}).then(function(s){DOOR_STATE=s&&s.allow_register==='0'?'closed':'open';var el=document.querySelector('[data-door-state]');if(el)el.textContent=DOOR_STATE==='closed'?'已关闭':'开放'}).catch(function(){})}
+function adminUserAction(kind,name,payload){
+  const enc=encodeURIComponent(name);
+  const cfg={method:kind==='del'?'DELETE':'POST',headers:{'Content-Type':'application/json'}};
+  if(payload)cfg.body=JSON.stringify(payload);
+  return fetch('/api/admin/users/'+enc+(kind==='role'?'/role':kind==='reset'?'/reset':''),cfg).then(function(r){return r.ok?{ok:true}:r.json().then(function(e){return{ok:false,err:e.error||('HTTP '+r.status)}})});
+}
+function bindUsersEvents(root){
+  if(root.__usersBound)return;root.__usersBound=true;
+  root.addEventListener('click',function(ev){
+    const t=ev.target.closest('[data-user-view],[data-user-role],[data-user-reset],[data-user-del],[data-export-csv],[data-door-toggle]');
+    if(!t)return;
+    if(t.hasAttribute('data-user-view')){
+      const name=t.getAttribute('data-user-view');
+      const u=(ADMIN_USERS_LIVE||[]).filter(function(x){return x.username===name})[0];
+      if(!u)return;toast('用户 '+name+' · '+(u.role||'?')+' · 注册 '+(u.created_at||'?').slice(0,10));
+    }
+    if(t.hasAttribute('data-user-role')){
+      const name=t.getAttribute('data-user-role');
+      const u=(ADMIN_USERS_LIVE||[]).filter(function(x){return x.username===name})[0];
+      if(!u)return;const target=u.role==='admin'?'user':'admin';
+      adminUserAction('role',name,{role:target}).then(function(res){if(res.ok){toast('已改派 '+name+' → '+target);refreshUsers()}else toast('失败：'+(res.err||'未知'))});
+    }
+    if(t.hasAttribute('data-user-reset')){
+      const name=t.getAttribute('data-user-reset');
+      const pw=prompt('为 '+name+' 设置新密码（≥6位）：');
+      if(pw===null)return;
+      adminUserAction('reset',name,{password:pw}).then(function(res){if(res.ok)toast('已重置 '+name+' 的密码');else toast('失败：'+(res.err||'未知'))});
+    }
+    if(t.hasAttribute('data-user-del')){
+      const name=t.getAttribute('data-user-del');
+      if(!confirm('确认删除用户 '+name+'？此操作不可撤销。'))return;
+      adminUserAction('del',name,null).then(function(res){if(res.ok){toast('已删除 '+name);refreshUsers()}else toast('失败：'+(res.err||'未知'))});
+    }
+    if(t.hasAttribute('data-export-csv')){
+      const rows=(ADMIN_USERS_LIVE||[]).map(function(u){return [u.username,u.role,(u.created_at||'').slice(0,10)].join(',')}).join('
+');
+      const blob=new Blob(['username,role,created_at
+'+rows],{type:'text/csv'});
+      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='nova-users.csv';a.click();
+    }
+    if(t.hasAttribute('data-door-toggle')){
+      const target=DOOR_STATE==='closed'?'1':'0';
+      fetch('/api/admin/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({allow_register:target})}).then(function(r){return r.ok}).then(function(ok){if(ok){toast('注册门 → '+(target==='0'?'关闭':'开放'));refreshDoor()}else toast('失败')});
+    }
+  });
+}
 const toolAdminRows=[['PDF 转 Word','文档处理','12,836','启用','fileText'],['Excel 数据洞察','数据分析','8,421','启用','chart'],['AI 需求分析','AI 助手','15,672','启用','brain'],['图片压缩','图像处理','6,234','启用','image'],['JSON 格式化','开发工具','4,321','启用','code'],['Markdown 编辑器','文档处理','3,124','停用','fileText'],['OCR 识别','图像处理','5,982','启用','eye']];
 function adminToolsPage(){return `${adminPageTitle('ADMIN / TOOL CATALOG','工具管理','维护工具目录、分类与上架状态，让用户总能发现合适的能力。',`<button class="secondary" data-export-csv>${icon('download',14)} 导出列表</button><button class="primary" data-open-modal="add-tool">${icon('plus',14)} 新增工具</button>`)}<div class="metric-grid nv-grid3">${metric('工具总数','128','6 个新增','grid')}${metric('正在使用','112','87.5%','check','mint')}${metric('待审核','6','需要关注','clock','peach')}</div><section class="section table-card"><div class="table-toolbar"><div><h3>工具目录</h3><span class="tiny muted">配置状态将在真实后台保存到数据库</span></div><div style="display:flex;gap:8px"><input class="field" style="width:220px" data-table-search="adminToolsTable" placeholder="搜索工具…"><button class="secondary btn-sm" data-open-modal="tool-category">${icon('sliders',13)} 分类</button></div></div><div class="table-wrap"><table id="adminToolsTable"><thead><tr><th>工具名称</th><th>分类</th><th>调用量</th><th>状态</th><th>首页推荐</th><th>操作</th></tr></thead><tbody>${toolAdminRows.map((r,i)=>`<tr><td><div class="user-cell"><span class="tool-icon ${i===1?'mint':i===3?'peach':i===4?'violet':''}" style="width:32px;height:32px;border-radius:10px">${icon(r[4],15)}</span><strong style="color:#293b60">${r[0]}</strong></div></td><td>${r[1]}</td><td>${r[2]}</td><td><span class="status ${r[3]==='启用'?'':'idle'}">${r[3]}</span></td><td><button class="switch ${i<4?'on':''}" role="switch" aria-checked="${i<4}" data-switch-label="首页推荐"></button></td><td><button class="ghost-btn btn-sm" data-tool-edit="${r[0]}">编辑</button><button class="icon-btn" style="width:28px;height:28px" data-toast="更多工具操作（演示）">${icon('more',13)}</button></td></tr>`).join('')}</tbody></table></div></section>`}
 function adminAnalyticsPage(){return `${adminPageTitle('ADMIN / ANALYTICS','运营分析','用稳定、可读的指标跟踪平台增长、工具使用和服务体验。',`<button class="secondary" data-open-modal="date-range">${icon('calendar',14)} 自定义周期</button><button class="primary" data-export-csv>${icon('download',14)} 导出报告</button>`)}<div class="metric-grid">${metric('日活用户','42,681','8.6%','users')}${metric('工具调用','186,324','13.2%','zap','violet')}${metric('转换成功率','98.56%','1.8%','check','mint')}${metric('平均用时','4.3 秒','11%','clock','peach')}</div><div class="section chart-layout"><section class="panel chart-card"><div class="chart-title"><div><h3>增长趋势</h3><p>用户与工具调用的日趋势</p></div><div class="tabs"><button class="tab active" data-chart-period="7">7 天</button><button class="tab" data-chart-period="30">30 天</button><button class="tab" data-chart-period="90">90 天</button></div></div>${lineChart('adminLine',true)}<div class="legend"><span><i></i>工具调用</span><span><i class="purple"></i>用户增长</span></div></section><section class="panel chart-card"><div class="chart-title"><div><h3>调用类别</h3><p>按业务模块汇总</p></div></div>${donut()}</section></div><div class="section chart-layout"><section class="panel chart-card"><div class="chart-title"><div><h3>各工具调用量</h3><p>按近 30 天使用量排名</p></div></div>${barChart()}</section><section class="panel"><div class="panel-head"><h3>运营洞察</h3><span class="tag info">AI 摘要</span></div>${[['文档转换需求增长','优化批量处理引导','brain'],['AI 工作流完成率提升','增加可复用模板','workflow'],['移动端使用增长','持续优化窄屏交互','smartphone']].map(x=>`<div class="prompt-card"><span class="prompt-icon">${icon(x[2],16)}</span><div><strong>${x[0]}</strong><p>${x[1]}</p></div></div>`).join('')}</section></div>`}
@@ -231,7 +297,7 @@ function routeToAI(prompt){const target=href('ai.html');if(sessionSet('novaPromp
 function init(){
   if(!ROOT)return;
   if(IS_ADMIN){
-    ROOT.innerHTML=adminShell(renderAdmin());
+    ROOT.innerHTML=adminShell(renderAdmin());bindUsersEvents(ROOT);
   }else if(PAGE==='login'){
     ROOT.innerHTML=renderFrontend();
     var sw=document.getElementById('authSwitch');
@@ -520,7 +586,7 @@ function badges(){
     }).catch(function(){});
   }
   function boot(){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init)}else{init()}}
-if(ADMIN_REQ){fetch('/api/auth/me').then(function(r){return r.ok?r.json():null}).then(function(j){if(j&&j.role==='admin'){document.body.dataset.admin='true';IS_ADMIN=true;boot()}else{location.href='../login.html'}}).catch(function(){location.href='../login.html'})}else{boot()}
+if(ADMIN_REQ){fetch('/api/auth/me').then(function(r){return r.ok?r.json():null}).then(function(j){if(j&&j.role==='admin'){document.body.dataset.admin='true';IS_ADMIN=true;ME_CACHE=j;if(document.body.dataset.adminPage==='users'){refreshUsers();refreshDoor()}boot()}else{location.href='../login.html'}}).catch(function(){location.href='../login.html'})}else{boot()}
 })();
 
 /* v2.8.0: tokens layer injector (last-loaded override) */

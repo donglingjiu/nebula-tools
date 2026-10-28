@@ -96,3 +96,14 @@
 - 案二十七入册：walrus 语法门·解析期中止·零副作用——:= 需 Python≥3.8，本机 3.7 拒解析——SyntaxError 炸在 parse 期、先于任何执行：文件零写入、哨兵零生成、commit 零发生，重跑完全幂等（本次即验证：同段原样重跑成功）
 - 挂账待考：data/ 并见 nova.db（45K·10-26）+shm（32K）+wal（745K）与 nova.json（233K 在写）——store.go:74 字面系 nova.json，db 系另一实现或遗留组件；与本刀无关（阶梯走 API 层），列入后续考古队列
 - 复跑双拦：旧定位器 miss data/（零伤）·死 PID readlink 空（零伤）——guard 再两次兑现；写死 PID 时代结束：后续一律 pgrep -f nova-server-linux 动态解析
+
+## 增补八：T7-W2 users 真接线（2026-10-28 · 第 66 发）
+
+- 王冠易主收官后首件施工：usersPage 全量换真——fetch /api/admin/users → [{username,role,created_at}] → 渲染；演示数字（128,436/86,421/1,206）→ 真数（users.length / admin count / 门状态）；userRows 假数据全量退役
+- 列瘦身：套餐/状态/AI 调用三列无数据源全裁——改为用户/角色/注册日期/操作四列（全有源）；表头同步
+- 四钮真钮化（data-toast 假面退役）：查看（toast 显示三元组）· role 改派（POST /role，admin↔user 双向，含 me 自我保护显示）· 重置密码（POST /reset，prompt 输入≥6位）· 删除（DELETE，confirm 二次确认）——全部端点 e2e 覆盖在案
+- 附加：导出 CSV 前端生成（username,role,created_at）· 注册门开关（POST /settings allow_register 切换）· me 驱动「当前登录（自我保护）」标识（后端不能删自己守卫的前端镜像）
+- 事件机制：bindUsersEvents 单次绑定（__usersBound 幂等守卫）+ closest 委托——避免重复 init 时多绑
+- me precheck 扩展：ADMIN_REQ 分支里 me 成功且 adminPage==='users' 时 refreshUsers+refreshDoor——数据在 boot 前到位
+- 棘轮×2：users演示数据=0（128,436/userRows/演示账户全退役）· users真接线≥12（ADMIN_USERS_LIVE/refreshUsers/adminUserAction 等标识在案）——W2 完成的绊线
+- 兼容性纪律：Python 3.6.4 本机实测——heredoc 全段无 walrus、无 f-string =、无海象——案二十七修法沿用
