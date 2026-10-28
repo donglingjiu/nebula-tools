@@ -71,6 +71,7 @@
 - 案二十一终审（出处）：三嫌疑全排——16 枚 tag 全 nova、origin/dist 纯二进制分发支（树仅 1 文件）、root commit（1d5fe74）仅 SKILL.md 无 go.mod；对象库暗线坐实——嵌套 7 文件 blob 全部命中本仓 ODB（git add 后撤销实证），b64595b（124KB Nova 静态原型）为 ODB 第二件游离物；dangling commit：无（只到过暂存区，未到过提交层）；定谳：外部来源·曾入暂存区·从未提交未认领，留档 quarantine。法（续）：对象库不说谎——blob 在而引用无，即 add 过又撤了；fsck 的 dangling 名单是工作区历史的沉积层。
 - 案二十二（工具链配方漏抄+断链无灯）：第 57 发 gate 的 export 行漏抄 CGO_ENABLED=0（53~56 发逐轮在案的配方件）——老 gcc 不识别 -fno-stack-protector，runtime/cgo 构建失败，vet/test 同根被误杀；&& 链在 vet 处静默截断，无任何回显（无 GATE-BLOCKED、无 TEST-OK），靠 receipt 的 M 文件与缺失行察觉。法：工具链 export 配方是原子整行（PATH/GOPROXY/GOMAXPROCS/CGO_ENABLED 四件全带，复制禁止节选）——漏一个环境变量=换了一台宿主，案十八的宿主口供不止版本还有配方变量；gate 链断点必须有灯——&& 链中断天然静默，if/else 显式分支或末尾状态行兜底（案十三分号尾巴的姊妹案：一处在链外泄，一处在链内断）。
 - 案二十三（空干草堆 0 伪影）：口供⑤定位器 grep -l 'auth/me' *.go 被 e2e_test.go 抢答（glob 字母序首匹配），handler 名从测试参数捞出伪名，me-body grep 空转——三面 0 旗在空干草堆上算出，0 是伪影不是证据；同轮第二伪影：admin-reg 正则引号位置不贴实文字形（"POST /api/… 引号在动词前），空回显险些误读为无路由。法：零旗先问干草堆——「没有发现」与「没有找」输出不可分、方法可分，0 结果必报取样范围与干草堆体积；grep 回显三证（文件名/行号/上下文）先于结论；最硬的证人在活体——curl 在役服务 401 五连当场洗清 W0 疑罪（s.admin 包装静态佐证），「怀疑被探针证伪」与「被探针坐实」同为探针的荣誉。
+- 案二十四（活体 0 伪影·body 户籍未验）：W1b 活体验收五探针四绿，唯 live /admin/index.html 双零（req-flag=0 且 hardcode=0）——盘面双棘轮 PASS、app.js 同目录活体在案，body 既非新版亦非旧版，即所服务 body 根本不是盘面那枚文件；而探针未验 http_code/content-type/size/编码便径直 grep。法：活体 0 旗三证先行——code、type/encoding、size 必先于 body grep；gzip/重定向/404/SPA 兜底都能让正确 pattern 在错误 body 上得 0（案二十三活体姊妹案：静态 0 问干草堆，活体 0 问传输层）；--compressed 才是完整握手（curl 默认不发 Accept-Encoding）；盘面棘轮与活体验收是两层管辖，盘绿体红不矛盾，是各说各话——两层都要绿才算绿。
 
 
 ## 附件10：军规 #18 部署顺序铁律（2026-10-26）

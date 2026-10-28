@@ -63,3 +63,9 @@
 - W1b（additive-only）：十壳 data-admin="true"→data-admin-req="true"（身份硬编码降格为门槛声明）；app.js ADMIN_REQ 异步门——admin 页先打 /api/auth/me，role==admin 注旗 boot，否则 ../login.html；tokens 注入器改读 body.dataset（作用域无关，贴合作者本意的 ../ 前缀）；代价：admin 页首帧白屏一个 me 往返（可接受，骨架屏缓行）
 - 棘轮×2：admin旗硬编码=0、adminReq=10——客户端半边有绊线；服务端半边由 e2e 全流程覆盖在案
 - 伪影二连（glob 抢答 + 引号字形不合）→ 案二十三；0 旗必问干草堆，正则必贴字形
+
+## 增补四：W1b 活体验收与传输伪影（2026-10-28 · 第 62 发）
+
+- 活体定谳：/admin/index.html 返回 301 重定向——浏览器真实路径以 Location/followed 回显为准；W1c 开案：循重定向补刀活体验收
+- 五探针四绿在案：app.js gate=2、ratchet=111、me 401、盘面双棘轮 PASS——JS 门与 API 墙活体俱在，悬而未决的只是 HTML body 的传输 provenance
+- 棘轮辖区注记：verify 双棘轮系盘面管辖（grep web/admin/*.html），活体传输层不在其辖——盘面绿+活体红不矛盾，是两层各说各话
