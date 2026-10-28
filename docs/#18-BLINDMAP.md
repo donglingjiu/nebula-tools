@@ -43,3 +43,13 @@
 - admin 壳裁决维持：五口径含内联合计零 /api/admin 命中——13 路盲名单坐实，「挂线≠通电」定稿
 - ODB 第二游离物定谳：b64595b ≠ 现行 app.js（7b480432）——124KB「Nova 静态原型」为 app.js 祖先版本，自家迭代沉积（良性），与 gin 快照无涉
 - 测绘自省第 4 条：口径五——HTML 内联 script（admin-refs 初查只扫 app.js，42 张 HTML 的内联块从未入普查）——盲图自己埋的「待核」旗收旗后，普查闭合
+
+## 增补二：fx UI 层定谳与快修（2026-10-28 · 第 60 发）
+
+- 卡层真相：converter-options 与 data-detail-format 卡片均由 app.js 模板串动态渲染（workspacePage/detailPage）——SPA 壳的 HTML 静态 grep 天然盲；上轮「全 HTML 零命中」是壳层空、非卡层无
+- 全栈对照（修前）：五真（detail-Word/Excel、work-Word/Excel/PDF）+ compress 附属暗道（合并特支 sws[2] 开关附加 opts.compress）+ 三假卡（detail-PPT、detail-Image、work-Summary——有卡无键，点击落「即将上线」toast，属有预告的体面假面）+ 两路无 UI（fx/compress、fx/split——路由在、EP 无键、卡无位，toast「已支持拆分/压缩」承诺大于 UI 路由面）
+- 本轮快修（additive-only）：EP+2 键、卡+2（压缩/拆分）、ext 三态（docx/xlsx/默认 .pdf）、label 映射（fx 错误提示不再冒「PDF→Excel」名）——compress/split 转全栈接线，toast 承诺当轮兑现；style 棘轮 111 原样（新增卡零内联样式）
+- 假面处置：三假卡入 T7 牌位——detail-PPT/Image 需新路由或摘卡；work-Summary 宜接 /api/ai/chat 或移出转换卡组——一面一账
+- paas 定谳：llm.html 两处命中均文档文案（placeholder 示例+脚注典型 Base URL），非调用——无害
+- 口径自省（续）：六=动态拼接（api('/api/llm/'+path)——chat/usage/llm 三份助手）；七=SPA 模板串（卡片与文案活在 app.js 反引号里）——静态普查三层盲区至此闭合
+- 卫生挂签：web/assets 下 app.js.bak~bak6 六代备份与 nova-v4/v5/v6.css 多代样式共存——删除决策缓行另案（防误伤在役引用）
