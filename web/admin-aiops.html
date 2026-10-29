@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 运营 · 后台</title>
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<link rel="stylesheet" href="/assets/css/admin.css">
+<style>
+.nb-toggles { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px; }
+.nb-tg { display:flex; align-items:center; gap:12px; }
+.nb-tg b { font-size:14px; display:block; }
+.nb-tg small { color:var(--text-sub); font-size:12px; }
+.nb-metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-top:12px; }
+</style>
+</head>
+<body class="nb-skin">
+<header class="nb-header">
+  <a class="nb-logo" href="/"><i aria-hidden="true"></i>Nova Tools</a>
+  <span class="nb-admin-tag">管理后台</span>
+  <div class="nb-user" id="userChip"></div>
+</header>
+<div class="nb-admin">
+  <aside class="nb-side">
+    <div class="grp">运营</div>
+    <a href="/admin.html">概览</a>
+    <a href="/admin-features.html">功能池</a>
+    <a href="/admin-aiops.html">AI 运营</a>
+    <div class="grp">系统</div>
+    <a href="/admin-keys.html">LLM 密钥</a>
+    <a href="/admin-users.html">用户</a>
+    <a href="/admin-monitor.html">监控报警</a>
+  </aside>
+  <main class="nb-main">
+    <h2>AI 运营</h2>
+    <p class="sub" id="tip">总控开关仅超级管理员可操作，实时生效；接口阶段5接真，当前操作提示失败属预期。</p>
+    <div class="nb-card" style="margin-bottom:14px">
+      <h3 style="margin:0 0 12px;font-size:15px">总控开关</h3>
+      <div class="nb-toggles">
+        <div class="nb-tg">
+          <span class="nb-switch"><input type="checkbox" id="sw_ai"><span class="nb-switch-track"></span></span>
+          <span><b>AI 总开关</b><small>关闭后全站 AI 功能暂停服务</small></span>
+        </div>
+        <div class="nb-tg">
+          <span class="nb-switch"><input type="checkbox" id="sw_paid"><span class="nb-switch-track"></span></span>
+          <span><b>付费模式</b><small>开启后 AI 模块按功能池计费</small></span>
+        </div>
+        <div class="nb-tg">
+          <span style="flex:1"><b>默认模型</b>
+            <select class="nb-input" id="sel_model" style="margin-top:6px"><option value="">加载中…</option></select>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="nb-card" style="margin-bottom:14px">
+      <h3 style="margin:0 0 4px;font-size:15px">今日概览</h3>
+      <div class="nb-metrics">
+        <div class="nb-metric"><b id="m_tok">–</b><span>Token 消耗</span></div>
+        <div class="nb-metric"><b id="m_calls">–</b><span>调用次数</span></div>
+        <div class="nb-metric"><b id="m_rate">–</b><span>成功率</span></div>
+        <div class="nb-metric"><b id="m_ms">–</b><span>平均延迟</span></div>
+      </div>
+    </div>
+    <div class="nb-card">
+      <h3 style="margin:0 0 10px;font-size:15px">调用明细（近 50 条）</h3>
+      <table class="nb-table" style="width:100%">
+        <thead><tr><th>时间</th><th>用户</th><th>模块</th><th>模型</th><th>tokens</th><th>耗时</th><th>状态</th></tr></thead>
+        <tbody id="rows"><tr><td colspan="7" style="color:var(--text-sub)">阶段5接入后展示</td></tr></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+<script src="/assets/js/core.js"></script>
+<script src="/assets/js/admin.js"></script>
+<script>
+/* 契约(阶段5):
+   GET /api/admin/ai/ops -> {switches:{ai_enabled,paid_mode,default_profile_id},today:{tokens,calls,success_rate,avg_ms},recent:[{ts,user,module,model,tokens,ms,ok}]}
+   PUT /api/admin/ai/ops {ai_enabled?|paid_mode?|default_profile_id?} 仅超级管理员
+   GET /api/admin/llm/profiles 复用密钥页接口填充默认模型下拉 */
+(function(){
+  var NB = window.NB, $ = function(id){ return document.getElementById(id); };
+  function loadOps(){
+    NB.api('/api/admin/ai/ops'
+      $('sw_ai').checked = !!r.switches.ai_enabled;
+      $('sw_paid').checked = !!r.switches.paid_mode;
+      $('m_tok').textContent = NB.fmtNum(r.today.tokens);
+      $('m_calls').textContent = NB.fmtNum(r.today.calls);
+      $('m_rate').textContent = r.today.success_rate + '%';
+      $('m_ms').textContent = r.today.avg_ms + 'ms';
+      var tb = $('rows'); tb.innerHTML = '';
+      (r.recent || []).forEach(function(x){
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + NB.fmtDate(x.ts) + '</td><td>' + NB.escape(x.user) + '</td>' +
+          '<td>' + NB.escape(x.module) + '</td><td>' + NB.escape(x.model) + '</td>' +
+          '<td>' + NB.fmtNum(x.tokens) + '</td><td>' + x.ms + 'ms</td>' +
+          '<td>' + (x.ok ? '成功' : '<span class="nb-badge-paid">失败</span>') + '</td>';
+        tb.appendChild(tr);
+      });
+    }).catch(function(e){ $('tip').textContent = '加载失败(阶段5接入): ' + e.message; });
+  }
+  function loadModels(){
+    NB.api('/api/admin/llm/profiles').then(function(r){
+      var sel = $('sel_model'), ps = r.profiles || [];
+      sel.innerHTML = '';
+      if(!ps.length){ sel.innerHTML = '<option value="">暂无 Profile, 先到 LLM 密钥新增</option>'; return; }
+      ps.forEach(function(p){
+        var o = document.createElement('option');
+        o.value = p.id; o.textContent = p.name + ' · ' + p.model + (p.enabled ? '' : '（停用）');
+        sel.appendChild(o);
+      });
+    }).catch(function(){ $('sel_model').innerHTML = '<option value="">接口阶段5接入</option>'; });
+  }
+  $('sw_ai').onchange = function(){
+    var on = this.checked;
+    NB.api('/api/admin/ai/ops', { method:'PUT', body:{ ai_enabled:on } })
+      .then(function(){ NB.toast('AI 总开关：' + (on ? '开启' : '关闭')); })
+      .catch(function(){}).then(loadOps);
+  };
+  $('sw_paid').onchange = function(){
+    var on = this.checked;
+    NB.api('/api/admin/ai/ops', { method:'PUT', body:{ paid_mode:on } })
+      .then(function(){ NB.toast('付费模式：' + (on ? '开启' : '关闭')); })
+      .catch(function(){}).then(loadOps);
+  };
+  $('sel_model').onchange = function(){
+    var v = this.value;
+    if(!v) return;
+    NB.api('/api/admin/ai/ops', { method:'PUT', body:{ default_profile_id:v } })
+      .then(function(){ NB.toast('默认模型已更新'); }).catch(function(){});
+  };
+  NB.adminNav();
+  NB.adminGate(function(){ loadOps(); loadModels(); });
+  NB.bindUserChip($('userChip'));
+})();
+</script>
+</body>
+</html>

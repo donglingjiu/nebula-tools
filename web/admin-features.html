@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>功能池 · 后台</title>
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body class="nb-skin">
+<header class="nb-header">
+  <a class="nb-logo" href="/"><i aria-hidden="true"></i>Nova Tools</a>
+  <span class="nb-admin-tag">管理后台</span>
+  <div class="nb-user" id="userChip"></div>
+</header>
+<div class="nb-admin">
+  <aside class="nb-side">
+    <div class="grp">运营</div>
+    <a href="/admin.html">概览</a>
+    <a href="/admin-features.html">功能池</a>
+    <a href="/admin-aiops.html">AI 运营</a>
+    <div class="grp">系统</div>
+    <a href="/admin-keys.html">LLM 密钥</a>
+    <a href="/admin-users.html">用户</a>
+    <a href="/admin-monitor.html">监控报警</a>
+  </aside>
+  <main class="nb-main">
+    <h2>功能池</h2>
+    <p class="sub" id="tip">上下线即时生效（前台 60 秒内隐藏入口，API 返回 410）；付费与价格阶段5生效。功能清单阶段5从服务端加载。</p>
+    <div class="nb-card" style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <div id="chips" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      <input class="nb-input" id="q" placeholder="搜索功能…" style="max-width:200px;margin-left:auto" aria-label="搜索功能">
+    </div>
+    <div id="grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px"></div>
+  </main>
+</div>
+<script src="/assets/js/core.js"></script>
+<script src="/assets/js/admin.js"></script>
+<script>
+/* 契约(阶段5):
+   GET /api/admin/features -> {features:[{id,key,name,category,enabled,is_paid,price,calls_7d,success_rate}]}
+   PUT /api/admin/features/{id} {enabled?|is_paid?|price?} */
+(function(){
+  var NB = window.NB, $ = function(id){ return document.getElementById(id); };
+  var F = [], CATS = ['全部','AI','文档','表格','数据','PPT','脑图'], cur = '全部', kw = '';
+  function chips(){
+    var c = $('chips'); c.innerHTML = '';
+    CATS.forEach(function(cat){
+      var b = document.createElement('button');
+      b.className = 'nb-btn nb-btn--sm ' + (cat === cur ? 'nb-btn--ai' : 'nb-btn--ghost');
+      b.textContent = cat;
+      b.onclick = function(){ cur = cat; chips(); render(); };
+      c.appendChild(b);
+    });
+  }
+  function render(){
+    var g = $('grid'); g.innerHTML = '';
+    var list = F.filter(function(f){
+      return (cur === '全部' || f.category === cur) && (!kw || (f.name + ' ' + f.key).toLowerCase().indexOf(kw) > -1);
+    });
+    if(!list.length){
+      g.innerHTML = '<p class="nb-todo-card" style="grid-column:1/-1">暂无功能数据（阶段5接入后展示全量功能池：文档 / 表格 / 数据 / PPT / 脑图 / AI）。</p>';
+      return;
+    }
+    list.forEach(function(f){
+      var d = document.createElement('div'); d.className = 'nb-card';
+      d.innerHTML = '<div style="display:flex;align-items:center;gap:8px">' +
+        '<b style="flex:1;font-size:15px">' + NB.escape(f.name) + '</b>' +
+        '<span class="nb-switch"><input type="checkbox" data-a="sw"' + (f.enabled ? ' checked' : '') + '><span class="nb-switch-track"></span></span></div>' +
+        '<p style="margin:6px 0 0;font-size:12px;color:var(--text-sub)">' + NB.escape(f.category) +
+        ' · <code>' + NB.escape(f.key) + '</code></p>' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;color:var(--text-sub);flex-wrap:wrap">' +
+        '<span>7日 ' + NB.fmtNum(f.calls_7d) + ' 次</span><span>成功率 ' + f.success_rate + '%</span>' +
+        '<label style="margin-left:auto;display:flex;gap:4px;align-items:center">付费' +
+        '<input type="checkbox" data-a="paid"' + (f.is_paid ? ' checked' : '') + '></label>' +
+        '<input class="nb-input" data-a="price" type="n
+      d.querySelector('[data-a=sw]').onchange = function(){
+        var on = this.checked;
+        NB.api('/api/admin/features/' + f.id, { method:'PUT', body:{ enabled:on } })
+          .then(function(){ NB.toast(f.name + (on ? ' 已上线' : ' 已下线')); })
+          .catch(function(){}).then(load);
+      };
+      var paid = d.querySelector('[data-a=paid]'), price = d.querySelector('[data-a=price]');
+      function savePay(){
+        NB.api('/api/admin/features/' + f.id, { method:'PUT', body:{ is_paid: paid.checked, price: Number(price.value) || 0 } })
+          .then(function(){ NB.toast(f.name + ' 付费设置已保存'); }).catch(function(){});
+      }
+      paid.onchange = savePay; price.onchange = savePay;
+      g.appendChild(d);
+    });
+  }
+  function load(){
+    NB.api('/api/admin/features').then(function(r){ F = r.features || []; render(); })
+      .catch(function(e){ $('tip').textContent = '加载失败(阶段5接入): ' + e.message; render(); });
+  }
+  $('q').oninput = NB.debounce(function(){ kw = this.value.trim().toLowerCase(); render(); }, 200);
+  NB.adminNav();
+  NB.adminGate(function(){ chips(); load(); });
+  NB.bindUserChip($('userChip'));
+})();
+</script>
+</body>
+</html>

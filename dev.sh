@@ -19,7 +19,7 @@ case "${1:-help}" in
      CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o nebula-tools . && echo BUILD_OK ;;
   smoke) # 冒烟：./dev.sh smoke http://127.0.0.1:8080
      B="${2:-http://127.0.0.1:8080}"; fail=0
-     for u in / /ai-studio.html /login.html /register.html /profile.html /ai-chat.html /admin.html /admin-keys.html /assets/css/tokens.css /assets/css/admin.css /assets/js/core.js /assets/js/ai-studio.js /assets/js/ai-chat.js /assets/js/admin.js; do
+     for u in / /ai-studio.html /login.html /register.html /profile.html /ai-chat.html /admin.html /admin-keys.html /admin-aiops.html /admin-features.html /assets/css/tokens.css /assets/css/admin.css /assets/js/core.js /assets/js/ai-studio.js /assets/js/ai-chat.js /assets/js/admin.js; do
        GET "${B}${u}" >/dev/null 2>&1 && echo "PASS 200 ${u}" || { echo "FAIL ${u}"; fail=1; }
      done
      GET "${B}/ai-studio.html" | grep -q "AI 工作台" && echo "PASS mark ai-studio" || { echo "FAIL mark ai-studio"; fail=1; }
@@ -31,10 +31,11 @@ case "${1:-help}" in
   stop)  pkill -f "python3 -m http.server" && echo stopped || echo "无进程" ;;
   check) # 每批必跑：CRLF归一 + 第72行类损伤自修 + 双编码/FFFD乱码扫描 + 严格UTF8 + 哨兵
      python3 - <<'PYCHK'
-import pathlib
+import glob, pathlib
 files = ["web/assets/js/ai-studio.js", "web/assets/js/core.js", "web/assets/js/ai-chat.js", "web/assets/js/admin.js",
          "web/ai-studio.html", "web/login.html", "web/register.html", "web/profile.html",
-         "web/ai-chat.html", "web/admin.html", "web/admin-keys.html", "web/index.html",
+         "web/ai-chat.html", "web/admin.html", "web/admin-keys.html", "web/admin-aiops.html",
+         "web/admin-features.html", "web/index.html",
          "web/assets/css/tokens.css", "web/assets/css/admin.css", "todo.md"]
 ok = True
 for f in files:
@@ -81,11 +82,19 @@ for f, marks in [("web/login.html", ["NB.auth.login"]),
                  ("web/admin.html", ["admin-keys.html", "NB.adminGate"]),
                  ("web/admin-keys.html", ["masked_key", "f_key", "llm/profiles"]),
                  ("web/assets/js/admin.js", ["adminGate"]),
+                 ("web/admin-aiops.html", ["sw_ai", "admin/ai/ops", "sel_model"]),
+                 ("web/admin-features.html", ["admin/features", "nb-switch", "calls_7d"]),
                  ("web/index.html", ["nb-hero-ai", '<a href="/ai-studio.html"', "立即体验"])]:
     t = pathlib.Path(f).read_text(encoding="utf-8")
     for m in marks:
         if m not in t:
             ok = False; print("sentinel missing:", f, "::", m[:40])
+for hf in sorted(glob.glob("web/*.html")):
+    ht = pathlib.Path(hf).read_text(encoding="utf-8")
+    if "</html>" not in ht:
+        ok = False; print("sentinel missing:", hf, ":: </html>")
+    if "<header" in ht and "</header>" not in ht:
+        ok = False; print("sentinel missing:", hf, ":: </header>")
 print("CHECK_OK" if ok else "CHECK_FAIL")
 raise SystemExit(0 if ok else 1)
 PYCHK
