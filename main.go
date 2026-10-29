@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"nova/internal/admin"
+	"nova/internal/ai"
 	"nova/internal/auth"
 	"os"
 	"sort"
@@ -129,6 +130,9 @@ func newRouter(db *DB) http.Handler {
 	if asvc != nil {
 		if err := admin.Mount(mux, "data", asvc); err != nil {
 			log.Printf("admin mount: %v", err)
+		}
+		if err := ai.Mount(mux, "data", asvc); err != nil {
+			log.Printf("ai mount: %v", err)
 		}
 	}
 

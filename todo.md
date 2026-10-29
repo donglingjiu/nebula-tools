@@ -125,3 +125,8 @@
 - 前端字段取证必须cat完整渲染函数, 窄grep模式会漏真身(教训: 模式key_tail|keyTail|api_key|密钥三轮均漏masked_key, 直到cat整段才见)
 - 密钥掩码字段定版5别名: key_tail/keyTail/api_key_mask/key_mask/masked_key(原生契约), 前端垫片v3退役
 - NB.api签名(取证): NB.api(url[, {method, body}]).then(r => 已解析body); 原生渲染在load()一次性出全表
+
+## 阶段5进度(续4)
+- 5-4a 完成: internal/ai 挂载 /api/ai/chat(SSE逐行转发, 默认Profile解密key) + /api/ai/status; 门链503总开关→404→410下线→402付费(带price); admin/export.go导出GetOps/FeatureByKey/FeaturesAll/ResolveDefaultProfile; 单测含门矩阵+SSE正流; 本地回显上游实测SSE全链路
+- 402门R1语义: feature.is_paid && ops.paid_mode(购买/权益系统后续阶段接入)
+- 5-4b 待做: /api/ai/flow/* 五端点 + ai-studio.html 前端接线(fetch流式渲染+402唤起showPaywall+410下线态) → 阶段门5评审
