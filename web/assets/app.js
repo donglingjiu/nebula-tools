@@ -5,7 +5,7 @@ if(typeof window.toast!=='function'){window.toast=function(m,t){var bad=/失败|
 'use strict';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const PAGE=document.body.dataset.page||'home';
-var ME_CACHE=null;var ADMIN_USERS_LIVE=[];var DOOR_STATE="unknown";const ADMIN_REQ=document.body.dataset.adminReq==='true';
+var ADMIN_DASH_LIVE={};var ADMIN_DASH_LOGS=[];var ME_CACHE=null;var ADMIN_USERS_LIVE=[];var DOOR_STATE="unknown";const ADMIN_REQ=document.body.dataset.adminReq==='true';
 let IS_ADMIN=document.body.dataset.admin==='true';
 const ROOT=$('#app');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -162,7 +162,31 @@ function renderFrontend(){switch(PAGE){case'home':return homePage();case'tools':
 /* Admin surfaces */
 function adminShell(inner){return `<div class="admin-shell">${adminHeader()}<div class="admin-frame">${adminSidebar()}<main class="admin-content page-transition">${inner}<div class="page-footer" style="padding:26px 0 0"><span><strong>Nova Admin</strong> · 内部运营工作台 · 演示数据</span><span>状态：所有系统正常</span></div></main></div></div>`}
 function adminPageTitle(eyebrow,title,sub,action=''){return pageTitle(eyebrow,title,sub,action)}
-function adminDashboard(){return `${adminPageTitle('ADMIN / OVERVIEW','管理总览','平台运行情况、工具使用和用户活跃度的统一视图。',`<button class="secondary" data-open-modal="date-range">${icon('calendar',14)} 最近 30 天</button><button class="primary" data-export-csv>${icon('download',14)} 导出概览</button>`)}<div class="metric-grid">${metric('注册用户','0','12.5%','users')}${metric('本月工具调用','3,678,920','18.2%','zap','violet')}${metric('任务完成率','98.6%','1.4%','check','mint')}${metric('平均响应时间','142 ms','8.1%','clock','peach')}</div><div class="section chart-layout"><section class="panel chart-card"><div class="chart-title"><div><h3>平台活跃与调用趋势</h3><p>按日汇总的调用与用户趋势</p></div><button class="secondary btn-sm" data-open-modal="date-range">${icon('calendar',12)} 调整周期</button></div>${lineChart('adminUsage',true)}<div class="legend"><span><i></i>工具调用</span><span><i class="purple"></i>活跃用户</span></div></section><section class="panel chart-card"><div class="chart-title"><div><h3>工具类别分布</h3><p>近 30 天使用占比</p></div></div>${donut()}<a class="text-link" href="tools.html">前往工具管理 ${icon('arrow',13)}</a></section></div><div class="section split"><section class="table-card"><div class="table-toolbar"><div><h3>最近系统事件</h3><span class="tiny muted">实时活动流（演示）</span></div><a class="text-link" href="logs.html">查看日志 ${icon('arrow',12)}</a></div><div class="table-wrap"><table><thead><tr><th>事件</th><th>范围</th><th>时间</th><th>状态</th></tr></thead><tbody>${[['批量文件转换完成','文件处理','14:32','成功'],['工具目录更新','工具管理','14:21','成功'],['新用户注册','用户管理','13:58','成功'],['运营报告已生成','数据分析','13:40','成功'],['AI 服务响应波动','服务监控','12:52','已恢复']].map(r=>`<tr><td><strong style="color:#2a3a5e">${r[0]}</strong></td><td>${r[1]}</td><td>${r[2]}</td><td><span class="status ${r[3]==='已恢复'?'processing':''}">${r[3]}</span></td></tr>`).join('')}</tbody></table></div></section><section class="panel"><div class="panel-head"><div><h3>平台健康度</h3><p>静态演示指标</p></div><span class="tag good">运行平稳</span></div>${[['API 可用性','99.98%','good'],['文件队列','42 个任务','good'],['AI 调用延迟','142 ms','good'],['通知服务','正常','good']].map(x=>`<div class="settings-row"><div><strong>${x[0]}</strong><p>最近监测值</p></div><span class="status">${x[1]}</span></div>`).join('')}<a class="secondary" href="settings.html" style="width:100%;margin-top:15px">系统设置 ${icon('arrow',13)}</a></section></div>`}
+function adminDashboard(){
+  const shell=adminPageTitle('ADMIN / OVERVIEW','管理总览','平台运行情况、工具使用与模块状态的统一视图（实时数据）。',`<button class="secondary" data-open-modal="date-range">${icon('calendar',14)} 最近 30 天</button><button class="primary" data-export-overview>${icon('download',14)} 导出概览</button>`);
+  return shell+`<div id="dashLive"><div class="section"><div class="panel"><span class="muted">正在加载平台数据…</span></div></div></div>`;
+}
+function nv(x){return (x===undefined||x===null)?'—':String(x)}
+function fmtUptime(sec){if(sec===undefined||sec===null)return '—';var s=Number(sec);if(isNaN(s))return '—';var d=Math.floor(s/86400),h=Math.floor((s%86400)/3600),m=Math.floor((s%3600)/60);if(d>0)return d+' 天 '+h+' 小时';if(h>0)return h+' 小时 '+m+' 分钟';if(m>0)return m+' 分钟';return '刚刚'}
+function renderDashLive(ov,logs){
+  const box=document.getElementById('dashLive');
+  if(!box)return;
+  ov=ov||{};logs=Array.isArray(logs)?logs:[];
+  const mods=nv(ov.modules_on)+' / '+nv(ov.modules_total);
+  const rows=logs.slice(0,8).map(function(l){return '<tr><td><strong>'+nv(l.path)+'</strong></td><td>'+nv(l.user)+'</td><td>'+nv(String(l.at||'').slice(0,19).replace('T',' '))+'</td><td><span class="status '+(l.status===200?'':'processing')+'">'+nv(l.status)+'</span></td></tr>'}).join('');
+  box.innerHTML=`<div class="metric-grid">${metric('注册用户',nv(ov.users),'','users')}${metric('工具调用总量',nv(ov.runs_total),'','zap','violet')}${metric('今日调用',nv(ov.runs_today),'','zap','mint')}${metric('模块启用',mods,'','grid','peach')}${metric('运行时长',fmtUptime(ov.uptime_sec),'','clock')}</div>`+
+  `<div class="section chart-layout"><section class="panel chart-card"><div class="chart-title"><div><h3>平台活跃与调用趋势</h3><p>图表数据接线排期 W4（/api/admin/analytics）</p></div></div>${lineChart('adminUsage',true)}<div class="legend"><span><i></i>工具调用</span><span><i class="purple"></i>活跃用户</span></div></section><section class="panel chart-card"><div class="chart-title"><div><h3>工具类别分布</h3><p>近 30 天使用占比</p></div></div>${donut()}<a class="text-link" href="tools.html">前往工具管理 ${icon('arrow',13)}</a></section></div>`+
+  `<div class="section split"><section class="table-card"><div class="table-toolbar"><div><h3>最近系统事件</h3><span class="tiny muted">实时日志（/api/admin/logs · 前 8 条）</span></div><a class="text-link" href="logs.html">查看日志 ${icon('arrow',12)}</a></div><div class="table-wrap"><table><thead><tr><th>事件（路径）</th><th>范围（用户）</th><th>时间</th><th>状态</th></tr></thead><tbody>${rows}</tbody></table></div></section><section class="panel"><div class="panel-head"><div><h3>平台健康度</h3><p>实时读数（/api/admin/overview）</p></div><span class="tag good">运行中</span></div>${[['注册用户',nv(ov.users)],['工具调用总量',nv(ov.runs_total)],['模块启用',mods],['运行时长',fmtUptime(ov.uptime_sec)]].map(x=>`<div class="settings-row"><div><strong>${x[0]}</strong><p>实时值</p></div><span class="status">${x[1]}</span></div>`).join('')}<a class="secondary" href="settings.html" style="width:100%;margin-top:15px">系统设置 ${icon('arrow',13)}</a></section></div>`;
+}
+function refreshOverview(){
+  fetch('/api/admin/overview').then(function(r){return r.ok?r.json():null}).then(function(ov){
+    ADMIN_DASH_LIVE=ov||{};
+    return fetch('/api/admin/logs').then(function(r){return r.ok?r.json():[]}).then(function(logs){
+      ADMIN_DASH_LOGS=Array.isArray(logs)?logs:[];
+      renderDashLive(ADMIN_DASH_LIVE,ADMIN_DASH_LOGS);
+    });
+  }).catch(function(){renderDashLive(ADMIN_DASH_LIVE||{},[])});
+}
 function usersPage(){
   const shell=adminPageTitle('ADMIN / USERS','用户管理','账户搜索、角色改派、密码重置与删除——全部真实操作。',`<button class="secondary" data-export-csv>${icon('download',14)} 导出用户</button>`);
   return shell+`<div id="usersLive"><div class="section table-card" style="padding:32px;text-align:center"><span class="muted">正在加载用户…</span></div></div>`;
@@ -193,7 +217,7 @@ function adminUserAction(kind,name,payload){
 function bindUsersEvents(root){
   if(root.__usersBound)return;root.__usersBound=true;
   root.addEventListener('click',function(ev){
-    const t=ev.target.closest('[data-user-view],[data-user-role],[data-user-reset],[data-user-del],[data-export-csv],[data-door-toggle]');
+    const t=ev.target.closest('[data-user-view],[data-user-role],[data-user-reset],[data-user-del],[data-export-csv],[data-export-overview],[data-door-toggle]');
     if(!t)return;
     if(t.hasAttribute('data-user-view')){
       const name=t.getAttribute('data-user-view');
@@ -222,7 +246,7 @@ function bindUsersEvents(root){
       const blob=new Blob(['username,role,created_at\n'+rows],{type:'text/csv'});
       const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='nova-users.csv';a.click();
     }
-    if(t.hasAttribute('data-door-toggle')){
+    if(t.hasAttribute('data-export-overview')){const blob=new Blob([JSON.stringify(ADMIN_DASH_LIVE||{},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='nova-overview.json';a.click();return}if(t.hasAttribute('data-door-toggle')){
       const target=DOOR_STATE==='closed'?'1':'0';
       fetch('/api/admin/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({allow_register:target})}).then(function(r){return r.ok}).then(function(ok){if(ok){toast('注册门 → '+(target==='0'?'关闭':'开放'));refreshDoor()}else toast('失败')});
     }
@@ -583,7 +607,7 @@ function badges(){
     }).catch(function(){});
   }
   function boot(){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init)}else{init()}}
-if(ADMIN_REQ){fetch('/api/auth/me').then(function(r){return r.ok?r.json():null}).then(function(j){if(j&&j.role==='admin'){document.body.dataset.admin='true';IS_ADMIN=true;ME_CACHE=j;currentID=computeCurrentID();if(document.body.dataset.adminPage==='users'){refreshUsers();refreshDoor()}boot()}else{location.href='../login.html'}}).catch(function(){location.href='../login.html'})}else{boot()}
+if(ADMIN_REQ){fetch('/api/auth/me').then(function(r){return r.ok?r.json():null}).then(function(j){if(j&&j.role==='admin'){document.body.dataset.admin='true';IS_ADMIN=true;ME_CACHE=j;currentID=computeCurrentID();if(document.body.dataset.adminPage==='users'){refreshUsers();refreshDoor()}if(document.body.dataset.adminPage==='index'){refreshOverview()}boot()}else{location.href='../login.html'}}).catch(function(){location.href='../login.html'})}else{boot()}
 })();
 
 /* v2.8.0: tokens layer injector (last-loaded override) */

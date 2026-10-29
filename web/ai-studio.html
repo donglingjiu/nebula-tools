@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 工作台 · Nova Nebula Tools</title>
+<meta name="description" content="从一句话想法到测试落地的 AI 全流程工作台：头脑风暴、需求评估、需求分析、方案设计、功能拆解、代码实现、测试落地。">
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<style>
+.nb-header { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 18px;
+  padding: 12px 24px; background: rgba(255,249,242,.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.nb-logo { font: 800 19px/1 var(--font-sans); color: var(--text-main); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+.nb-logo i { width: 26px; height: 26px; border-radius: 8px; background: var(--ai-gradient); display: inline-block; }
+.nb-nav { display: flex; gap: 4px; }
+.nb-nav a { padding: 8px 14px; border-radius: var(--radius-btn); text-decoration: none; font: 600 14px/1 var(--font-sans); color: var(--text-sub); }
+.nb-nav a:hover { background: var(--bg-warm-1); color: var(--text-main); }
+.nb-nav a[aria-current="page"] { color: var(--ai-deep); background: var(--ai-soft); }
+.nb-header .nb-user { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.nb-user-chip { font: 600 13px/1 var(--font-sans); color: var(--text-main); background: var(--bg-warm-1); padding: 8px 12px; border-radius: 999px; }
+
+.nb-layout { display: grid; grid-template-columns: 220px 1fr 260px; gap: 16px; max-width: 1280px; margin: 20px auto; padding: 0 16px; }
+.nb-layout > aside, .nb-layout > main { min-width: 0; }
+@media (max-width: 1080px) { .nb-layout { grid-template-columns: 200px 1fr; } #outSidebar { grid-column: 1 / -1; } }
+@media (max-width: 760px) { .nb-layout { grid-template-columns: 1fr; } .nb-stepper { flex-direction: row; flex-wrap: wrap; } .nb-stepper button { width: auto; } }
+
+.stage-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.stage-head h2 { margin: 0; font-size: 18px; flex: 1; }
+.stage-body { margin-top: 14px; min-height: 300px; }
+.nb-md { font-size: 15px; }
+.nb-empty { text-align: center; padding: 60px 20px; color: var(--text-sub); }
+.nb-empty .big { font-size: 40px; }
+
+.chat-log { margin: 14px 0; max-height: 220px; overflow: auto; display: flex; flex-direction: column; gap: 8px; }
+.chat-msg { padding: 8px 12px; border-radius: 12px; font-size: 14px; max-width: 92%; }
+.chat-msg--u { align-self: flex-end; background: var(--bg-warm-2); }
+.chat-msg--a { align-self: flex-start; background: var(--ai-soft); }
+.chat-row { display: flex; gap: 8px; }
+.chat-row .nb-input { flex: 1; }
+
+.statusbar { position: sticky; bottom: 0; display: flex; gap: 18px; align-items: center;
+  background: rgba(255,249,242,.95); border-top: 1px solid var(--line); padding: 8px 24px;
+  font: 600 12px/1 var(--font-mono); color: var(--text-sub); }
+.statusbar .meter-wrap { flex: 1; max-width: 240px; display: flex; align-items: center; gap: 8px; }
+.edit-area { width: 100%; min-height: 320px; font: 400 14px/1.7 var(--font-mono); }
+.out-item { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: transparent; border: 0; padding: 9px 10px; border-radius: 10px; cursor: pointer; font: 500 13px/1.3 var(--font-sans); color: var(--text-sub); }
+.out-item:hover { background: var(--bg-warm-1); color: var(--text-main); }
+.out-item .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); flex: none; }
+.hint-ai { font: 500 12px/1.5 var(--font-sans); color: var(--text-sub); }
+</style>
+</head>
+<body class="nb-skin">
+
+<header class="nb-header">
+  <a class="nb-logo" href="/"><i aria-hidden="true"></i>Nova Tools</a>
+  <nav class="nb-nav" aria-label="主导航">
+    <a href="/">首页</a>
+    <a href="/ai-studio.html" aria-current="page">AI 工作台 <span class="nb-badge-ai">AI</span></a>
+    <a href="/ai-chat.html">AI 对话</a>
+  </nav>
+  <div class="nb-user" id="userChip"></div>
+</header>
+
+<div class="nb-layout">
+  <aside aria-label="流程阶段">
+    <div class="nb-card nb-card--ai">
+      <ul class="nb-stepper" id="stepper"></ul>
+    </div>
+    <p class="hint-ai" style="padding:10px 4px">每阶段可重新生成、编辑内容后继续，追问会带着当前阶段上下文。</p>
+  </aside>
+
+  <main>
+    <div class="nb-card nb-card--ai" id="workCard">
+      <div id="phaseIdea">
+        <div class="stage-head"><h2>用一句话描述你的想法 ✨</h2></div>
+        <label class="hint-ai" for="ideaInput">例如：做一个记录我家猫体重的提醒小工具</label>
+        <textarea class="nb-textarea" id="ideaInput" rows="4" placeholder="用一句话描述你的想法…"></textarea>
+        <div style="display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;align-items:center">
+          <label style="font:500 13px/1 var(--font-sans);color:var(--text-sub)">
+            <input type="radio" name="mode" value="full" checked> 全流程一键跑
+          </label>
+          <label style="font:500 13px/1 var(--font-sans);color:var(--text-sub)">
+            <input type="radio" name="mode" value="single"> 单阶段逐步跑
+          </label>
+          <span style="flex:1"></span>
+          <button class="nb-btn nb-btn--ai" id="btnStart">开始全流程 →</button>
+        </div>
+        <div class="nb-empty" id="loginGate" hidden>
+          <div class="big">[需登录]</div>
+          <p>AI 全流程需要登录后使用（免费工具无需登录）。</p>
+          <a class="nb-btn nb-btn--warm" href="/login.html">去登录</a>
+        </div>
+      </div>
+
+      <div id="phaseStage" hidden>
+        <div class="stage-head">
+          <h2 id="stageTitle">阶段</h2>
+          <button class="nb-btn nb-btn--ghost nb-btn--sm" id="btnRegen" title="重新生成本阶段">↻ 重新生成</button>
+          <button class="nb-btn nb-btn--ghost nb-btn--sm" id="btnEdit">✎ 编辑</button>
+          <button class="nb-btn nb-btn--ai nb-btn--sm" id="btnNext">下一阶段 →</button>
+        </div>
+        <div class="stage-body nb-md" id="stageContent" aria-live="polite"></div>
+        <textarea class="edit-area nb-textarea" id="editArea" hidden></textarea>
+        <div style="display:flex;gap:8px;margin-top:10px" id="editActions" hidden>
+          <button class="nb-btn nb-btn--warm nb-btn--sm" id="btnSave">保存修改</button>
+          <button class="nb-btn nb-btn--ghost nb-btn--sm" id="btnCancel">取消</button>
+        </div>
+        <div id="chatZone" style="margin-top:18px;border-top:1px dashed var(--line);padding-top:14px">
+          <div class="hint-ai">对当前阶段继续追问（AI 会结合本阶段内容作答）：</div>
+          <div class="chat-log" id="chatLog" aria-live="polite"></div>
+          <div class="chat-row">
+            <input class="nb-input" id="chatInput" placeholder="例如：再补充两个创新角度…" aria-label="追问输入">
+            <button class="nb-btn nb-btn--ai" id="btnChat">发送</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <aside id="outSidebar" aria-label="产出汇总">
+    <div class="nb-card">
+      <h3 style="margin:0 0 8px;font-size:15px">产出汇总</h3>
+      <div id="outList"></div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
+        <button class="nb-btn nb-btn--ai" id="btnExportZip" disabled>导出全部（zip）</button>
+        <button class="nb-btn nb-btn--ghost nb-btn--sm" id="btnExportMd" disabled>导出文档（md）</button>
+        <button class="nb-btn nb-btn--ghost nb-btn--sm" id="btnNewFlow">＋ 新建流程</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<div class="statusbar">
+  <span id="stModel">model: –</span>
+  <span id="stStage">stage: –</span>
+  <span class="meter-wrap"><span>tokens</span><span class="nb-meter" style="flex:1"><i id="stMeter" style="width:0%"></i></span><span id="stTokens">0</span></span>
+  <span id="stTime"></span>
+</div>
+
+<script src="/assets/js/core.js"></script>
+<script src="/assets/js/ai-studio.js"></script>
+</body>
+</html>
