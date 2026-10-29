@@ -47,7 +47,7 @@
 <script src="/assets/js/core.js"></script>
 <script>
 (function(){
-  var pwd = document.getElementById('password');
+  var pwd = document.getElementById('password') || document.querySelector('input[autocomplete="new-password"]');
   var bar = document.getElementById('pwdBar');
   var hint = document.getElementById('pwdHint');
   pwd.addEventListener('input', function(){

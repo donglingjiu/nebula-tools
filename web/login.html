@@ -50,7 +50,7 @@
   var next = new URLSearchParams(location.search).get('next') || '/';
   document.getElementById('btnLogin').onclick = async function(){
     var email = document.getElementById('email').value.trim();
-    var pwd = document.getElementById('password').value;
+    var pwdEl = document.getElementById('password') || document.querySelector('input[autocomplete="current-password"]'); var pwd = pwdEl ? pwdEl.value : '';
     if(!email || !pwd){ NB.toast('请填写邮箱和密码','warn'); return; }
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ NB.toast('邮箱格式不正确','warn'); return; }
     this.disabled = true;
