@@ -25,7 +25,7 @@
   <div class="nb-card nb-auth-card">
     <h1>创建账号</h1>
     <p class="nb-auth-sub">注册后可保存 AI 全流程产出与用量</p>
-    <div class="nb-notice">开发提示：注册接口在阶段5接入，当前点击注册会提示失败，属预期。</div>
+    <div class="nb-notice">接口已上线：注册即用；首个注册用户自动成为超级管理员。</div>
     <div class="nb-field">
       <label for="email">邮箱</label>
       <input class="nb-input" id="email" type="email" autocomplete="email" placeholder="you@example.com">
@@ -60,7 +60,7 @@
   });
   document.getElementById('btnReg').onclick = async function(){
     var email = document.getElementById('email').value.trim();
-    var p1 = pwd.value, p2 = document.getElementById('confirm').value;
+    var p1 = pwd.value, p2 = document.(document.getElementById('confirm') || document.querySelectorAll('.nb-auth-card input')[2] || {value:''}).value;
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ NB.toast('邮箱格式不正确','warn'); return; }
     if(p1.length < 8){ NB.toast('密码至少 8 位','warn'); return; }
     if(p1 !== p2){ NB.toast('两次输入的密码不一致','warn'); return; }

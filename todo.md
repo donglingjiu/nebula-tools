@@ -69,3 +69,8 @@
 - 粘贴内容(含Go)一律禁用TAB缩进：交互heredoc中TAB触发readline补全→目录列表炸屏+行截断；落盘后 go fmt 统一
 - 长python块易断行：替换串尽量短，patch后必须grep回验
 - 集成既有系统前先侦察(路由/中间件/存储/e2e约束)，禁止盲patch main.go
+
+## 过程规约（续7）
+- 同文件多个rep的guard禁用"前一个rep会注入的关键词"(自踩: guard='querySelector'被rep1注入导致rep2误跳过)
+- 账号/密码等口径变更必须在当轮公告并保持唯一(教训: admin12345→admin123456两轮口径不一致引发误判)
+- 旧站SW(scope /)会拦截新页面: 本站页面统一注销; 诊断要看sw.js的fetch策略

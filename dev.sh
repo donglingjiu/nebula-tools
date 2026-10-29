@@ -78,7 +78,7 @@ c = pathlib.Path("web/assets/js/core.js").read_text(encoding="utf-8")
 for mark in ("NB.stream", "String.fromCharCode(96, 96, 96)", "showPaywall"):
     if mark not in c:
         ok = False; print("sentinel core missing:", mark)
-for f, marks in [("web/login.html", ["NB.auth.login"]),
+for f, marks in [("web/login.html", ["NB.auth.login", "insEls"]),
                  ("web/register.html", ["NB.auth.register", "max-width: 400px", "margin-bottom: 14px"]),
                  ("web/profile.html", ["btnLogout", "device-width", "billing"]),
                  ("web/assets/js/ai-chat.js", ["NB.stream"]),

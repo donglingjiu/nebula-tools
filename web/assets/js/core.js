@@ -218,3 +218,10 @@
     return out.join('\n');
   };
 })();
+
+/* 本站不注册 SW; 注销旧站遗留 SW 防止缓存劫持(旧站页面加载时会自行重注册) */
+if (navigator.serviceWorker) {
+  navigator.serviceWorker.getRegistrations().then(function(rs){
+    rs.forEach(function(r){ r.unregister(); });
+  }).catch(function(){});
+}

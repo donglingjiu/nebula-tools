@@ -26,7 +26,7 @@
   <div class="nb-card nb-auth-card">
     <h1>欢迎回来</h1>
     <p class="nb-auth-sub">登录 Nova Nebula Tools，继续你的 AI 全流程</p>
-    <div class="nb-notice">开发提示：登录接口在阶段5接入，当前点击登录会提示失败，属预期。</div>
+    <div class="nb-notice">接口已上线：邮箱+密码登录；首个注册用户自动成为超级管理员。</div>
     <div class="nb-field">
       <label for="email">邮箱</label>
       <input class="nb-input" id="email" type="email" autocomplete="email" placeholder="you@example.com">
@@ -49,7 +49,7 @@
 (function(){
   var next = new URLSearchParams(location.search).get('next') || '/';
   document.getElementById('btnLogin').onclick = async function(){
-    var email = document.getElementById('email').value.trim();
+    var insEls = document.querySelectorAll('.nb-auth-card input'); var email = (insEls[0] ? insEls[0].value : '').trim();
     var pwdEl = document.getElementById('password') || document.querySelector('input[autocomplete="current-password"]'); var pwd = pwdEl ? pwdEl.value : '';
     if(!email || !pwd){ NB.toast('请填写邮箱和密码','warn'); return; }
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ NB.toast('邮箱格式不正确','warn'); return; }
@@ -61,7 +61,7 @@
     } catch(e) { NB.toast(e.message === '请先登录' ? '登录失败：账号或密码错误' : '登录失败：' + (e.message || '未知错误'), 'err'); }
     this.disabled = false;
   };
-  document.getElementById('password').addEventListener('keydown', function(e){
+  (document.getElementById('password') || document.querySelector('input[autocomplete="current-password"]') || {addEventListener:function(){}}).addEventListener('keydown', function(e){
     if(e.key === 'Enter') document.getElementById('btnLogin').click();
   });
   NB.auth.me().then(function(u){ if(u) location.href = next; });
