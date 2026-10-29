@@ -120,3 +120,8 @@
 - 垫片禁止调用未经取证签名的助手函数(NB.api签名从未确认→v2静默失败); 自带fetch+JWT扫描(localStorage中eyJ特征)最稳
 - 定位表格单元格用表头文字找列号+按首列名称匹配行, 不依赖行序与固定下标
 - 垫片必须带console诊断日志(status/hit/异常), 失败时打开Console即见卡点
+
+## 过程规约（续15）
+- 前端字段取证必须cat完整渲染函数, 窄grep模式会漏真身(教训: 模式key_tail|keyTail|api_key|密钥三轮均漏masked_key, 直到cat整段才见)
+- 密钥掩码字段定版5别名: key_tail/keyTail/api_key_mask/key_mask/masked_key(原生契约), 前端垫片v3退役
+- NB.api签名(取证): NB.api(url[, {method, body}]).then(r => 已解析body); 原生渲染在load()一次性出全表
