@@ -113,7 +113,7 @@ func TestAIGatesAndSSE(t *testing.T) {
 
     do(t, ts, "PUT", "/api/admin/features/"+fid, super, `{"is_paid":true,"price":9.9}`)
     do(t, ts, "PUT", "/api/admin/ai/ops", super, `{"paid_mode":true}`)
-    c, m5, _ := do(t, ts, "POST", "/api/ai/chat", user, `{"messages
+    c, m5, _ := do(t, ts, "POST", "/api/ai/chat", user, `{"messages":[{"role":"user","content":"hi"}]}`)
     if c != 402 {
         t.Fatalf("付费应402: %d %v", c, m5)
     }
