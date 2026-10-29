@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"nova/internal/admin"
 	"nova/internal/auth"
 	"os"
 	"sort"
@@ -121,8 +122,14 @@ func newRouter(db *DB) http.Handler {
 	mux := http.NewServeMux()
 	registerLLMRoutes(mux, s)
 	registerConvRoutes(mux, s)
-	if _, err := auth.Mount(mux, "data", "/api/v2/auth"); err != nil {
-		log.Printf("auth mount: %v", err)
+	asvc, errA := auth.Mount(mux, "data", "/api/v2/auth")
+	if errA != nil {
+		log.Printf("auth mount: %v", errA)
+	}
+	if asvc != nil {
+		if err := admin.Mount(mux, "data", asvc); err != nil {
+			log.Printf("admin mount: %v", err)
+		}
 	}
 
 	mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) {
