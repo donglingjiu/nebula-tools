@@ -112,7 +112,7 @@ func (s *Service) listProfiles(w http.ResponseWriter, r *http.Request) {
 		kt := keyTail(s.decKey(p.APIKeyEnc))
 		arr = append(arr, map[string]any{
 			"id": p.ID, "name": p.Name, "base_url": p.BaseURL, "model": p.Model,
-			"enabled": p.Enabled, "created_at": p.CreatedAt, "key_tail": kt, "keyTail": kt, "api_key_mask": kt,
+			"enabled": p.Enabled, "created_at": p.CreatedAt, "key_tail": kt, "keyTail": kt, "api_key_mask": kt, "is_default": s.st.Ops.DefaultProfileID == p.ID,
 		})
 	}
 	writeJSON(w, 200, map[string]any{"profiles": arr})
@@ -154,11 +154,12 @@ func (s *Service) createProfile(w http.ResponseWriter, r *http.Request) {
 func (s *Service) updateProfile(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	var req struct {
-		Name    *string `json:"name"`
-		BaseURL *string `json:"base_url"`
-		Model   *string `json:"model"`
-		APIKey  *string `json:"api_key"`
-		Enabled *bool   `json:"enabled"`
+		Name      *string `json:"name"`
+		BaseURL   *string `json:"base_url"`
+		Model     *string `json:"model"`
+		APIKey    *string `json:"api_key"`
+		Enabled   *bool   `json:"enabled"`
+		IsDefault *bool   `json:"is_default"`
 	}
 	if json.NewDecoder(r.Body).Decode(&req) != nil {
 		fail(w, 400, "参数错误")
@@ -182,6 +183,9 @@ func (s *Service) updateProfile(w http.ResponseWriter, r *http.Request) {
 			}
 			if req.Enabled != nil {
 				s.st.Profiles[i].Enabled = *req.Enabled
+			}
+			if req.IsDefault != nil && *req.IsDefault {
+				s.st.Ops.DefaultProfileID = id
 			}
 			if err := s.st.saveLocked(); err != nil {
 				fail(w, 500, "保存失败")

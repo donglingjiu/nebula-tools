@@ -128,5 +128,24 @@
   NB.bindUserChip($('userChip'));
 })();
 </script>
+<script>
+(function(){
+  function fixKeys(){
+    try {
+      NB.api('/api/admin/llm/profiles', {silent:true}).then(function(d){
+        var ps = (d && d.profiles) || [];
+        var trs = document.querySelectorAll('tbody tr');
+        for (var i = 0; i < trs.length && i < ps.length; i++) {
+          var td = trs[i].children[3];
+          if (td && ps[i].key_tail) td.textContent = ps[i].key_tail;
+        }
+      }).catch(function(){});
+    } catch (e) {}
+  }
+  setTimeout(fixKeys, 1200); setTimeout(fixKeys, 3200);
+  var tb = document.querySelector('tbody');
+  if (tb && window.MutationObserver) new MutationObserver(fixKeys).observe(tb, {childList:true});
+})();
+</script>
 </body>
 </html>

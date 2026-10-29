@@ -98,3 +98,7 @@
 ## 过程规约（续10）
 - web/ 经 go:embed 编入二进制: 改前端必须 ./dev.sh build + 重启才生效(教训: 截图旧文案误判为patch失败)
 - git push 偶发 SSL_ERROR_SYSCALL 为瞬时抖动, 原命令重试即可
+
+## 阶段5进度(续3)
+- 5-3f: 密钥列掩码垫片(过渡方案; 原生渲染代码存档/tmp/akr.txt待重构并入); 后端is_default契约补齐("设默认"按钮接真)
+- 5-4 待做: AI 接线(SSE chat/flow + 410下线门/402付费门)
