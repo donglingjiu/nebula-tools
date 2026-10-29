@@ -107,3 +107,7 @@
 - 含前端修改的批次, 收尾段必须包含 build+restart+线上curl验证(再犯: 段4漏build致shim未上线)
 - MutationObserver内改DOM会自触发死循环: 垫片类代码禁用观察者, 改用重试+online事件
 - ERR_INTERNET_DISCONNECTED=客户端断网请求未达服务端, 与服务端无关; 服务端状态以curl为准
+
+## 过程规约（续12）
+- 验证grep必须先在源文件跑对照组(文件=1而线上=0才是真未上线; 教训: "addEventListener('online')"带右括号匹配不了"addEventListener('online',"), 白警报一轮)
+- Chrome错误类型即定位: ERR_INTERNET_DISCONNECTED=浏览器离线(或DevTools"离线"复选框勾着), ERR_CONNECTION_REFUSED才是服务端没起; 判服务死活用 curl -m 5 health, 不看浏览器
