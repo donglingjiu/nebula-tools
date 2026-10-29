@@ -354,47 +354,47 @@ func newRouter(db *DB) http.Handler {
 // [5-4a]旧注册停用(路由移交internal/ai): E(w, 400, "参数错误")
 // [5-4a]旧注册停用(路由移交internal/ai): return
 // [5-4a]旧注册停用(路由移交internal/ai): }
-		ep := db.GetSettingSafe("ai_endpoint")
-		if ep == "" {
-			J(w, map[string]any{"ok": true, "reply": "（演示模式）管理员尚未配置 AI 端点。请管理员进入 后台 → 设置 填入 OpenAI 兼容接口地址与密钥，即可开启真实对话。"})
-			return
-		}
-		pr, _ := json.Marshal(map[string]any{"model": db.GetSettingSafe("ai_model"), "messages": req.Messages, "stream": false})
-		hr, _ := http.NewRequest("POST", ep, strings.NewReader(string(pr)))
-		hr.Header.Set("Content-Type", "application/json")
-		if k := db.GetSettingSafe("ai_key"); k != "" {
-			hr.Header.Set("Authorization", "Bearer "+k)
-		}
-		resp, err := (&http.Client{Timeout: 60 * time.Second}).Do(hr)
-		if err != nil {
-			E(w, 502, "AI 端点不可达: "+err.Error())
-			return
-		}
-		defer resp.Body.Close()
-		var ar struct {
-			Choices []struct {
-				Message struct {
-					Content string `json:"content"`
-				} `json:"message"`
-			} `json:"choices"`
-			Error *struct {
-				Message string `json:"message"`
-			} `json:"error"`
-		}
-		if err := json.NewDecoder(resp.Body).Decode(&ar); err != nil {
-			E(w, 502, "AI 响应解析失败")
-			return
-		}
-		if ar.Error != nil {
-			E(w, 502, "AI 端点返回错误: "+ar.Error.Message)
-			return
-		}
-		reply := ""
-		if len(ar.Choices) > 0 {
-			reply = ar.Choices[0].Message.Content
-		}
-		J(w, map[string]any{"ok": true, "reply": reply})
-	})
+// [5-4a]旧注册停用(路由移交internal/ai): ep := db.GetSettingSafe("ai_endpoint")
+// [5-4a]旧注册停用(路由移交internal/ai): if ep == "" {
+// [5-4a]旧注册停用(路由移交internal/ai): J(w, map[string]any{"ok": true, "reply": "（演示模式）管理员尚未配置 AI 端点。请管理员进入 后台 → 设置 填入 OpenAI 兼容接口地址与密钥，即可开启真实对话。"})
+// [5-4a]旧注册停用(路由移交internal/ai): return
+// [5-4a]旧注册停用(路由移交internal/ai): }
+// [5-4a]旧注册停用(路由移交internal/ai): pr, _ := json.Marshal(map[string]any{"model": db.GetSettingSafe("ai_model"), "messages": req.Messages, "stream": false})
+// [5-4a]旧注册停用(路由移交internal/ai): hr, _ := http.NewRequest("POST", ep, strings.NewReader(string(pr)))
+// [5-4a]旧注册停用(路由移交internal/ai): hr.Header.Set("Content-Type", "application/json")
+// [5-4a]旧注册停用(路由移交internal/ai): if k := db.GetSettingSafe("ai_key"); k != "" {
+// [5-4a]旧注册停用(路由移交internal/ai): hr.Header.Set("Authorization", "Bearer "+k)
+// [5-4a]旧注册停用(路由移交internal/ai): }
+// [5-4a]旧注册停用(路由移交internal/ai): resp, err := (&http.Client{Timeout: 60 * time.Second}).Do(hr)
+// [5-4a]旧注册停用(路由移交internal/ai): if err != nil {
+// [5-4a]旧注册停用(路由移交internal/ai): E(w, 502, "AI 端点不可达: "+err.Error())
+// [5-4a]旧注册停用(路由移交internal/ai): return
+// [5-4a]旧注册停用(路由移交internal/ai): }
+// [5-4a]旧注册停用(路由移交internal/ai): defer resp.Body.Close()
+// [5-4a]旧注册停用(路由移交internal/ai): var ar struct {
+// [5-4a]旧注册停用(路由移交internal/ai): Choices []struct {
+// [5-4a]旧注册停用(路由移交internal/ai): Message struct {
+// [5-4a]旧注册停用(路由移交internal/ai): Content string `json:"content"`
+// [5-4a]旧注册停用(路由移交internal/ai): } `json:"message"`
+// [5-4a]旧注册停用(路由移交internal/ai): } `json:"choices"`
+// [5-4a]旧注册停用(路由移交internal/ai): Error *struct {
+// [5-4a]旧注册停用(路由移交internal/ai): Message string `json:"message"`
+// [5-4a]旧注册停用(路由移交internal/ai): } `json:"error"`
+// [5-4a]旧注册停用(路由移交internal/ai): }
+// [5-4a]旧注册停用(路由移交internal/ai): if err := json.NewDecoder(resp.Body).Decode(&ar); err != nil {
+// [5-4a]旧注册停用(路由移交internal/ai): E(w, 502, "AI 响应解析失败")
+// [5-4a]旧注册停用(路由移交internal/ai): return
+// [5-4a]旧注册停用(路由移交internal/ai): }
+// [5-4a]旧注册停用(路由移交internal/ai): if ar.Error != nil {
+// [5-4a]旧注册停用(路由移交internal/ai): E(w, 502, "AI 端点返回错误: "+ar.Error.Message)
+// [5-4a]旧注册停用(路由移交internal/ai): return
+// [5-4a]旧注册停用(路由移交internal/ai): }
+// [5-4a]旧注册停用(路由移交internal/ai): reply := ""
+// [5-4a]旧注册停用(路由移交internal/ai): if len(ar.Choices) > 0 {
+// [5-4a]旧注册停用(路由移交internal/ai): reply = ar.Choices[0].Message.Content
+// [5-4a]旧注册停用(路由移交internal/ai): }
+// [5-4a]旧注册停用(路由移交internal/ai): J(w, map[string]any{"ok": true, "reply": reply})
+// [5-4a]旧注册停用(路由移交internal/ai): })
 	mux.HandleFunc("GET /api/workflows", func(w http.ResponseWriter, r *http.Request) {
 		u := s.user(r)
 		if u == nil {
