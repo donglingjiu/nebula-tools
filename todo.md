@@ -59,3 +59,13 @@
 ## 过程规约（续5）
 - 导航侧栏不允许死链：页面未实现时先上占位页（含规划说明），accept B 才能真实闭合
 - 认证类接口（login/register）401 走 silent + 页面级提示，全局"登录已过期"仅用于会话失效场景
+
+## 阶段5进度
+- 5-1 完成(修复后)：internal/auth 四件套 + httptest 全流程单测
+- 关键发现：项目为 nova v2.2.1 成熟库，已含 SQLite/db.go/username 用户体系/secmw 中间件/ai-chat/llm-profiles；e2e_test 锁定旧 auth 行为
+- 5-2 方向：共存接入（不破坏旧站与 e2e），待 R1-R5 侦察输出定具体方案
+
+## 过程规约（续6）
+- 粘贴内容(含Go)一律禁用TAB缩进：交互heredoc中TAB触发readline补全→目录列表炸屏+行截断；落盘后 go fmt 统一
+- 长python块易断行：替换串尽量短，patch后必须grep回验
+- 集成既有系统前先侦察(路由/中间件/存储/e2e约束)，禁止盲patch main.go

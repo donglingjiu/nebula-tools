@@ -15,6 +15,9 @@ case "${1:-help}" in
   app)   # 全量应用：go run（含 go:embed 与后端），Go 代码改动需 Ctrl+C 重启
      echo "[dev] go run 启动中（首次编译数秒）"
      CGO_ENABLED=0 go run . ;;
+  test)  # Go 单测: 新包 + 存量
+     CGO_ENABLED=0 go test ./internal/... && echo TESTS_NEW_OK
+     CGO_ENABLED=0 go test . 2>&1 | tail -5 ;;
   build) # 标准产物（等价 CI 构建参数）
      CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o nebula-tools . && echo BUILD_OK ;;
   smoke) # 冒烟：./dev.sh smoke http://127.0.0.1:8080
@@ -157,6 +160,6 @@ chk('G.contract-surface', len(apis) >= 8)
 print('ACCEPT_OK' if ok else 'ACCEPT_FAIL')
 raise SystemExit(0 if ok else 1)
 PYACC
-     ;;  *) echo "用法: ./dev.sh web|app|build|smoke|stop|check|accept [port|base]" ;;
+     ;;  *) echo "用法: ./dev.sh web|app|build|test|smoke|stop|check|accept [port|base]" ;;
 
 esac
