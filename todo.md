@@ -136,3 +136,8 @@
 - build/test失败=批次硬停, 严禁带病restart+验证(教训: 旧二进制跑完全场, 404/401全是旧路由假象)
 - dev.sh check未覆盖go build ./...(语法破损漏检CHECK_OK): 每批次显式 CGO_ENABLED=0 go build ./...
 - 常驻mock: 18787 python回显上游(/tmp/mock_llm.py), SSE实测标配
+
+## 过程规约（续18）
+- 路由grep禁止锚定开引号: 方法前缀模式"POST /api/ai/..."不含'"/api/ai/'序列致零命中; 用'含路径+含HandleFunc'双条件
+- 注释多行注册语句必须string感知括号平衡到真末尾(禁行数上限; 12行cap切断长闭包→悬垂括号→下游连环语法错"multiple receivers"全是幻影)
+- 修语法前先git restore到最近可编译提交保底, 再小步精修

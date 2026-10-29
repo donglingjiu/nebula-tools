@@ -341,19 +341,19 @@ func newRouter(db *DB) http.Handler {
 	mux.HandleFunc("GET /api/notices", func(w http.ResponseWriter, r *http.Request) {
 		J(w, db.NoticesList())
 	})
-	mux.HandleFunc("POST /api/ai/chat", func(w http.ResponseWriter, r *http.Request) {
-		u := s.user(r)
-		if u == nil {
-			E(w, 401, "请先登录后使用 AI 助手")
-			return
-		}
-		var req struct {
-			Messages []map[string]any `json:"messages"`
-		}
-		if body(r, &req) != nil {
-			E(w, 400, "参数错误")
-			return
-		}
+// [5-4a]旧注册停用(路由移交internal/ai): mux.HandleFunc("POST /api/ai/chat", func(w http.ResponseWriter, r *http.Request) {
+// [5-4a]旧注册停用(路由移交internal/ai): u := s.user(r)
+// [5-4a]旧注册停用(路由移交internal/ai): if u == nil {
+// [5-4a]旧注册停用(路由移交internal/ai): E(w, 401, "请先登录后使用 AI 助手")
+// [5-4a]旧注册停用(路由移交internal/ai): return
+// [5-4a]旧注册停用(路由移交internal/ai): }
+// [5-4a]旧注册停用(路由移交internal/ai): var req struct {
+// [5-4a]旧注册停用(路由移交internal/ai): Messages []map[string]any `json:"messages"`
+// [5-4a]旧注册停用(路由移交internal/ai): }
+// [5-4a]旧注册停用(路由移交internal/ai): if body(r, &req) != nil {
+// [5-4a]旧注册停用(路由移交internal/ai): E(w, 400, "参数错误")
+// [5-4a]旧注册停用(路由移交internal/ai): return
+// [5-4a]旧注册停用(路由移交internal/ai): }
 		ep := db.GetSettingSafe("ai_endpoint")
 		if ep == "" {
 			J(w, map[string]any{"ok": true, "reply": "（演示模式）管理员尚未配置 AI 端点。请管理员进入 后台 → 设置 填入 OpenAI 兼容接口地址与密钥，即可开启真实对话。"})
