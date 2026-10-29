@@ -84,11 +84,11 @@
       return meCache;
     },
     async login(email, password) {
-      var r = await NB.api('/api/auth/login', { method: 'POST', body: { email: email, password: password } });
+      var r = await NB.api('/api/auth/login', { method: 'POST', silent: true, body: { email: email, password: password } });
       localStorage.setItem('nb_token', r.token); meCache = r.user; return r.user;
     },
     async register(email, password) {
-      var r = await NB.api('/api/auth/register', { method: 'POST', body: { email: email, password: password } });
+      var r = await NB.api('/api/auth/register', { method: 'POST', silent: true, body: { email: email, password: password } });
       localStorage.setItem('nb_token', r.token); meCache = r.user; return r.user;
     },
     logout() { localStorage.removeItem('nb_token'); meCache = null; location.href = '/'; },

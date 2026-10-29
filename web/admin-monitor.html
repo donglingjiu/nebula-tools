@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>监控报警 · 后台</title>
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body class="nb-skin">
+<header class="nb-header">
+  <a class="nb-logo" href="/"><i aria-hidden="true"></i>Nova Tools</a>
+  <span class="nb-admin-tag">管理后台</span>
+  <div class="nb-user" id="userChip"></div>
+</header>
+<div class="nb-admin">
+  <aside class="nb-side">
+    <div class="grp">运营</div>
+    <a href="/admin.html">概览</a>
+    <a href="/admin-features.html">功能池</a>
+    <a href="/admin-aiops.html">AI 运营</a>
+    <div class="grp">系统</div>
+    <a href="/admin-keys.html">LLM 密钥</a>
+    <a href="/admin-users.html">用户</a>
+    <a href="/admin-monitor.html">监控报警</a>
+  </aside>
+  <main class="nb-main">
+    <h2>监控报警</h2>
+    <p class="sub">R2 接真。</p>
+    <div class="nb-card">
+      <p class="nb-todo-card">规划：QPS/延迟/错误率/工具调用/AI token/活跃用户；报警通道邮件、Webhook、钉钉、飞书；阈值配置与历史记录。</p>
+    </div>
+  </main>
+</div>
+<script src="/assets/js/core.js"></script>
+<script src="/assets/js/admin.js"></script>
+<script>
+NB.adminNav();
+NB.adminGate(function(){});
+NB.bindUserChip(document.getElementById('userChip'));
+</script>
+</body>
+</html>

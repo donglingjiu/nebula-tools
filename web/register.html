@@ -69,7 +69,7 @@
       await NB.auth.register(email, p1);
       NB.toast('注册成功，正在进入…');
       setTimeout(function(){ location.href = '/'; }, 600);
-    } catch(e) {}
+    } catch(e) { NB.toast(e.message === '请先登录' ? '注册失败（开发阶段接口未接入）' : (e.message || '注册失败'), 'err'); }
     this.disabled = false;
   };
   NB.auth.me().then(function(u){ if(u) location.href = '/'; });
