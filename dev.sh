@@ -19,7 +19,7 @@ case "${1:-help}" in
      CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o nebula-tools . && echo BUILD_OK ;;
   smoke) # 冒烟：./dev.sh smoke http://127.0.0.1:8080
      B="${2:-http://127.0.0.1:8080}"; fail=0
-     for u in / /ai-studio.html /assets/css/tokens.css /assets/js/core.js /assets/js/ai-studio.js; do
+     for u in / /ai-studio.html /login.html /register.html /profile.html /ai-chat.html /assets/css/tokens.css /assets/js/core.js /assets/js/ai-studio.js /assets/js/ai-chat.js; do
        GET "${B}${u}" >/dev/null 2>&1 && echo "PASS 200 ${u}" || { echo "FAIL ${u}"; fail=1; }
      done
      GET "${B}/ai-studio.html" | grep -q "AI 工作台" && echo "PASS mark ai-studio" || { echo "FAIL mark ai-studio"; fail=1; }
@@ -56,7 +56,7 @@ for f in files:
     mo = (b"\xef\xbf\xbd" in b) or (b"\xc3\xaf\xc2\xbf\xc2\xbd" in b)
     if mo: ok = False
     print(f, "utf8:" + u, "mojibake:" + ("YES" if mo else "no"))
-s = pathlib.Path("web/ai-studio.js").read_text(encoding="utf-8")
+s = pathlib.Path("web/assets/js/ai-studio.js").read_text(encoding="utf-8")
 ls = s.splitlines()
 idx = next((i for i, l in enumerate(ls) if "stTime" in l), -1)
 if idx < 0:

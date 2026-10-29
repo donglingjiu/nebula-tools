@@ -69,7 +69,7 @@
     $('stMeter').style.width = Math.min(100, (tin + tout) / 100) + '%';
     var d = S.stages[S.cur];
     $('stTime').textContent = d.ms ? '本阶段 ' + (d.ms / 1000).toFixed(1) + 's' : '';
-�  }
+  }
   var throttledRender = NB.debounce(renderStage, 150);
 
   function gotoStage(i) {

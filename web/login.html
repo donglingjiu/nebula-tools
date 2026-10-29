@@ -1,3 +1,70 @@
-<!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#8a5a1c"><meta name="description" content="进入你的 Nova 工作空间。"><title>Nova · 登录</title><link rel="stylesheet" href="assets/styles.css"><link rel="stylesheet" href="assets/experiences.css"><link rel="stylesheet" href="assets/nova-finishing.css"><link rel="icon" type="image/svg+xml" href="assets/nova-mark.svg"><link rel="stylesheet" href="assets/nova-v4.css"><link rel="stylesheet" href="assets/nova-v5.css">
-<link rel="stylesheet" href="assets/nova-v6.css"><style>.nova-nav{position:sticky;top:0;z-index:99;background:#1a2233;color:#cdd5e8;font-size:13px;padding:8px 16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}.nova-nav a{color:#cdd5e8;text-decoration:none}.nova-nav a:hover{color:#fff}.nova-nav .grp{color:#8fa3ff;font-weight:600;margin-left:6px}.nova-nav b{color:#fff}</style></head><body data-page="login"><nav class="nova-nav"><b>Nova 工具</b><span class="grp">文档</span><a href="pdf2word.html">PDF转Word</a><a href="word2pdf.html">Word转PDF</a><a href="pdf.html">PDF工具箱</a><a href="markdown.html">Markdown</a><a href="mindmap.html">脑图</a><a href="imgtool.html">图片压缩</a><a href="excel.html">Excel洞察</a><span class="grp">开发</span><a href="json.html">JSON工具</a><a href="jsonx.html">JSON转换</a><a href="regex.html">正则测试</a><a href="base64.html">编码</a><span class="grp">数据</span><a href="excel.html">数据洞察</a><a href="tools.html" style="margin-left:auto">☰ 全部工具</a></nav><div id="app"><div style="min-height:100vh;display:grid;place-items:center;color:#7483a4;font:13px system-ui">正在准备 Nova 工作空间…</div></div><div class="toast-stack" aria-live="polite"></div><script src="assets/app.js" defer></script></body></html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>登录 · Nova Nebula Tools</title>
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<style>
+.nb-auth-wrap { min-height: 100vh; display: grid; place-items: center; padding: 24px;
+  background: linear-gradient(160deg, var(--bg-warm-1), var(--bg-base) 55%, var(--ai-soft)); }
+.nb-auth-card { width: 100%; max-width: 400px; }
+.nb-auth-card h1 { margin: 0 0 6px; font-size: 22px; }
+.nb-auth-sub { color: var(--text-sub); font-size: 14px; margin: 0 0 16px; }
+.nb-field { margin-bottom: 14px; }
+.nb-field label { display: block; font: 600 13px/1 var(--font-sans); color: var(--text-main); margin-bottom: 6px; }
+.nb-auth-alt { text-align: center; margin-top: 16px; font-size: 14px; color: var(--text-sub); }
+.nb-auth-alt a { font-weight: 700; }
+.nb-oauth { display: flex; gap: 8px; margin-top: 14px; }
+.nb-oauth .nb-btn { flex: 1; opacity: .55; cursor: not-allowed; }
+.nb-notice { font: 500 12px/1.5 var(--font-sans); color: var(--warn); background: #FFF4E0;
+  border: 1px solid var(--warn); border-radius: 10px; padding: 8px 12px; margin-bottom: 14px; }
+</style>
+</head>
+<body class="nb-skin">
+<div class="nb-auth-wrap">
+  <div class="nb-card nb-auth-card">
+    <h1>欢迎回来</h1>
+    <p class="nb-auth-sub">登录 Nova Nebula Tools，继续你的 AI 全流程</p>
+    <div class="nb-notice">开发提示：登录接口在阶段5接入，当前点击登录会提示失败，属预期。</div>
+    <div class="nb-field">
+      <label for="email">邮箱</label>
+      <input class="nb-input" id="email" type="email" autocomplete="email" placeholder="you@example.com">
+    </div>
+    <div class="nb-field">
+      <label for="password">密码</label>
+      <input class="nb-input" id="password" type="password" autocomplete="current-password" placeholder="至少 8 位">
+    </div>
+    <button class="nb-btn nb-btn--warm" id="btnLogin" style="width:100%">登 录</button>
+    <div class="nb-auth-alt">还没有账号？<a href="/register.html">立即注册</a></div>
+    <div class="nb-oauth">
+      <button class="nb-btn nb-btn--ghost nb-btn--sm" disabled title="TODO T-03">GitHub</button>
+      <button class="nb-btn nb-btn--ghost nb-btn--sm" disabled title="TODO T-03">Google</button>
+      <button class="nb-btn nb-btn--ghost nb-btn--sm" disabled title="TODO T-03">微信</button>
+    </div>
+  </div>
+</div>
+<script src="/assets/js/core.js"></script>
+<script>
+(function(){
+  var next = new URLSearchParams(location.search).get('next') || '/';
+  document.getElementById('btnLogin').onclick = async function(){
+    var email = document.getElementById('email').value.trim();
+    var pwd = document.getElementById('password').value;
+    if(!email || !pwd){ NB.toast('请填写邮箱和密码','warn'); return; }
+    this.disabled = true;
+    try {
+      await NB.auth.login(email, pwd);
+      NB.toast('登录成功，正在跳转…');
+      setTimeout(function(){ location.href = next; }, 600);
+    } catch(e) { /* 提示已由 core 统一弹出 */ }
+    this.disabled = false;
+  };
+  document.getElementById('password').addEventListener('keydown', function(e){
+    if(e.key === 'Enter') document.getElementById('btnLogin').click();
+  });
+  NB.auth.me().then(function(u){ if(u) location.href = next; });
+})();
+</script>
+</body>
+</html>

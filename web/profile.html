@@ -1,3 +1,75 @@
-<!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#8a5a1c"><meta name="description" content="管理个人工作空间。"><title>Nova · 个人中心</title><link rel="stylesheet" href="assets/styles.css"><link rel="stylesheet" href="assets/experiences.css"><link rel="stylesheet" href="assets/nova-finishing.css"><link rel="icon" type="image/svg+xml" href="assets/nova-mark.svg"><link rel="stylesheet" href="assets/nova-v4.css"><link rel="stylesheet" href="assets/nova-v5.css">
-<link rel="stylesheet" href="assets/nova-v6.css"><style>.nova-nav{position:sticky;top:0;z-index:99;background:#1a2233;color:#cdd5e8;font-size:13px;padding:8px 16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}.nova-nav a{color:#cdd5e8;text-decoration:none}.nova-nav a:hover{color:#fff}.nova-nav .grp{color:#8fa3ff;font-weight:600;margin-left:6px}.nova-nav b{color:#fff}</style></head><body data-page="profile"><nav class="nova-nav"><b>Nova 工具</b><span class="grp">文档</span><a href="pdf2word.html">PDF转Word</a><a href="word2pdf.html">Word转PDF</a><a href="pdf.html">PDF工具箱</a><a href="markdown.html">Markdown</a><a href="mindmap.html">脑图</a><a href="imgtool.html">图片压缩</a><a href="excel.html">Excel洞察</a><span class="grp">开发</span><a href="json.html">JSON工具</a><a href="jsonx.html">JSON转换</a><a href="regex.html">正则测试</a><a href="base64.html">编码</a><span class="grp">数据</span><a href="excel.html">数据洞察</a><a href="tools.html" style="margin-left:auto">☰ 全部工具</a></nav><div id="app"><div style="min-height:100vh;display:grid;place-items:center;color:#7483a4;font:13px system-ui">正在准备 Nova 工作空间…</div></div><div class="toast-stack" aria-live="polite"></div><script src="assets/app.js" defer></script></body></html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=devic
+<title>个人中心 · Nova Nebula Tools</title>
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<style>
+.nb-header { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 18px;
+  padding: 12px 24px; background: rgba(255,249,242,.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.nb-logo { font: 800 19px/1 var(--font-sans); color: var(--text-main); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+.nb-logo i { width: 26px; height: 26px; border-radius: 8px; background: var(--ai-gradient); display: inline-block; }
+.nb-header .nb-user { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.nb-user-chip { font: 600 13px/1 var(--font-sans); color: var(--text-main); background: var(--bg-warm-1); padding: 8px 12px; border-radius: 999px; }
+.nb-wrap { max-width: 920px; margin: 20px auto; padding: 0 16px; display: grid; gap: 16px; }
+.nb-wrap h3 { margin: 0 0 12px; font-size: 16px; }
+.nb-row { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: 14px; }
+.nb-row:last-child { border-bottom: 0; }
+.nb-row b { flex: none; width: 90px; color: var(--text-sub); font-weight: 600; }
+.nb-role { font: 700 11px/1 var(--font-sans); padding: 4px 10px; border-radius: 999px; background: var(--bg-warm-1); color: var(--brand-warm-deep); }
+.nb-role--admin, .nb-role--super { background: var(--ai-soft); color: var(--ai-deep); }
+.nb-empty2 { color: var(--text-sub); font-size: 13px; background: var(--bg-warm-1); border-radius: 10px; padding: 12px 14px; }
+.nb-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+</style>
+</head>
+<body class="nb-skin">
+<header class="nb-header">
+  <a class="nb-logo" href="/"><i aria-hidden="true"></i>Nova Tools</a>
+  <div class="nb-user" id="userChip"></div>
+</header>
+<main class="nb-wrap">
+  <div class="nb-card">
+    <h3>我的信息</h3>
+    <div id="meBox"><p class="nb-empty2">加载中…</p></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <a class="nb-btn nb-btn--ghost nb-btn--sm" href="/ai-studio.html">AI 工作台</a>
+      <button class="nb-btn nb-btn--ghost nb-btn--sm" id="btnLogout">退出登录</button>
+    </div>
+  </div>
+  <div class="nb-card">
+    <h3>我的 AI 流程</h3>
+    <p class="nb-empty2">流程列表接口在阶段5接入。当前流程数据保存在浏览器本地，可在工作台页继续。</p>
+    <div style="margin-top:10px"><a class="nb-btn nb-btn--ai nb-btn--sm" href="/ai-studio.html">打开工作台</a></div>
+  </div>
+  <div class="nb-card">
+    <h3>用量</h3>
+    <div class="nb-metrics">
+      <div class="nb-metric"><b>0</b><span>累计 token（阶段5起统计）</span></div>
+      <div class="nb-metric"><b>0</b><span>AI 调用次数</span></div>
+    </div>
+  </div>
+  <div class="nb-card" id="billing">
+    <h3>计费</h3>
+    <p class="nb-empty2">AI 模块付费能力由超级管理员在后台一键配置（R2 上线）。当前开发阶段 AI 调用免费。</p>
+  </div>
+</main>
+<script src="/assets/js/core.js"></script>
+<script>
+(function(){
+  var ROLES = { user: '普通用户', admin: '管理员', 'super': '超级管理员' };
+  NB.bindUserChip(document.getElementById('userChip'));
+  NB.auth.me().then(function(u){
+    var box = document.getElementById('meBox');
+    if(!u){ box.innerHTML = '<p class="nb-empty2">未登录。<a href="/login.html?next=/profile.html">去登录</a></p>'; return; }
+    var r = u.role || 'user';
+    box.innerHTML =
+      '<div class="nb-row"><b>邮箱</b><span>' + NB.escape(u.email) + '</span></div>' +
+      '<div class="nb-row"><b>角色</b><span class="nb-role nb-role--' + NB.escape(r) + '">' + (ROLES[r] || '普通用户') + '</span></div>' +
+      '<div class="nb-row"><b>注册时间</b><span>' + (u.created_at ? NB.fmtDate(u.created_at) : '阶段5起记录') + '</span></div>';
+  });
+  docum
+})();
+</script>
+</body>
+</html>

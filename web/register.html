@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>注册 · Nova Nebula Tools</title>
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<style>
+.nb-auth-wrap { min-height: 100vh; display: grid; place-items: center; padding: 24px;
+  background: linear-gradient(160deg, var(--ai-soft), var(--bg-base) 55%, var(--bg-warm-1)); }
+.nb-auth-card { width: 100%; max-width: 400px; }
+.nb-auth-card
+.nb-auth-sub { color: var(--text-sub); font-size: 14px; margin: 0 0 16px; }
+.nb-field 
+.nb-field label { display: block; font: 600 13px/1 var(--font-sans); color: var(--text-main); margin-bottom: 6px; }
+.nb-auth-alt { text-align: center; margin-top: 16px; font-size: 14px; color: var(--text-sub); }
+.nb-auth-alt a { font-weight: 700; }
+.nb-notice { font: 500 12px/1.5 var(--font-sans); color: var(--warn); background: #FFF4E0;
+  border: 1px solid var(--warn); border-radius: 10px; padding: 8px 12px; margin-bottom: 14px; }
+.hint-pwd { font: 500 12px/1.4 var(--font-sans); color: var(--text-sub); margin-top: 4px; }
+</style>
+</head>
+<body class="nb-skin">
+<div class="nb-auth-wrap">
+  <div class="nb-card nb-auth-card">
+    <h1>创建账号</h1>
+    <p class="nb-auth-sub">注册后可保存 AI 全流程产出与用量</p>
+    <div class="nb-notice">开发提示：注册接口在阶段5接入，当前点击注册会提示失败，属预期。</div>
+    <div class="nb-field">
+      <label for="email">邮箱</label>
+      <input class="nb-input" id="email" type="email" autocomplete="email" placeholder="you@example.com">
+    </div>
+    <div class="nb-field">
+      <label for="password">密码</label>
+      <input class="nb-input" id="password" type="password" autocomplete="new-password" placeholder="至少 8 位">
+      <span class="nb-meter" style="display:block;margin-top:6px"><i id="pwdBar" style="width:0%"></i></span>
+      <div class="hint-pwd" id="pwdHint">建议 8 位以上，混合字母、数字与符号</div>
+    </div>
+    <div class="nb-field">
+      <label for="confirm">确认密码</label>
+      <input class="nb-input" id="confirm" type="password" autocomplete="new-password" placeholder="再输入一次">
+    </div>
+    <button class="nb-btn nb-btn--warm" id="btnReg" style="width:100%">注 册</button>
+    <div class="nb-auth-alt">已有账号？<a href="/login.html">直接登录</a></div>
+  </div>
+</div>
+<script src="/assets/js/core.js"></script>
+<script>
+(function(){
+  var pwd = document.getElementById('password');
+  var bar = document.getElementById('pwdBar');
+  var hint = document.getElementById('pwdHint');
+  pwd.addEventListener('input', function(){
+    var v = pwd.value, score = 0;
+    if(v.length >= 8) score += 34;
+    if(/[A-Za-z]/.test(v) && /[0-9]/.test(v)) score += 33;
+    if(/[^A-Za-z0-9]/.test(v)) score += 33;
+    bar.style.width = score + '%';
+    hint.textContent = score >= 90 ? '强度：强' : (score >= 60 ? '强度：中' : (v ? '强度：弱' : '建议 8 位以上，混合字母、数字与符号'));
+  });
+  document.getElementById('btnReg').onclick = async function(){
+    var email = document.getElementById('email').value.trim();
+    var p1 = pwd.value, p2 = document.getElementById('confirm').value;
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ NB.toast('邮箱格式不正确','warn'); return; }
+    if(p1.length < 8){ NB.toast('密码至少 8 位','warn'); return; }
+    if(p1 !== p2){ NB.toast('两次输入的密码不一致','warn'); return; }
+    this.disabled = true;
+    try {
+      await NB.auth.register(email, p1);
+      NB.toast('注册成功，正在进入…');
+      setTimeout(function(){ location.href = '/'; }, 600);
+    } catch(e) {}
+    this.disabled = false;
+  };
+  NB.auth.me().then(function(u){ if(u) location.href = '/'; });
+})();
+</script>
+</body>
+</html>

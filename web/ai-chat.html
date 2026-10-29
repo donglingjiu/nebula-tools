@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 对话 · Nova Nebula Tools</title>
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<style>
+.nb-header { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 18px;
+  padding: 12px 24px; background: rgba(255,249,242,.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.nb-logo { font: 800 19px/1 var(--font-sans); color: var(--text-main); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+.nb-logo i { width: 26px; height: 26px; border-radius: 8px; background: var(--ai-gradient); display: inline-block; }
+.nb-header .nb-user { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.nb-user-chip { font: 600 13px/1 var(--font-sans); color: var(--text-main); background: var(--bg-warm-1); padding: 8px 12px; border-radius: 999px; }
+.nb-chat-main { max-width: 860px; margin: 20px auto; padding: 0 16px; }
+.nb-log { height: calc(100vh - 340px); min-height: 320px; overflow: auto;
+  display: flex; flex-direction: column; gap: 10px; padding: 6px 2px; }
+.nb-msg { max-width: 85%; padding: 10px 14px; border-radius: 14px; font-size: 14.5px;
+  line-height: 1.65; white-space: pre-wrap; word-break: break-word; }
+.nb-msg--u { align-self: flex-end; background: var(--bg-warm-2); }
+.nb-msg--a { align-self: flex-start; background: var(--ai-soft); }
+.nb-inputbar { display: flex; gap: 8px; margin-top: 12px; }
+.nb-inputbar .nb-input { flex: 1; }
+.statusbar { position: sticky; bottom: 0; display: flex; gap: 18px; align-items: center;
+  background: rgba(255,249,242,.95); border-top: 1px solid var(--line); padding: 8px 24px;
+  font: 600 12px/1 var(--font-mono); color: var(--text-sub); }
+</style>
+</head>
+<body class="nb-skin">
+<header class="nb-header">
+  <a class="nb-logo" href="/"><i aria-hidden="true"></i>Nova Tools</a>
+  <div class="nb-user" id="userChip"></div>
+</header>
+<main class="nb-chat-main">
+  <div class="nb-card nb-card--ai" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <h2 style="margin:0;font-size:17px;flex:1">AI 对话 <span class="nb-badge-ai">AI</span></h2>
+    <button class="nb-btn nb-btn--ghost nb-btn--sm" id="btnNew">＋ 新对话</button>
+  </div>
+  <div class="nb-log" id="log" aria-live="polite"></div>
+  <div class="nb-inputbar">
+    <input class="nb-input" id="input" placeholder="输入消息，Enter 发送…" aria-label="消息输入">
+    <button class="nb-btn nb-btn--ai" id="btnSend">发送</button>
+  </div>
+</main>
+<div class="statusbar"><span>tokens: <span id="stTok">0</span></span><span>对话接口在阶段5接入，当前发送会提示失败（预期）</span></div>
+<script src="/assets/js/core.js"></script>
+<script src="/assets/js/ai-chat.js"></script>
+</body>
+</html>
