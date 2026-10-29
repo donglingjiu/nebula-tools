@@ -58,7 +58,7 @@
       await NB.auth.login(email, pwd);
       NB.toast('登录成功，正在跳转…');
       setTimeout(function(){ location.href = next; }, 600);
-    } catch(e) { NB.toast(e.message === '请先登录' ? '登录失败：账号或密码错误（开发阶段接口未接入）' : (e.message || '登录失败'), 'err'); }
+    } catch(e) { NB.toast(e.message === '请先登录' ? '登录失败：账号或密码错误' : '登录失败：' + (e.message || '未知错误'), 'err'); }
     this.disabled = false;
   };
   document.getElementById('password').addEventListener('keydown', function(e){

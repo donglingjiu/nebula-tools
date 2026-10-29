@@ -199,6 +199,10 @@ func newRouter(db *DB) http.Handler {
 		J(w, map[string]any{"ok": true})
 	})
 
+	mux.HandleFunc("GET /favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	})
+
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		b, err := webFS.ReadFile("web/index.html")
 		if err != nil {
