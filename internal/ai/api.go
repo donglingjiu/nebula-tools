@@ -35,6 +35,11 @@ func Mount(mux *http.ServeMux, dir string, asvc *auth.Service) error {
 	s := &Service{dir: dir}
 	mux.HandleFunc("POST /api/ai/chat", asvc.RequireRole("user", s.chat))
 	mux.HandleFunc("GET /api/ai/status", asvc.RequireRole("user", s.status))
+	mux.HandleFunc("POST /api/ai/flow/start", asvc.RequireRole("user", s.flowStart))
+	mux.HandleFunc("POST /api/ai/flow/advance", asvc.RequireRole("user", s.flowAdvance))
+	mux.HandleFunc("POST /api/ai/flow/run", asvc.RequireRole("user", s.flowRun))
+	mux.HandleFunc("POST /api/ai/flow/chat", asvc.RequireRole("user", s.flowChat))
+	mux.HandleFunc("GET /api/ai/flow/export", asvc.RequireRole("user", s.flowExport))
 	return nil
 }
 
