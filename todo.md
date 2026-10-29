@@ -159,3 +159,10 @@
 - gofmt -l恒退出0, 列出文件即未格式化, `&& echo CLEAN`必误报: 收尾用gofmt -w并看-l是否空输出
 - mock上游双模: body.stream真→SSE分片/假→JSON全文(chat流式与工作台collectChat各取所需)
 - 前端流式: fetch+getReader逐行解析data:载荷; 402读body.price唤showPaywall(typeof防御), 410/503走提示条; web文件embed进二进制, patch必须先于dev.sh build
+
+## 过程规约（续22）
+- WIRE锚点禁含缩进假设(gofmt把4空格改tab致WIRE2未命中, assert正确中止→flow五路由漏挂一轮): 定位用路径token+行尾插入
+- do()返回(int,map,string): 测试解构按位置对齐, raw在第3位
+- 引用脚本必须当轮落盘(m54b.sh被我引用却从未写出=空跑一轮, 账在我): 交付物以ls为证
+- 遗留契约裁决: web/assets/js/ai-studio.js自带flow契约(idea/mode/stages/NB.stream), NB.stream无定义=从未接线的死代码; 真实API以internal/ai为准, js重写列R2
+- R2遗留清单: ①旧ai-studio.js重写对齐真API ②402购买链路(现为假门) ③flow无用户隔离(flows.json全局共享)

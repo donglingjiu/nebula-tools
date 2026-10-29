@@ -93,7 +93,7 @@ func TestFlow(t *testing.T) {
 		t.Fatalf("chat: %v", mc)
 	}
 
-	c, raw, _ := do(t, ts, "GET", "/api/ai/flow/export?id="+fid2, super, "")
+	c, _, raw := do(t, ts, "GET", "/api/ai/flow/export?id="+fid2, super, "")
 	if c != 200 || !strings.Contains(raw, "一键") ||
 		!strings.Contains(raw, "步骤输出OK") {
 		t.Fatalf("export: %d %q", c, raw)
