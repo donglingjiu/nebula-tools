@@ -37,3 +37,10 @@
 - 交付块内禁止 4 字节 emoji（会被终端粘贴替换为乱码）；一律用 ASCII/中文替代
 - 大文件粘贴易随机丢字：写完必跑哨兵 grep 核对关键行；修复用 sed 定点改行，不整块重贴
 - 本机构建统一 CGO_ENABLED=0 go build（服务器 gcc 过旧与 cgo 不兼容；项目纯 Go 无影响）
+
+## 本地开发回路规约
+- 本地验证一律走 ./dev.sh（web/app/build/smoke/stop/check）；构建唯一方式 CGO_ENABLED=0，不把物理机 gcc 等当依赖
+- 前端迭代 = ./dev.sh web + 浏览器
+- dev 与发布解耦：CI 产物/docker/K8s 仅阶段7部署门使用；目标机只做"拉取+启动"（后续一键脚本）
+- JS 语法门禁：浏览器 F12 控制台零红错；可选 nvm 装 node（$HOME 内）后升级为 node --check
+- 括号原始计数为信息项非门禁（正则字符类会污染计数）
