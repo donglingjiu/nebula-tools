@@ -130,21 +130,26 @@
 </script>
 <script>
 (function(){
-  function fixKeys(){
+  var done = false;
+  function fill(d){
     try {
-      NB.api('/api/admin/llm/profiles', {silent:true}).then(function(d){
-        var ps = (d && d.profiles) || [];
-        var trs = document.querySelectorAll('tbody tr');
-        for (var i = 0; i < trs.length && i < ps.length; i++) {
-          var td = trs[i].children[3];
-          if (td && ps[i].key_tail) td.textContent = ps[i].key_tail;
-        }
-      }).catch(function(){});
-    } catch (e) {}
+      var ps = (d && d.profiles) || [];
+      var trs = document.querySelectorAll('tbody tr');
+      var hit = 0;
+      for (var i = 0; i < trs.length && i < ps.length; i++) {
+        var td = trs[i].children[3];
+        var kt = ps[i].key_tail || ps[i].keyTail || ps[i].api_key_mask || ps[i].key_mask;
+        if (td && kt) { td.textContent = kt; hit++; }
+      }
+      return hit > 0;
+    } catch (e) { return false; }
   }
-  setTimeout(fixKeys, 1200); setTimeout(fixKeys, 3200);
-  var tb = document.querySelector('tbody');
-  if (tb && window.MutationObserver) new MutationObserver(fixKeys).observe(tb, {childList:true});
+  function tryFill(){
+    if (done) return;
+    NB.api('/api/admin/llm/profiles', {silent:true}).then(function(d){ if (fill(d)) done = true; }).catch(function(){});
+  }
+  for (var i = 1; i <= 8; i++) setTimeout(tryFill, 800 * i);
+  window.addEventListener('online', tryFill);
 })();
 </script>
 </body>

@@ -102,3 +102,8 @@
 ## 阶段5进度(续3)
 - 5-3f: 密钥列掩码垫片(过渡方案; 原生渲染代码存档/tmp/akr.txt待重构并入); 后端is_default契约补齐("设默认"按钮接真)
 - 5-4 待做: AI 接线(SSE chat/flow + 410下线门/402付费门)
+
+## 过程规约（续11）
+- 含前端修改的批次, 收尾段必须包含 build+restart+线上curl验证(再犯: 段4漏build致shim未上线)
+- MutationObserver内改DOM会自触发死循环: 垫片类代码禁用观察者, 改用重试+online事件
+- ERR_INTERNET_DISCONNECTED=客户端断网请求未达服务端, 与服务端无关; 服务端状态以curl为准
