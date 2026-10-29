@@ -73,7 +73,7 @@
         '<span>7日 ' + NB.fmtNum(f.calls_7d) + ' 次</span><span>成功率 ' + f.success_rate + '%</span>' +
         '<label style="margin-left:auto;display:flex;gap:4px;align-items:center">付费' +
         '<input type="checkbox" data-a="paid"' + (f.is_paid ? ' checked' : '') + '></label>' +
-        '<input class="nb-input" data-a="price" type="n
+        '<input class="nb-input" data-a="price" type="number" min="0" value="' + (f.price || 0) + '" style="width:80px;padding:4px 8px" aria-label="价格"></div>';
       d.querySelector('[data-a=sw]').onchange = function(){
         var on = this.checked;
         NB.api('/api/admin/features/' + f.id, { method:'PUT', body:{ enabled:on } })

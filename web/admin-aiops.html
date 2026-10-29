@@ -80,7 +80,7 @@
 (function(){
   var NB = window.NB, $ = function(id){ return document.getElementById(id); };
   function loadOps(){
-    NB.api('/api/admin/ai/ops'
+    NB.api('/api/admin/ai/ops').then(function(r){
       $('sw_ai').checked = !!r.switches.ai_enabled;
       $('sw_paid').checked = !!r.switches.paid_mode;
       $('m_tok').textContent = NB.fmtNum(r.today.tokens);

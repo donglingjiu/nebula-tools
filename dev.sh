@@ -82,8 +82,8 @@ for f, marks in [("web/login.html", ["NB.auth.login"]),
                  ("web/admin.html", ["admin-keys.html", "NB.adminGate"]),
                  ("web/admin-keys.html", ["masked_key", "f_key", "llm/profiles"]),
                  ("web/assets/js/admin.js", ["adminGate"]),
-                 ("web/admin-aiops.html", ["sw_ai", "admin/ai/ops", "sel_model"]),
-                 ("web/admin-features.html", ["admin/features", "nb-switch", "calls_7d"]),
+                 ("web/admin-aiops.html", ["sw_ai", "/ai/ops').then(function(r){", "sel_model"]),
+                 ("web/admin-features.html", ["admin/features", "nb-switch", "calls_7d", "(f.price || 0)"]),
                  ("web/index.html", ["nb-hero-ai", '<a href="/ai-studio.html"', "立即体验"])]:
     t = pathlib.Path(f).read_text(encoding="utf-8")
     for m in marks:
