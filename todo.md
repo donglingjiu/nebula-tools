@@ -90,3 +90,7 @@
 - 行级patch必须先grep原行并保真其结构后缀(教训: FIXS重写哨兵行丢掉for列表收口"]:")；改dev.sh后立即 bash -n + check 双验证通过才可commit
 - grep -c统计行数非次数: 单行JSON计数用 grep -o ... | wc -l
 - 本机gcc过老: Go命令统一 CGO_ENABLED=0(裸build的cgo报错属环境噪声)
+
+## 过程规约（续10）
+- web/ 经 go:embed 编入二进制: 改前端必须 ./dev.sh build + 重启才生效(教训: 截图旧文案误判为patch失败)
+- git push 偶发 SSL_ERROR_SYSCALL 为瞬时抖动, 原命令重试即可

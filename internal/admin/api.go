@@ -109,9 +109,10 @@ func (s *Service) listProfiles(w http.ResponseWriter, r *http.Request) {
 	defer s.st.mu.Unlock()
 	arr := make([]map[string]any, 0, len(s.st.Profiles))
 	for _, p := range s.st.Profiles {
+		kt := keyTail(s.decKey(p.APIKeyEnc))
 		arr = append(arr, map[string]any{
 			"id": p.ID, "name": p.Name, "base_url": p.BaseURL, "model": p.Model,
-			"enabled": p.Enabled, "created_at": p.CreatedAt, "key_tail": keyTail(s.decKey(p.APIKeyEnc)),
+			"enabled": p.Enabled, "created_at": p.CreatedAt, "key_tail": kt, "keyTail": kt, "api_key_mask": kt,
 		})
 	}
 	writeJSON(w, 200, map[string]any{"profiles": arr})
