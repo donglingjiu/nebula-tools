@@ -99,5 +99,64 @@ print("CHECK_OK" if ok else "CHECK_FAIL")
 raise SystemExit(0 if ok else 1)
 PYCHK
      ;;
-  *) echo "用法: ./dev.sh web|app|build|smoke|stop|check [port|base]" ;;
+  accept) # R1 前端验收（阶段门4自动证据）
+     python3 - <<'PYACC'
+import glob, pathlib, re
+ok = True
+def chk(name, cond, detail=''):
+    global ok
+    print(('PASS' if cond else 'FAIL'), name, ('| ' + detail) if detail else '')
+    if not cond: ok = False
+
+need = ['index.html','ai-studio.html','login.html','register.html','profile.html',
+        'ai-chat.html','admin.html','admin-keys.html','admin-aiops.html','admin-features.html',
+        'assets/css/tokens.css','assets/css/admin.css',
+        'assets/js/core.js','assets/js/ai-studio.js','assets/js/ai-chat.js','assets/js/admin.js']
+miss = [f for f in need if not pathlib.Path('web', f).exists()]
+chk('A.inventory', not miss, '16/16' if not miss else 'missing: ' + ','.join(miss))
+
+hrefs = set()
+for f in glob.glob('web/*.html'):
+    hrefs |= set(re.findall(r'href="(/[a-z0-9-]+\.html)"', pathlib.Path(f).read_text(encoding='utf-8')))
+bad = [h for h in sorted(hrefs) if not pathlib.Path('web' + h).exists()]
+chk('B.nav-closure', not bad, str(len(hrefs)) + ' links ok' if not bad else 'broken: ' + ','.join(bad))
+
+core = pathlib.Path('web/assets/js/core.js').read_text(encoding='utf-8')
+chk('C.error-codes', all(c in core for c in ['401', '402', '410', '429']))
+chk('C.paywall-modal', 'showPaywall' in core)
+admin_pages = glob.glob('web/admin-*.html') + ['web/admin.html']
+chk('C.admin-gate', all('adminGate' in pathlib.Path(f).read_text(encoding='utf-8') for f in admin_pages), str(len(admin_pages)) + ' pages')
+
+stu = pathlib.Path('web/assets/js/ai-studio.js').read_text(encoding='utf-8')
+chk('D.export-fallback', 'clientMd' in stu and 'format=zip' in stu)
+studio_html = pathlib.Path('web/ai-studio.html').read_text(encoding='utf-8')
+chat_js = pathlib.Path('web/assets/js/ai-chat.js').read_text(encoding='utf-8')
+chk('D.login-gates', 'loginGate' in studio_html and 'login.html?next=/ai-chat.html' in chat_js)
+
+tok = pathlib.Path('web/assets/css/tokens.css').read_text(encoding='utf-8')
+defined = set(re.findall(r'(--[a-z0-9-]+)\s*:', tok))
+used = set()
+for f in glob.glob('web/*.html') + glob.glob('web/assets/js/*.js') + ['web/assets/css/admin.css']:
+    used |= set(re.findall(r'var\((--[a-z0-9-]+)\)', pathlib.Path(f).read_text(encoding='utf-8')))
+undef = sorted(used - defined)
+chk('E.tokens-coverage', not undef, str(len(used)) + ' vars defined' if not undef else 'undefined: ' + ','.join(undef))
+chk('E.focus-visible', 'focus-visible' in tok)
+
+alljs = '\n'.join(pathlib.Path(f).read_text(encoding='utf-8') for f in glob.glob('web/assets/js/*.js'))
+chk('F.storage-keys', all(k in alljs for k in ['nb_token', 'nb_flow', 'nb_chat']))
+
+apis = set()
+for f in glob.glob('web/assets/js/*.js') + glob.glob('web/*.html'):
+    for x in re.findall(r'/api/[a-z0-9_/{}\-]+', pathlib.Path(f).read_text(encoding='utf-8')):
+        apis.add(x.rstrip('/'))
+print('INFO api-endpoints (' + str(len(apis)) + '):')
+for a in sorted(apis):
+    print('   ', a)
+chk('G.contract-surface', len(apis) >= 8)
+
+print('ACCEPT_OK' if ok else 'ACCEPT_FAIL')
+raise SystemExit(0 if ok else 1)
+PYACC
+     ;;  *) echo "用法: ./dev.sh web|app|build|smoke|stop|check|accept [port|base]" ;;
+
 esac

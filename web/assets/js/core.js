@@ -31,7 +31,7 @@
       headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders(), opts.headers || {}),
       body: opts.body != null ? JSON.stringify(opts.body) : undefined
     });
-    if (res.status === 401) { NB.emitAuthExpired(); throw new NB.ApiError(401, '请先登录'); }
+    if (res.status === 401) { if (!opts.silent) NB.emitAuthExpired(); throw new NB.ApiError(401, '请先登录'); }
     if (res.status === 402) { var info = await safeJson(res); NB.showPaywall(info); throw new NB.ApiError(402, info.message || '该 AI 功能为付费功能'); }
     if (res.status === 410) { NB.toast('该功能已被管理员下线', 'warn'); throw new NB.ApiError(410, '功能已下线'); }
     if (res.status === 429) { NB.toast('请求过于频繁，请稍后再试', 'warn'); throw new NB.ApiError(429, '限流'); }
@@ -80,7 +80,7 @@
     async me(force) {
       if (meCache && !force) return meCache;
       if (!NB.auth.token()) return null;
-      try { meCache = (await NB.api('/api/auth/me')).user; } catch (e) { meCache = null; }
+      try { meCache = (await NB.api('/api/auth/me', { silent: true })).user; } catch (e) { meCache = null; }
       return meCache;
     },
     async login(email, password) {
