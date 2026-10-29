@@ -87,7 +87,7 @@ for f, marks in [("web/login.html", ["NB.auth.login", "insEls"]),
                  ("web/assets/js/admin.js", ["adminGate"]),
                  ("web/admin-aiops.html", ["sw_ai", "/ai/ops').then(function(r){", "sel_model"]),
                  ("web/admin-features.html", ["admin/features", "nb-switch", "calls_7d", "(f.price || 0)"]),
-                 ("web/index.html", ["nb-hero-ai", '<a href="/ai-studio.html"', "立即体验"], "font-weight:700;padding:9px 18px"]]:
+                 ("web/index.html", ["nb-hero-ai", '<a href="/ai-studio.html"', "立即体验", "font-weight:700;padding:9px 18px"])]:
     t = pathlib.Path(f).read_text(encoding="utf-8")
     for m in marks:
         if m not in t:

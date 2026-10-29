@@ -85,3 +85,8 @@
 - 5-3b 修复：长粘贴断链致 api 丢 .go 后缀/test 丢失/main 未接线 → 全部重写补齐，矩阵全绿
 - 5-3 完成：admin 8路由接真；index 横幅修复
 - 5-4 待做：AI 接线（SSE chat/flow + 410 下线门/402 付费门）
+
+## 过程规约（续9）
+- 行级patch必须先grep原行并保真其结构后缀(教训: FIXS重写哨兵行丢掉for列表收口"]:")；改dev.sh后立即 bash -n + check 双验证通过才可commit
+- grep -c统计行数非次数: 单行JSON计数用 grep -o ... | wc -l
+- 本机gcc过老: Go命令统一 CGO_ENABLED=0(裸build的cgo报错属环境噪声)
