@@ -80,15 +80,15 @@
     async me(force) {
       if (meCache && !force) return meCache;
       if (!NB.auth.token()) return null;
-      try { meCache = (await NB.api('/api/auth/me', { silent: true })).user; } catch (e) { meCache = null; }
+      try { meCache = (await NB.api('/api/v2/auth/me', { silent: true })).user; } catch (e) { meCache = null; }
       return meCache;
     },
     async login(email, password) {
-      var r = await NB.api('/api/auth/login', { method: 'POST', silent: true, body: { email: email, password: password } });
+      var r = await NB.api('/api/v2/auth/login', { method: 'POST', silent: true, body: { email: email, password: password } });
       localStorage.setItem('nb_token', r.token); meCache = r.user; return r.user;
     },
     async register(email, password) {
-      var r = await NB.api('/api/auth/register', { method: 'POST', silent: true, body: { email: email, password: password } });
+      var r = await NB.api('/api/v2/auth/register', { method: 'POST', silent: true, body: { email: email, password: password } });
       localStorage.setItem('nb_token', r.token); meCache = r.user; return r.user;
     },
     logout() { localStorage.removeItem('nb_token'); meCache = null; location.href = '/'; },
