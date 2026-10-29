@@ -153,3 +153,9 @@
 - go test的[setup failed]真实报错在输出头部(tail会吞掉), 用head取; go fmt禁用>/dev/null静默
 - 长粘贴(矩阵/脚本)一律先落/tmp短行文件再bash执行(直贴四连翻车: Tab补全/Go行截断x2/shell行截断); 长JSON体抽MSGS变量+gput/oput函数缩短每行
 - E2E矩阵独立于单测: 服务存活即先跑矩阵拿功能实证, 单测修复并行
+
+## 过程规约（续21）
+- 门策略分层: AI消耗端点(advance/run/chat)走门链(随ai_chat); start/export不耗AI不设门(下线仍可建流程/导出成果)
+- gofmt -l恒退出0, 列出文件即未格式化, `&& echo CLEAN`必误报: 收尾用gofmt -w并看-l是否空输出
+- mock上游双模: body.stream真→SSE分片/假→JSON全文(chat流式与工作台collectChat各取所需)
+- 前端流式: fetch+getReader逐行解析data:载荷; 402读body.price唤showPaywall(typeof防御), 410/503走提示条; web文件embed进二进制, patch必须先于dev.sh build

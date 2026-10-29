@@ -138,5 +138,122 @@
 
 <script src="/assets/js/core.js"></script>
 <script src="/assets/js/ai-studio.js"></script>
+<script>
+(function(){
+  function tok(){
+    try{
+      for(var i=0;i<localStorage.length;i++){
+        var v=localStorage.getItem(localStorage.key(i))||'';
+        var m=v.match(/eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/);
+        if(m)return m[0];
+      }
+    }catch(e){}
+    return '';
+  }
+  function hdrs(){
+    var h={'Content-Type':'application/json'};
+    var t=tok(); if(t)h['Authorization']='Bearer '+t;
+    return h;
+  }
+  function box(){return document.getElementById('nbst-out');}
+  function note(msg){
+    var o=box(); if(!o)return;
+    var d=document.createElement('div');
+    d.style.cssText='padding:8px 10px;margin:6px 0;border-radius:8px;background:#fff7ed;color:#9a3412;font-size:13px';
+    d.textContent=msg;o.appendChild(d);
+  }
+  function paywall(price,msg){
+    if(typeof window.showPaywall==='function'){window.showPaywall(price,msg);return;}
+    note(msg);
+  }
+  async function send(){
+    var inp=document.getElementById('nbst-in');
+    var q=(inp.value||'').trim(); if(!q)return;
+    var o=box();
+    var mine=document.createElement('div');
+    mine.style.cssText='margin:8px 0;font-weight:600';
+    mine.textContent='你: '+q; o.appendChild(mine);
+    var ai=document.createElement('div');
+    ai.style.cssText='margin:4px 0 12px;white-space:pre-wrap';
+    o.appendChild(ai);
+    inp.value='';
+    try{
+      var res=await fetch('/api/ai/chat',{method:'POST',headers:hdrs(),body:JSON.stringify({messages:[{role:'user',content:q}]})});
+      if(!res.ok){
+        var e=null; try{e=await res.json();}catch(_){}
+        var m=(e&&e.message)||('请求失败 '+res.status);
+        if(res.status===402){paywall(e&&e.price,m);}else{note(m);}
+        return;
+      }
+      var rd=res.body.getReader(),dec=new TextDecoder(),buf='';
+      while(true){
+        var r=await rd.read(); if(r.done)break;
+        buf+=dec.decode(r,{stream:true});
+        var ls=buf.split('\n'); buf=ls.pop();
+        for(var i=0;i<ls.length;i++){
+          var L=ls[i];
+          if(L.indexOf('data:')!==0)continue;
+          var p=L.slice(5).trim();
+          if(p==='[DONE]')continue;
+          try{
+            var j=JSON.parse(p);
+            var d=j.choices&&j.choices[0]&&j.choices[0].delta&&j.choices[0].delta.content;
+            if(d)ai.textContent+=d;
+          }catch(_){}
+        }
+      }
+    }catch(err){note('网络异常: '+err);}
+  }
+  async function flowRun(){
+    var t=document.getElementById('nbst-ft').value||'工作台流程';
+    var p1=document.getElementById('nbst-f1').value;
+    var p2=document.getElementById('nbst-f2').value;
+    if(!p1){note('请填至少第1步提示词');return;}
+    var steps=[{name:'步骤1',prompt:p1}];
+    if(p2)steps.push({name:'步骤2',prompt:p2});
+    var res=await fetch('/api/ai/flow/start',{method:'POST',headers:hdrs(),body:JSON.stringify({title:t,steps:steps})});
+    if(!res.ok){note('创建失败 '+res.status);return;}
+    var f=await res.json();
+    var o=box();
+    var line=document.createElement('div');
+    line.style.cssText='margin:8px 0;padding:8px;border-left:3px solid #7c3aed;white-space:pre-wrap';
+    line.textContent='流程['+f.title+'] 运行中...'; o.appendChild(line);
+    var res2=await fetch('/api/ai/flow/run',{method:'POST',headers:hdrs(),body:JSON.stringify({id:f.id})});
+    if(!res2.ok){
+      var e=null; try{e=await res2.json();}catch(_){}
+      var m=(e&&e.message)||('运行失败 '+res2.status);
+      if(res2.status===402){paywall(e&&e.price,m);}else{note(m);}
+      return;
+    }
+    var f2=await res2.json();
+    var txt='';
+    (f2.steps||[]).forEach(function(s){
+      txt+='['+s.name+'] '+s.status+'\n'+(s.output||'')+'\n\n';
+    });
+    line.textContent='流程['+f2.title+'] '+f2.state+'\n'+txt;
+  }
+  function ui(){
+    if(document.getElementById('nbst-out'))return;
+    var w=document.createElement('div');
+    w.style.cssText='max-width:860px;margin:16px auto;padding:16px;background:#fff;border:1px solid #eee;border-radius:12px';
+    w.innerHTML='<h3 style="margin:0 0 8px">AI 工作台</h3>'
+      +'<textarea id="nbst-in" rows="2" placeholder="问点什么..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px"></textarea>'
+      +'<button id="nbst-go" style="margin:8px 0;padding:8px 18px;background:#7c3aed;color:#fff;border:0;border-radius:8px;cursor:pointer">发送(流式)</button>'
+      +'<div style="margin:14px 0 6px;font-weight:600">流程模式(两步串行)</div>'
+      +'<input id="nbst-ft" placeholder="流程标题" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:8px">'
+      +'<input id="nbst-f1" placeholder="第1步提示词" style="width:100%;margin-top:6px;padding:6px 8px;border:1px solid #ddd;border-radius:8px">'
+      +'<input id="nbst-f2" placeholder="第2步提示词(可选)" style="width:100%;margin-top:6px;padding:6px 8px;border:1px solid #ddd;border-radius:8px">'
+      +'<button id="nbst-fr" style="margin:8px 0;padding:8px 18px;background:#2563eb;color:#fff;border:0;border-radius:8px;cursor:pointer">创建并跑完</button>'
+      +'<div id="nbst-out" style="margin-top:8px;font-size:14px"></div>';
+    document.body.appendChild(w);
+    document.getElementById('nbst-go').onclick=send;
+    document.getElementById('nbst-fr').onclick=flowRun;
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',ui);
+  }else{ui();}
+})();
+</script>
+
 </body>
 </html>
