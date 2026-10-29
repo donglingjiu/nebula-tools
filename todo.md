@@ -130,3 +130,9 @@
 - 5-4a 完成: internal/ai 挂载 /api/ai/chat(SSE逐行转发, 默认Profile解密key) + /api/ai/status; 门链503总开关→404→410下线→402付费(带price); admin/export.go导出GetOps/FeatureByKey/FeaturesAll/ResolveDefaultProfile; 单测含门矩阵+SSE正流; 本地回显上游实测SSE全链路
 - 402门R1语义: feature.is_paid && ops.paid_mode(购买/权益系统后续阶段接入)
 - 5-4b 待做: /api/ai/flow/* 五端点 + ai-studio.html 前端接线(fetch流式渲染+402唤起showPaywall+410下线态) → 阶段门5评审
+
+## 过程规约（续16）
+- 交互式bash直贴heredoc代码, 行首Tab触发readline补全(目录列表刷屏+Tab被吞): Go等代码文件一律空格缩进书写(本轮api.go:143语法破损即此因)
+- build/test失败=批次硬停, 严禁带病restart+验证(教训: 旧二进制跑完全场, 404/401全是旧路由假象)
+- dev.sh check未覆盖go build ./...(语法破损漏检CHECK_OK): 每批次显式 CGO_ENABLED=0 go build ./...
+- 常驻mock: 18787 python回显上游(/tmp/mock_llm.py), SSE实测标配
