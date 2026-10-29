@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=devic
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>个人中心 · Nova Nebula Tools</title>
 <link rel="stylesheet" href="/assets/css/tokens.css">
 <style>
@@ -68,7 +68,7 @@
       '<div class="nb-row"><b>角色</b><span class="nb-role nb-role--' + NB.escape(r) + '">' + (ROLES[r] || '普通用户') + '</span></div>' +
       '<div class="nb-row"><b>注册时间</b><span>' + (u.created_at ? NB.fmtDate(u.created_at) : '阶段5起记录') + '</span></div>';
   });
-  docum
+  document.getElementById('btnLogout').onclick = function(){ NB.auth.logout(); };
 })();
 </script>
 </body>

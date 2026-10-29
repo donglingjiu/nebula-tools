@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>后台概览 · Nova Nebula Tools</title>
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body class="nb-skin">
+<header class="nb-header">
+  <a class="nb-logo" href="/"><i aria-hidden="true"></i>Nova Tools</a>
+  <span class="nb-admin-tag">管理后台</span>
+  <div class="nb-user" id="userChip"></div>
+</h
+<div class="nb-admin">
+  <aside class="nb-side">
+    <div class="grp">运营</div>
+    <a href="/admin.html">概览</a>
+    <a href="/admin-features.html">功能池</a>
+    <a href="/admin-aiops.html">AI 运营</a>
+    <div class="grp">系统</div>
+    <a href="/admin-keys.html">LLM 密钥</a>
+    <a href="/admin-users.html">用户</a>
+    <a href="/admin-monitor.html">监控报警</a>
+  </aside>
+  <main class="nb-main">
+    <div id="content" hidden>
+      <h2>管理后台</h2>
+      <p class="sub">R1 最小版：概览 / LLM 密钥可用；功能池、AI 运营在下一批；用户、监控在阶段5/R2 接入。</p>
+      <div class="nb-card" style="margin-bottom:14px">
+        <h3 style="margin:0 0 10px;font-size:15px">快捷入口</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a class="nb-btn nb-btn--ai nb-btn--sm" href="/admin-keys.html">LLM 密钥管理</a>
+          <a class="nb-btn nb-btn--ghost nb-btn--sm" href="/admin-features.html">功能池（下批）</a>
+          <a class="nb-btn nb-btn--ghost nb-btn--sm" href="/admin-aiops.html">AI 运营（下批）</a>
+          <a class="nb-btn nb-btn--warm nb-btn--sm" href="/ai-studio.html">去 AI 工作台</a>
+        </div>
+      </div>
+      <div class="nb-card">
+        <h3 style="margin:0 0 10px;font-size:15px">系统状态</h3>
+        <p style="font-size:14px;margin:0">前端静态资源：正常（本页可打开即通过）。</p>
+        <p class="nb-todo-card" style="margin-top:10px">监控指标（QPS/延迟/错误率/工具调用/AI token/活跃）与报警（邮件/Webhook/钉钉/飞书）R2 接入；用户管理阶段5接入。</p>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="/assets/js/core.js"></script>
+<script src="/assets/js/admin.js"></script>
+<script>
+NB.adminNav();
+NB.adminGate(function(){ document.getElementById('content').hidden = false; });
+NB.bindUserChip(document.getElementById('userChip'));
+</script>
+</body>
+</html>

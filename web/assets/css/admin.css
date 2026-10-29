@@ -1,0 +1,24 @@
+.nb-admin-tag { font: 700 12px/1 var(--font-sans); color: var(--ai-deep); background: var(--ai-soft); padding: 6px 10px; border-radius: 999px; }
+.nb-header { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 14px;
+  padding: 12px 24px; background: rgba(255,249,242,.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.nb-logo { font: 800 19px/1 var(--font-sans); color: var(--text-main); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+.nb-logo i { width: 26px; height: 26px; border-radius: 8px; background: var(--ai-gradient); display: inline-block; }
+.nb-header .nb-user { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.nb-user-chip { font: 600 13px/1 var(--font-sans); color: var(--text-main); background: var(--bg-warm-1); padding: 8px 12px; border-radius: 999px; }
+.nb-admin { display: grid; grid-template-columns: 200px 1fr; min-height: calc(100vh - 61px); max-width: 1280px; margin: 0 auto; }
+.nb-side { background: #fff; border-right: 1px solid var(--line); padding: 16px 10px; }
+.nb-side a { display: block; padding: 10px 14px; border-radius: 10px; color: var(--text-sub);
+  text-decoration: none; font: 600 14px/1 var(--font-sans); margin-bottom: 4px; }
+.nb-side a:hover { background: var(--bg-warm-1); color: var(--text-main); }
+.nb-side a.on { background: var(--ai-soft); color: var(--ai-deep); }
+.nb-side .grp { font: 700 11px/1 var(--font-sans); color: var(--text-sub); opacity: .7; margin: 14px 10px 6px; }
+.nb-main { padding: 20px; min-width: 0; }
+.nb-main h2 { margin: 0 0 4px; font-size: 18px; }
+.nb-main .sub { color: var(--text-sub); font-size: 13px; margin: 0 0 14px; }
+.nb-fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+@media (max-width: 720px) { .nb-fgrid { grid-template-columns: 1fr; } }
+.nb-field label { display: block; font: 600 13px/1 var(--font-sans); color: var(--text-main); margin-bottom: 6px; }
+.nb-table code { background: var(--bg-warm-1); padding: 2px 6px; border-radius: 6px; font: 600 12px/1 var(--font-mono); }
+.nb-gate { text-align: center; padding: 60px 20px; color: var(--text-sub); }
+.nb-gate h2 { margin: 0 0 8px; font-size: 22px; color: var(--text-main); }
+.nb-todo-card { color: var(--text-sub); font-size: 13px; background: var(--bg-warm-1); border-radius: 10px; padding: 12px 14px; }

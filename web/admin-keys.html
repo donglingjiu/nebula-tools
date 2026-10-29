@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LLM 密钥 · 后台</title>
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body class="nb-skin">
+<header class="nb-header">
+  <a class="nb-logo" href="/"><i aria-hidden="true"></i>Nova Tools</a>
+  <span class="nb-admin-ta
+  <div class="nb-user" id="userChip"></div>
+</header>
+<div class="nb-admin">
+  <aside class="nb-side">
+    <div class="grp">运营</div>
+    <a href="/admin.html">概览</a>
+    <a href="/admin-features.html">功能池</a>
+    <a href="/admin-aiops.html">AI 运营</a>
+    <div class="grp">系统</div>
+    <a href="/admin-keys.html">LLM 密钥</a>
+    <a href="/admin-users.html">用户</a>
+    <a href="/admin-monitor.html">监控报警</a>
+  </aside>
+  <main class="nb-main">
+    <h2>LLM Profile 管理</h2>
+    <p class="sub" id="tip">密钥仅服务端保存，界面只显示尾四位；接口在阶段5接入，当前操作会提示失败（预期）。默认 Profile 兜底全站 AI 调用。</p>
+    <div class="nb-card" style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <h3 style="margin:0;font-size:15px;flex:1" id="formTitle">新增 Profile</h3>
+        <label style="font:500 13px/1 var(--font-sans);color:var(--text-sub);
+          启用 <span class="nb-switch"><input type="checkbox" id="f_en" checked><span class="nb-switch-track"></span></span>
+        </label>
+      </div>
+      <input type="hidden" id="f_id" value="">
+      <div class="nb-fgrid">
+        <div class="nb-field"><label for="f_name">名称</label><input class="nb-input" id="f_name" placeholder="如: 主力-4o"></div>
+        <div class="nb-field"><label for="f_url">Base URL</label><input class="nb-input" id="f_url" placeholder="https://api.openai.com/v1"></div>
+        <div class="nb-field"><label for="f_model">模型</label><input class="nb-input" id="f_model" placeholder="gpt-4o-mini"></div>
+        <div class="nb-field"><label for="f_key">API Key（留空 = 不修改）</label><input class="nb-input" id="f_key" type="password" placeholder="sk-..." autocomplete="new-password"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="nb-btn nb-btn--ai nb-btn--sm" id="btnSave">保存</button>
+        <button class="nb-btn nb-btn--ghost nb-btn--sm" id="btnReset">清空表单</button>
+      </div>
+    </div>
+    <div class="nb-card">
+      <h3 style="margin:0 0 10px;font-size:15px">Profile 列表</h3>
+      <table class="nb-table" style="width:100%">
+        <thead><tr><th>名称</th><th>Base URL</th><th>模型</th><th>密钥</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+<script src="/assets/js/core.js"></script>
+<script src="/assets/js/admin.js"></script>
+<script>
+/* 契约(阶段5):
+   GET  /api/admin/llm/profiles -> {profiles:[{id,name,base_url,model,masked_key,is_default,enabled}]}
+   POST /api/admin/llm/profiles {name,base_url,api_key,model,enabled}
+   PUT  /api/admin/llm/profiles/{id} 支持部分字段(api_key留空不改; is_default:true 设默认)
+   DELETE /api/admin/llm/profiles/{id}
+   权限: 管理员可读写, key 永不回传明文 */
+(function(){
+  var NB = window.NB, $ = function(id){ return document.getElementById(id); };
+  var P = [];
+  function load(){
+    NB.api('/api/admin/llm/profiles').then(function(r){ P = r.profiles || []; render(); })
+      .catch(function(e){ $('tip').textContent = '加载失败(接口阶段5接入): ' + e.message; render(); });
+  }
+  function render(){
+    var tb = $('rows'); tb.innerHTML = '';
+    if(!P.length){ tb.innerHTML = '<tr><td colspan="6" style="color:var(--text-sub)">暂无 Profile</td></tr>'; return; }
+    P.forEach(function(p){
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + NB.escape(p.name) + '</td>' +
+        '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + NB.escape(p.base_url) + '</td>' +
+        '<td>' + NB.escape(p.model) + '</td>' +
+        '<td><code>' + NB.escape(p.masked_key || '') + '</code></td>' +
+        '<td>' + (p.is_default ? '<span class="nb-badge-ai">默认</span> ' : '') +
+        (p.enabled ? '启用' : '<span class="nb-badge-paid">停用</span>') + '</td>' +
+        '<td style="white-space:nowrap">' +
+        '<button class="nb-btn nb-btn--ghost nb-btn--sm" data-a="edit">编辑</button> ' +
+        '<button class="nb-btn nb-btn--ghost nb-btn--sm" data-a="def">设默认</button> ' +
+        '<button class="nb-btn nb-btn--ghost nb-btn--sm" data-a="del">删除</button></td>';
+      tr.querySelector('[data-a=edit]').onclick = function(){ fill(p); };
+      tr.querySelector('[data-a=def]').onclick = function(){
+        NB.api('/api/admin/llm/profiles/' + p.id, { method: 'PUT', body: { is_default: true } }).then(load).catch(function(){});
+      };
+      tr.querySelector('[data-a=del]').onclick = function(){
+        NB.modal({ title: '删除 Profile', body: '确认删除「' + p.name + '」？', actions: [
+          { label: '删除', cls: 'nb-btn--ai', onClick: function(){ NB.api('/api/admin/llm/profiles/' + p.id, { method: 'DELETE' }).then(load).catch(function(){}); } },
+          { label: '取消' } ] });
+      };
+      tb.appendChild(tr);
+    });
+  }
+  function fill(p){
+    $('f_id').value = p.id; $('f_name').value = p.name || ''; $('f_url').value = p.base_url || '';
+    $('f_model').value = p.model || ''; $('f_key').value = ''; $('f_en').checked = !!p.enabled;
+    $('formTitle').textContent = '编辑 Profile #' + p.id;
+  }
+  function reset(){
+    $('f_id').value = ''; $('f_name').value = ''; $('f_url').value = '';
+    $('f_model').value = ''; $('f_key').value = ''; $('f_en').checked = true;
+    $('formTitle').textContent = '新增 Profile';
+  }
+  $('btnSave').onclick = async function(){
+    var id = $('f_id').value;
+    var body = { name: $('f_name').value.trim(), base_url: $('f_url').value.trim(),
+                 model: $('f_model').value.trim(), enabled: $('f_en').checked };
+    if(!body.name || !body.base_url || !body.model){ NB.toast('名称 / BaseURL / 模型 必填', 'warn'); return; }
+    var k = $('f_key').value.trim(); if(k) body.api_key = k;
+    this.disabled = true;
+    try {
+      if(id){ await NB.api('/api/admin/llm/profiles/' + id, { method: 'PUT', body: body }); NB.toast('已保存'); }
+      else { await NB.api('/api/admin/llm/profiles', { method: 'POST', body: body }); NB.toast('已新增'); }
+      reset(); load();
+    } catch(e) {}
+    this.disabled = false;
+  };
+  $('btnReset').onclick = reset;
+  NB.adminNav();
+  NB.adminGate(load);
+  NB.bindUserChip($('userChip'));
+})();
+</script>
+</body>
+</html>
