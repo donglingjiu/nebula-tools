@@ -6,8 +6,12 @@ GET() { if command -v curl >/dev/null 2>&1; then curl -fsS "$1"; else wget -qO- 
 
 case "${1:-help}" in
   web)   # 前端极速回路：静态服务 web/，改完刷新即生效（当前阶段主力，0编译）
-     echo "[dev] 本机 http://127.0.0.1:${PORT}/ai-studio.html  远程 http://服务器IP:${PORT}/ai-studio.html  (Ctrl+C 停止)"
-     cd web && exec python3 -m http.server "${PORT}" --bind 0.0.0.0 ;;
+     BUSY() { (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null && { exec 3>&-; return 0; } || return 1; }
+     TRY="${PORT}"
+     while BUSY "${TRY}"; do echo "[dev] 端口 ${TRY} 被占用(可能是你的Go服务), 换 $((TRY+1))"; TRY=$((TRY+1)); [ "${TRY}" -gt $((PORT+20)) ] && echo "[dev] 无空闲端口" && exit 1; done
+     [ "${TRY}" != "${PORT}" ] && echo "[dev] 实际使用端口 ${TRY}"
+     echo "[dev] 打开 http://127.0.0.1:${TRY}/ai-studio.html 或 http://服务器IP:${TRY}/ai-studio.html  (Ctrl+C 停止)"
+     cd web && exec python3 -m http.server "${TRY}" --bind 0.0.0.0 ;;
   app)   # 全量应用：go run（含 go:embed 与后端），Go 代码改动需 Ctrl+C 重启
      echo "[dev] go run 启动中（首次编译数秒）"
      CGO_ENABLED=0 go run . ;;
@@ -15,19 +19,20 @@ case "${1:-help}" in
      CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o nebula-tools . && echo BUILD_OK ;;
   smoke) # 冒烟：./dev.sh smoke http://127.0.0.1:8080
      B="${2:-http://127.0.0.1:8080}"; fail=0
-     for u in / /ai-studio.html /assets/css/tokens.css /assets/js/core.js; do
+     for u in / /ai-studio.html /assets/css/tokens.css /assets/js/core.js /assets/js/ai-studio.js; do
        GET "${B}${u}" >/dev/null 2>&1 && echo "PASS 200 ${u}" || { echo "FAIL ${u}"; fail=1; }
      done
      GET "${B}/ai-studio.html" | grep -q "AI 工作台" && echo "PASS mark ai-studio" || { echo "FAIL mark ai-studio"; fail=1; }
      GET "${B}/assets/css/tokens.css" | grep -q "ai-gradient" && echo "PASS mark tokens" || { echo "FAIL mark tokens"; fail=1; }
      GET "${B}/assets/js/core.js" | grep -q "NB.stream" && echo "PASS mark core" || { echo "FAIL mark core"; fail=1; }
+     GET "${B}/assets/js/ai-studio.js" | grep -q "toFixed(1)" && echo "PASS fresh ai-studio.js" || { echo "FAIL fresh: 该服务内嵌旧前端(重启Go服务即可)"; fail=1; }
      [ "$fail" = 0 ] && echo SMOKE_OK || echo SMOKE_FAIL
      exit "$fail" ;;
   stop)  pkill -f "python3 -m http.server" && echo stopped || echo "无进程" ;;
   check) # 每批必跑：CRLF归一 + 第72行类损伤自修 + 双编码/FFFD乱码扫描 + 严格UTF8 + 哨兵
      python3 - <<'PYCHK'
 import pathlib
-files = ["web/ai-studio.js", "web/assets/js/core.js", "web/ai-studio.html",
+files = ["web/assets/js/ai-studio.js", "web/assets/js/core.js", "web/ai-studio.html",
          "web/assets/css/tokens.css", "todo.md"]
 ok = True
 for f in files:

@@ -40,7 +40,8 @@
 
 ## 本地开发回路规约
 - 本地验证一律走 ./dev.sh（web/app/build/smoke/stop/check）；构建唯一方式 CGO_ENABLED=0，不把物理机 gcc 等当依赖
-- 前端迭代 = ./dev.sh web + 浏览器
+- 前端迭代 = ./dev.sh web + 浏览器刷新（0 编译）；Go 迭代 = ./dev.sh app（go run 秒级）
+- web 模式端口被占自动 +1；stop 只杀 python 静态服务，不碰正在运行的 Go 服务
 - dev 与发布解耦：CI 产物/docker/K8s 仅阶段7部署门使用；目标机只做"拉取+启动"（后续一键脚本）
 - JS 语法门禁：浏览器 F12 控制台零红错；可选 nvm 装 node（$HOME 内）后升级为 node --check
 - 括号原始计数为信息项非门禁（正则字符类会污染计数）
