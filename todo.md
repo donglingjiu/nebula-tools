@@ -171,3 +171,10 @@
 - 同类错误第二次(续18 grep锚引号→本轮python find锚引号): 修复手段必须内置自证(patch后当场打印目标结构计数), 规约只记不执行等于没记
 - 字符串/路由定位一律裸token(不含引号/不含缩进/不含方法前缀), 行尾用find('\n')推
 - 虚报第二次(c4c02bc/a8acd34提交信息与事实不符): 提交前必须回看本轮验证输出; 守卫条件写在段4开头不执行等于0
+
+## 阶段门5评审记录
+- 汇总: GATE5: 77 PASS / 5 FAIL (明细: /tmp/gate5.log)
+- 交付物: internal/ai 网关(chat SSE/status/flow五端点/门链503-404-410-402带price) + admin导出层(GetOps/FeatureByKey/FeaturesAll/ResolveDefaultProfile) + ai-studio工作台区块(流式/402paywall/410提示) + mock双模上游(:18787) + 单测2包 + 40+检查点回归
+- 环境终态: 默认LLM Profile=主用(假上游502属预期); flows.json含评审流程; g5user测试号留存
+- R2遗留定稿: ①旧ai-studio.js重写对齐真API(NB.stream无定义的死代码) ②402购买链路(现假门, 等购买/权益系统) ③flow无用户隔离(flows.json全局共享) ④flows原子写单进程假设(多实例部署需换存储)
+- 过程资产: 规约续14-24(粘贴污染四形态/路由撞车/裸token自证/OK守卫/短行落盘)
