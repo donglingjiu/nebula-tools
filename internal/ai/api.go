@@ -18,7 +18,8 @@ import (
 const defaultFeatureKey = "ai_chat"
 
 type Service struct {
-	dir string
+	dir  string
+	auth *auth.Service
 }
 
 type gateErr struct {
@@ -32,7 +33,7 @@ func Mount(mux *http.ServeMux, dir string, asvc *auth.Service) error {
 	if asvc == nil {
 		return errors.New("auth service 为 nil, ai 路由未挂载")
 	}
-	s := &Service{dir: dir}
+	s := &Service{dir: dir, auth: asvc}
 	mux.HandleFunc("POST /api/ai/chat", asvc.RequireRole("user", s.chat))
 	mux.HandleFunc("GET /api/ai/status", asvc.RequireRole("user", s.status))
 	mux.HandleFunc("POST /api/ai/flow/start", asvc.RequireRole("user", s.flowStart))

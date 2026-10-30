@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -126,4 +128,79 @@ func TestFlow(t *testing.T) {
 		t.Fatalf("下线start应放行: %d", c)
 	}
 	do(t, ts, "PUT", "/api/admin/features/"+afid, super, `{"enabled":true}`)
+}
+
+func TestFlowIsolation(t *testing.T) {
+	up := httptest.NewServer(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(200)
+			json.NewEncoder(w).Encode(map[string]any{
+				"choices": []map[string]any{
+					{"message": map[string]string{"content": "步骤输出OK"}},
+				},
+			})
+		}))
+	defer up.Close()
+
+	mux := http.NewServeMux()
+	dir := t.TempDir()
+	asvc, err := auth.Mount(mux, dir, "/api/v2/auth")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := admin.Mount(mux, dir, asvc); err != nil {
+		t.Fatal(err)
+	}
+	if err := Mount(mux, dir, asvc); err != nil {
+		t.Fatal(err)
+	}
+	ts := httptest.NewServer(mux)
+	defer ts.Close()
+
+	_, m, _ := do(t, ts, "POST", "/api/v2/auth/register", "", `{"email":"root@x.com","password":"12345678"}`)
+	super := m["token"].(string)
+	_, m3, _ := do(t, ts, "POST", "/api/admin/llm/profiles", super,
+		fmt.Sprintf(`{"name":"模拟","base_url":"%s/v1","model":"mock-1","api_key":"sk-1","enabled":true}`, up.URL))
+	pid := m3["id"].(string)
+	do(t, ts, "PUT", "/api/admin/llm/profiles/"+pid, super, `{"is_default":true}`)
+
+	do(t, ts, "POST", "/api/v2/auth/register", "", `{"email":"ua@x.com","password":"12345678"}`)
+	do(t, ts, "POST", "/api/v2/auth/register", "", `{"email":"ub@x.com","password":"12345678"}`)
+	_, ma, _ := do(t, ts, "POST", "/api/v2/auth/login", "", `{"email":"ua@x.com","password":"12345678"}`)
+	ua := ma["token"].(string)
+	_, mb, _ := do(t, ts, "POST", "/api/v2/auth/login", "", `{"email":"ub@x.com","password":"12345678"}`)
+	ub := mb["token"].(string)
+
+	_, ms, _ := do(t, ts, "POST", "/api/ai/flow/start", ua,
+		`{"title":"A的","steps":[{"name":"s1","prompt":"p1"}]}`)
+	fid, _ := ms["id"].(string)
+	if fid == "" {
+		t.Fatalf("start: %v", ms)
+	}
+	if c, _, _ := do(t, ts, "POST", "/api/ai/flow/advance", ub, fmt.Sprintf(`{"id":"%s"}`, fid)); c != 404 {
+		t.Fatalf("B访问A流程应404: %d", c)
+	}
+	if c, _, _ := do(t, ts, "GET", "/api/ai/flow/export?id="+fid, ub, ""); c != 404 {
+		t.Fatalf("B导出A流程应404: %d", c)
+	}
+	if c, _, _ := do(t, ts, "POST", "/api/ai/flow/advance", ua, fmt.Sprintf(`{"id":"%s"}`, fid)); c != 200 {
+		t.Fatalf("owner advance应200: %d", c)
+	}
+	if c, _, _ := do(t, ts, "POST", "/api/ai/flow/advance", super, fmt.Sprintf(`{"id":"%s"}`, fid)); c != 200 {
+		t.Fatalf("super跨访问应200: %d", c)
+	}
+
+	b, _ := os.ReadFile(filepath.Join(dir, "flows.json"))
+	var doc map[string]any
+	json.Unmarshal(b, &doc)
+	doc["flows"].(map[string]any)[fid].(map[string]any)["user_id"] = ""
+	nb, _ := json.Marshal(doc)
+	os.WriteFile(filepath.Join(dir, "flows.json"), nb, 0644)
+	if c, _, _ := do(t, ts, "POST", "/api/ai/flow/advance", ub, fmt.Sprintf(`{"id":"%s"}`, fid)); c != 404 {
+		t.Fatalf("历史数据user应404: %d", c)
+	}
+	if c, _, _ := do(t, ts, "POST", "/api/ai/flow/advance", super, fmt.Sprintf(`{"id":"%s"}`, fid)); c != 200 {
+		t.Fatalf("历史数据super应200: %d", c)
+	}
 }
