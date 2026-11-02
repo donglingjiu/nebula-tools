@@ -196,3 +196,8 @@
 - git commit -m双引号里$var被bash展开吞字(003a46c的$GF丢失): commit message含$一律单引号
 - auth身份面: RequireRole已注入*User到context, UserFrom(r)现成取用 — 接线前先grep导出面, 不自造轮子
 - 归属校验语义: 404防存在性探测(非403); 校验先于门链; 历史数据(user_id空)仅admin可见
+
+## 过程规约（续26）
+- 锚点模型漂移(uid:4/state:0与文件实况不符): 多点patch作废, 自有文件改走全文重生成+func计数预检+测试兜底
+- heredoc粘贴tab缩进触发readline补全(目录列表刷屏, 续20第五形态): heredoc一律空格缩进, gofmt归一
+- 第四次虚报根治: 提交命令用&&链锁在全部验证之后, 验证不过链路到不了git commit — 守卫从"写在段4开头"升级为"长在命令结构里"

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"nova/internal/admin"
+	"nova/internal/auth"
 )
 
 type stepIn struct {
@@ -29,6 +30,7 @@ type FlowStep struct {
 
 type Flow struct {
 	ID        string              `json:"id"`
+	UserID    string              `json:"user_id,omitempty"`
 	Title     string              `json:"title"`
 	State     string              `json:"state"`
 	CreatedAt string              `json:"created_at"`
@@ -38,6 +40,20 @@ type Flow struct {
 
 type flowStore struct {
 	Flows map[string]*Flow `json:"flows"`
+}
+
+// canAccess 流程归属: admin/super全可见; 历史数据(user_id空)仅管理员; 其余仅owner
+func canAccess(f *Flow, u *auth.User) bool {
+	if u == nil {
+		return false
+	}
+	if u.Role == "admin" || u.Role == "super" {
+		return true
+	}
+	if f.UserID == "" {
+		return false
+	}
+	return f.UserID == u.ID
 }
 
 func (s *Service) loadFlows() (*flowStore, error) {
@@ -160,14 +176,19 @@ func (s *Service) flowStart(w http.ResponseWriter, r *http.Request) {
 		fail(w, 400, "参数错误: 需要 title 与 steps")
 		return
 	}
+	u := s.auth.UserFrom(r)
 	st, err := s.loadFlows()
 	if err != nil {
 		fail(w, 500, "读取流程失败")
 		return
 	}
-	f := &Flow{ID: newFlowID(), Title: req.Title,
+	f := &Flow{
+		ID:        newFlowID(),
+		UserID:    u.ID,
+		Title:     req.Title,
 		State:     "created",
-		CreatedAt: time.Now().Format(time.RFC3339)}
+		CreatedAt: time.Now().Format(time.RFC3339),
+	}
 	for _, si := range req.Steps {
 		f.Steps = append(f.Steps, FlowStep{
 			Name: si.Name, Prompt: si.Prompt, Status: "pending"})
@@ -240,6 +261,10 @@ func (s *Service) flowAdvance(w http.ResponseWriter, r *http.Request) {
 		fail(w, 404, err.Error())
 		return
 	}
+	if !canAccess(f, s.auth.UserFrom(r)) {
+		fail(w, 404, "流程不存在")
+		return
+	}
 	step, ge := s.advanceOne(f)
 	if ge != nil {
 		writeGate(w, ge)
@@ -268,6 +293,10 @@ func (s *Service) flowRun(w http.ResponseWriter, r *http.Request) {
 	st, f, err := s.getFlow(req.ID)
 	if err != nil {
 		fail(w, 404, err.Error())
+		return
+	}
+	if !canAccess(f, s.auth.UserFrom(r)) {
+		fail(w, 404, "流程不存在")
 		return
 	}
 	for {
@@ -300,6 +329,10 @@ func (s *Service) flowChat(w http.ResponseWriter, r *http.Request) {
 	st, f, err := s.getFlow(req.ID)
 	if err != nil {
 		fail(w, 404, err.Error())
+		return
+	}
+	if !canAccess(f, s.auth.UserFrom(r)) {
+		fail(w, 404, "流程不存在")
 		return
 	}
 	prof, key, ge := s.gateNow()
@@ -340,6 +373,10 @@ func (s *Service) flowExport(w http.ResponseWriter, r *http.Request) {
 	_, f, err := s.getFlow(id)
 	if err != nil {
 		fail(w, 404, err.Error())
+		return
+	}
+	if !canAccess(f, s.auth.UserFrom(r)) {
+		fail(w, 404, "流程不存在")
 		return
 	}
 	var sb strings.Builder
