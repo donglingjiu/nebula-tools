@@ -2,3 +2,4 @@
 data/
 nova.log
 nova-server-linux-amd64
+/nebula-tools
