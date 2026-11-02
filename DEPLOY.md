@@ -1,13 +1,17 @@
 # Nova 部署与运维
 
-## 重启契约（2026-10-28 · 服务模型定谳随件 · 承重条款）
+## 重启契约（7-2 对账修订 · 进程发现式 · 零运行时断言）
 
-- 产线：/home/work/fanguohui/nova-server-linux-amd64（现役 PID 38593 · mtime 2026-10-27 19:35）
-- 服务模型：二进制默认 //go:embed web（烤盘）；携带 NOVA_WEB_DIR 时改 http.Dir 磁盘直服——现役进程 /proc/38593/environ 实测携带
-- **承重条款：重启必须携带 NOVA_WEB_DIR=/home/work/fanguohui/nebula-tools/web——漏带即回退烤盘旧资产，web-only 改动「push 即产线」依赖此 env**
-- 标准配方：cd /home/work/fanguohui && pkill -f nova-server-linux-amd64; sleep 2; (NOVA_WEB_DIR=/home/work/fanguohui/nebula-tools/web nohup ./nova-server-linux-amd64 > nova8080.log 2>&1 &); sleep 2
-- 重启自检：curl -s http://127.0.0.1:8080/admin/ | grep -c data-admin-req 应为 1
-
+- 产线二进制：/home/work/fanguohui/nova-server-linux-amd64（mtime 2026-10-27 19:35 · 快照值）——**7-2 对账时进程已不在**（PID 38593 不存在，无任何运行实例，停机时点不可考）
+- **漂移警示：产线二进制构建于 2026-10-27 19:35，其后 main 新增 62 个提交（含 flow 用户隔离/402 购买闭环/NOVA_DATA_DIR 配置外置）——重启前必须重建，否则产线跑旧代码**
+- 服务模型：二进制默认 //go:embed web（烤盘）；携带 NOVA_WEB_DIR 时改 http.Dir 磁盘直服（历史实测携带：2026-10-28 /proc/38593/environ，进程已逝，证据留档）
+- **承重条款：产线重启必须携带 NOVA_WEB_DIR=/home/work/fanguohui/nebula-tools/web——漏带即回退烤盘旧资产，web-only 改动「push 即产线」依赖此 env**
+- 活配方（进程发现式，不断言 PID）：
+  1. pgrep -f 'nova-server-linux-amd64|nova-box' >/dev/null && pkill -f 'nova-server-linux-amd64|nova-box'; sleep 2
+  2. cd /home/work/fanguohui/nebula-tools && bash build.sh    # 重建 → /home/work/fanguohui/nova-box（新产物名，取代历史名 nova-server-linux-amd64）
+  3. cd /home/work/fanguohui && (NOVA_WEB_DIR=/home/work/fanguohui/nebula-tools/web nohup ./nova-box > nova8080.log 2>&1 &); sleep 2
+- 重启自检：curl -s http://127.0.0.1:8080/api/health 应 200；curl -s http://127.0.0.1:8080/admin/ | grep -c data-admin-req 应为 1（本机开发实例同样命中，已实测）
+- **本机 8080 现为开发回路实例（./nebula-tools）——上述配方在部署目标机执行；在本机执行步骤 1 会先杀开发实例**
 ## 环境变量清单（7-1 配置外置）
 
 | 变量 | 默认 | 说明 |
