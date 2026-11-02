@@ -33,3 +33,9 @@
 - 备份: `bash scripts/backup.sh [数据目录] [备份目录] [保留份数]`（默认 data/ backups/ 14份）
 - 恢复: 停服 → `tar -xzf backups/nova-data-<ts>.tar.gz -C 仓库根` → 覆盖 data/ → 重启
 - 已验证: 双实例隔离(9091+NOVA_DATA_DIR=/tmp)数据全落新目录, 8080现役零影响
+
+## 公开工具箱条款（B-2 拍板②A）
+
+- `POST /api/run/{tool}`、`POST /api/upload/{tool}` 无登录门为**有意设计**（公共工具箱定位）：ToolOn 模块开关是唯一闸门，登录仅影响历史记录（AddHist）与告警归属（sendAlert）
+- GET /api/tools 匿名仅见已开启工具，admin 全量可见
+- 对外收敛手段：admin 工具开关关停，或前置反代鉴权（应用层不加门）

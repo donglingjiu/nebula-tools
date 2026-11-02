@@ -223,3 +223,30 @@
 - 部署物漂移要量化不停留在"落后了": git log --since <产物mtime> 数提交数, 写进文档让人看见代价
 - 不擅自复活产线: 起停产线是部署动作, 对账只改文档+量化漂移, 复活与否由人拍板
 - 配方含杀进程步骤的, 必须写清执行环境警示(本机8080=开发实例, 在本机执行会误杀)
+
+## B-1 工具域盘点报告（7-3 · 双轨五维全域对账）
+
+| 维度 | 轨1 toolkit /api/t/*（3工具） | 轨2 /api/run+/api/upload（27工具） |
+|---|---|---|
+| 接线 | ✅ main.go:615 registerToolkit | ✅ main.go:256/285 + GET /api/tools(237) |
+| 鉴权 | fxUser 强制401 | 无门（拍板②A：公共工具箱，DEPLOY.md留档） |
+| 需求侧 | ❌ 孤岛定谳（现役web+bak考古+admin子树三重零命中） | 文本轨23✅ app.js试炼场；文件轨4❌ 零前端入口 |
+| 测试 | NO_TEST | NO_TEST |
+| 其他消费方 | 无 | workflow步骤链✅ main.go:465 |
+
+判定明细：
+- /api/t/* 从未接线（csv-clean/img-process/xlsx-profile 三路由后端活、需求侧零）→ 拍板①C 坠重接线
+- 23 文本工具全链通：主表12+extra7+p02·4=23，runTool switch + extraRunners fallback 闭合
+- 文件轨4工具（file.pdf/excel/word/img）零前端入口：NR_SCHEMA 无 file.*，个体页纯静态壳（零fetch）→ /api/upload 成纯API通道
+- 正主前端 = web/assets/app.js（[证10] 搜 js/ 子目录为假阴性，assets/ 下另有 js/ 子层并存）
+- crypto.go 判活（encSecret/decSecret 各4引用，LLM key 加密承重件）
+
+### B-2 拍板记录
+- ① /api/t/* 孤岛：**C 坠重接线**
+- ② /api/run 无门：**A 保持**（公开工具箱条款入 DEPLOY.md）
+- ③ 27工具可达矩阵补测 ④ app.js.bak×6 卫生 ⑤ app.js:435/445 FormData 端点补录 —— 随执行序列推进
+
+## 过程规约（续33）
+- 前端取证先定位正主资产再搜索：app.js 在 assets/ 根而非 js/ 子目录，搜错目录=全盘假阴性
+- 死链定谳三层穷尽：现役调用面+bak考古+子树，单层零命中只记嫌疑不定谳
+- 无门≠缺陷：先考古设计意图（GET /api/tools 匿名可见逻辑=有意公共化），设计意图取证优先于安全直觉
