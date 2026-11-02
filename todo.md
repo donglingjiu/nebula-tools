@@ -275,3 +275,18 @@
 - 根目录 .bak ×3 新现：tools.go.bak / main.go.bak / e2e_test.go.bak（[证8]仅盘web/assets×6）
 - 另见构建产物 nova.log / nova-server-linux-amd64 / nebula-tools 二进制——.gitignore 覆盖态待取证
 - ④ 执行口径：ls-files判定跟踪态 → 已跟踪git rm入库删除、未跟踪物理删+.gitignore补口；体积收益实测附档
+
+### ④ 卫生收尾（7-3）
+- 9 个 .bak（根目录 go ×3 + app.js ×6）全未跟踪，物理删除释放 1.1MB；考古价值已收割入 B-1
+- .gitignore 早已全覆盖（*.bak*/nova.log/两二进制）——repo 卫生在 ignore 层闭环，无需补口
+- 保留判定：nebula-tools=8080 运行实例本体（PID 9315）、nova-server-linux-amd64=可重建产物、nova.log=77B——本地工作集不动，删除不产生 git diff（未跟踪）
+
+## 7-3 收官判定（B-2 ①C②A③④ 全清）
+- ①C /api/t/* 接线：tools.html 传统文件工具区三工具上线，E2E 五连（401门/登录/csv去重/jpg magic/xlsx剖析）
+- ②A 公开工具箱条款入 DEPLOY.md；③ 27 工具矩阵三锁上链（新增工具不带测试=go test 红）
+- 三族终态全双通：/api/run（23文本·试炼场）+ /api/t/*（3文件·新接线）+ /api/fx/*（5PDF·workspace）
+- 遗留观察项：image/jpg 非规范 MIME（一行修候选）；/api/upload 文件轨 4 工具零前端（与 /api/fx 重叠待拍板）
+- commit 链：7b4bfe0(B-1盘点) → 494bf98(①C接线) → b80286b(③矩阵) → 本次(④收官)
+
+## 过程规约（续35·终）
+- 收官清理三判据：跟踪态定删除方式、进程占用定保留边界、ignore覆盖定补口需求——物理删除仅对"未跟踪+价值已收割+无进程依赖"三者同时成立的文件
