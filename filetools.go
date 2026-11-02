@@ -4,9 +4,9 @@ package main
 // 全程内存处理，不落盘；通过 main.go 里一行 registerFileTools(mux, db) 挂载。
 
 import (
-	"context"
 	"archive/zip"
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"

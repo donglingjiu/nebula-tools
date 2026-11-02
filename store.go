@@ -101,9 +101,12 @@ func (d *DB) Save() {
 	os.Rename(d.path+".tmp", d.path)
 }
 
-func pwHash(p string) string { h := sha256.Sum256([]byte("nova$salt$" + p)); return hex.EncodeToString(h[:]) }
-func newToken() string       { b := make([]byte, 24); rand.Read(b); return hex.EncodeToString(b) }
-func (d *DB) nextId() int64  { d.NextId++; return d.NextId }
+func pwHash(p string) string {
+	h := sha256.Sum256([]byte("nova$salt$" + p))
+	return hex.EncodeToString(h[:])
+}
+func newToken() string      { b := make([]byte, 24); rand.Read(b); return hex.EncodeToString(b) }
+func (d *DB) nextId() int64 { d.NextId++; return d.NextId }
 
 func (d *DB) UserCount() int { d.mu.Lock(); defer d.mu.Unlock(); return len(d.Users) }
 
