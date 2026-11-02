@@ -264,3 +264,14 @@
 - E2E 实例三隔离：独立二进制名(防pkill误杀8080)+独立data dir(防污染开发数据)+PORT env(114行唯一注入点)
 - 守卫判据与patch实际计数对齐再上链：nova-fx在patch内仅1次(sec.id)，判据写ge5必自堵——判据设计期就要grep实数
 - 功能真值与规范符合性分开断言：FAIL E4:ffd8ff 字面即"magic正确功能成功、仅MIME头非规范"——先取证响应头再定性，不把断言洁癖误报为功能故障
+
+### ③ 27工具可达矩阵（7-3 tools_test.go）
+- 三锁结构：快照锁(len(Registry)==27, 漂移即红+提示更新B-1) + 正向锁(每个注册id必有case) + 反向锁(case必在Registry)
+- 23文本强断言14例(QR dataURI/SQL大写/chmod rwx串/子网掩码/JSON键名等特征串) + 默认路径弱断言9例；4文件工具：excel同库fixture强断言、img stdlib png强断言、pdf/word分发可达弱断言
+- totp case 教训：生成型工具≠零输入工具——opts.code可空但input密钥必需，"无输入也能跑"的断言假设违背契约；用例输入按NR_SCHEMA契约填，不按直觉省略
+- 断言选型规约：registry desc亲供特征串优先，实现细节未知处降级长度/非空断言——测试锁分发链不锁三方库
+
+### ④ 卫生清单扩容（矩阵执行期目击）
+- 根目录 .bak ×3 新现：tools.go.bak / main.go.bak / e2e_test.go.bak（[证8]仅盘web/assets×6）
+- 另见构建产物 nova.log / nova-server-linux-amd64 / nebula-tools 二进制——.gitignore 覆盖态待取证
+- ④ 执行口径：ls-files判定跟踪态 → 已跟踪git rm入库删除、未跟踪物理删+.gitignore补口；体积收益实测附档
