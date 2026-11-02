@@ -13,9 +13,11 @@
 7. **内网工具链兜底**：base64/xxd/node 不存在 → python3 stdlib + gofmt + grep 自证
 8. **push 重试链**：`git push || git push`（内网 443 SSL 抖动常态，三次内成功）
 9. **管道陷阱**：`git clone | tail -1` 管道吃掉 clone 退出码导致重试永不触发——`set -o pipefail`，或干脆用 rev-parse 复查代替管道退出码判定
-10. **内网缺 timeout → git 原生防卡**：`git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=20 clone --depth 1`——低于 1KB/s 持续 20 秒自动中止，不依赖外部 timeout；连接拒绝秒败、真卡死 40 秒内了断
+10. **内网缺 timeout → git 原生防卡（实测有边界）**：`git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=20 clone --depth 1` 仅对**传输阶段停滞**有效；**连接阶段挂起不受 lowSpeed 控制**（实测 0/0 字节挂满 curl 默认 300s 才超时）——小内容用孤儿直推（~3KB 比 clone 更抗抖动），大 clone 接受 300s 上限或换网络窗口
 11. **长粘贴分段**：多段 heredoc 长粘贴中断 → shell 卡 `>` 续行提示符，Ctrl+C 丢弃缓冲即恢复；长内容拆两次贴降低暴露
 
+12. **壳变量≠环境变量**：`NT=$(cat ...)` 只进 shell，python os.environ 拿不到（KeyError 实测）——跨进程传参用 export 或硬编码路径
+13. **终验必须验远端态**：本地 log grep 只证明 commit 存在不证明 push 成功（product-expert-team 直推被拒后本地终验仍✓=假阳性）——远端确认以 push 成功输出或 git ls-remote 为准
 ## 反模式记录
 - 守卫判据写 `nova-fx>=5` 但 patch 内实仅 1 次 → 判据设计期必须 grep 实数
 - 假设"生成型工具零输入可跑" → totp 密钥必需；用例输入按契约（NR_SCHEMA）填，不按直觉省略
