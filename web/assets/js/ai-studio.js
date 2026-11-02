@@ -30,6 +30,7 @@
   }
   function paywall(price, msg) {
     if (typeof window.showPaywall === 'function') { window.showPaywall(price, msg); return; }
+    if (window.NB && typeof window.NB.showPaywall === 'function') { window.NB.showPaywall({ price: price, message: msg }); return; }
     note(msg);
   }
   async function api(method, url, body) {
@@ -43,8 +44,26 @@
       price: e && e.price };
   }
   function handleErr(r) {
-    if (r.status === 402) paywall(r.price, r.msg);
-    else note(r.msg);
+    if (r.status === 402) { buyFlow(r); return; }
+    note(r.msg);
+  }
+  function buyFlow(r) {
+    paywall(r.price, r.msg);
+    var o = document.getElementById('nbsw-out'); if (!o) return;
+    var b = document.createElement('button');
+    b.textContent = '模拟购买并重试(¥' + (r.price || '?') + ')';
+    b.style.cssText = 'margin:6px 0;padding:8px 16px;background:#d97706;color:#fff;border:0;border-radius:8px;cursor:pointer';
+    b.onclick = async function () {
+      b.disabled = true;
+      var c = await api('POST', '/api/ai/order', { feature_key: 'ai_chat' });
+      if (!c.ok) { note(c.msg); b.disabled = false; return; }
+      var pr = await api('POST', '/api/ai/order/pay', { id: c.data.id });
+      if (!pr.ok) { note(pr.msg); b.disabled = false; return; }
+      note('已开通(模拟), 自动重试...');
+      b.remove();
+      if (typeof window.nbswRetry === 'function') window.nbswRetry();
+    };
+    o.appendChild(b);
   }
   function renderFlow(f) {
     var o = document.getElementById('nbsw-out');
@@ -64,6 +83,7 @@
     if (ex) ex.style.display = 'inline-block';
   }
   async function createRun() {
+    window.nbswRetry = createRun;
     var idea = (document.getElementById('nbsw-idea').value || '').trim();
     if (!idea) { note('请输入想法'); return; }
     var mode = document.getElementById('nbsw-mode').value;
@@ -80,6 +100,7 @@
     renderFlow(r2.data);
   }
   async function stepAdvance() {
+    window.nbswRetry = stepAdvance;
     if (!window.nbswFlowId) { note('先创建流程'); return; }
     var r = await api('POST', '/api/ai/flow/advance',
       { id: window.nbswFlowId });
@@ -87,6 +108,7 @@
     renderFlow(r.data.flow);
   }
   async function chat() {
+    window.nbswRetry = chat;
     var inp = document.getElementById('nbsw-cin');
     var q = (inp.value || '').trim(); if (!q) return;
     if (!window.nbswFlowId) { note('先创建流程, 对话将带上流程上下文'); return; }

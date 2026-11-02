@@ -206,3 +206,9 @@
 - 判决取样不足(head -3漏core.js): "NB.stream死代码"判决基于抽样而非全量grep, 6-2取证更正 — 结论强度必须匹配证据强度
 - 旧js退役路线: 全文重写自包含(own fetch+JWT扫描), 不依赖NB.*, 端点对齐真API; 线上资产以served内容grep计数为证
 - gate脚本版本化: /tmp易失, cp进scripts/入库 — 评审可复现
+
+## 过程规约（续29）
+- 多返回值函数修一半: resolveFeature门失败路径改了key(第二值)漏了store(第一值), orderCreate拿nil store解引用panic→http recover→空响应体 — 空响应=panic指纹, 先查nova.log再猜
+- 修返回值时对齐全部返回位置, 不只报错那处; 调用方在非error分支继续用store的, 门失败路径必须给有效store或调用方复开
+- 守卫正反验证: 6-3首轮"未提交"为真(push up-to-date佐证), 6-2轮"未提交"为假(push实际失败) — 判定守卫消息真伪看旁证
+- E2E脚本幂等: 购买链路用一次性fresh用户(u63), 重跑不因已购而402断言失效

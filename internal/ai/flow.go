@@ -143,8 +143,8 @@ func flowCtx(f *Flow) string {
 }
 
 // gateNow 门链+默认Profile解析(AI消耗端点共用)
-func (s *Service) gateNow() (admin.Profile, string, *gateErr) {
-	if _, _, ge := s.resolveFeature(""); ge != nil {
+func (s *Service) gateNow(u *auth.User, want string) (admin.Profile, string, *gateErr) {
+	if _, _, ge := s.gateCheck(u, want); ge != nil {
 		return admin.Profile{}, "", ge
 	}
 	prof, key, err := admin.ResolveDefaultProfile(s.dir)
@@ -202,7 +202,7 @@ func (s *Service) flowStart(w http.ResponseWriter, r *http.Request) {
 }
 
 // advanceOne 执行当前待跑步骤; 返回nil步=已全部完成
-func (s *Service) advanceOne(f *Flow) (*FlowStep, *gateErr) {
+func (s *Service) advanceOne(f *Flow, u *auth.User) (*FlowStep, *gateErr) {
 	idx := -1
 	for i := range f.Steps {
 		if f.Steps[i].Status == "pending" {
@@ -213,7 +213,7 @@ func (s *Service) advanceOne(f *Flow) (*FlowStep, *gateErr) {
 	if idx < 0 {
 		return nil, nil
 	}
-	prof, key, ge := s.gateNow()
+	prof, key, ge := s.gateNow(u, "")
 	if ge != nil {
 		return nil, ge
 	}
@@ -261,11 +261,12 @@ func (s *Service) flowAdvance(w http.ResponseWriter, r *http.Request) {
 		fail(w, 404, err.Error())
 		return
 	}
-	if !canAccess(f, s.auth.UserFrom(r)) {
+	u := s.auth.UserFrom(r)
+	if !canAccess(f, u) {
 		fail(w, 404, "流程不存在")
 		return
 	}
-	step, ge := s.advanceOne(f)
+	step, ge := s.advanceOne(f, u)
 	if ge != nil {
 		writeGate(w, ge)
 		return
@@ -295,12 +296,13 @@ func (s *Service) flowRun(w http.ResponseWriter, r *http.Request) {
 		fail(w, 404, err.Error())
 		return
 	}
-	if !canAccess(f, s.auth.UserFrom(r)) {
+	u := s.auth.UserFrom(r)
+	if !canAccess(f, u) {
 		fail(w, 404, "流程不存在")
 		return
 	}
 	for {
-		step, ge := s.advanceOne(f)
+		step, ge := s.advanceOne(f, u)
 		if ge != nil {
 			writeGate(w, ge)
 			return
@@ -331,11 +333,12 @@ func (s *Service) flowChat(w http.ResponseWriter, r *http.Request) {
 		fail(w, 404, err.Error())
 		return
 	}
-	if !canAccess(f, s.auth.UserFrom(r)) {
+	u := s.auth.UserFrom(r)
+	if !canAccess(f, u) {
 		fail(w, 404, "流程不存在")
 		return
 	}
-	prof, key, ge := s.gateNow()
+	prof, key, ge := s.gateNow(u, "")
 	if ge != nil {
 		writeGate(w, ge)
 		return
@@ -375,7 +378,8 @@ func (s *Service) flowExport(w http.ResponseWriter, r *http.Request) {
 		fail(w, 404, err.Error())
 		return
 	}
-	if !canAccess(f, s.auth.UserFrom(r)) {
+	u := s.auth.UserFrom(r)
+	if !canAccess(f, u) {
 		fail(w, 404, "流程不存在")
 		return
 	}

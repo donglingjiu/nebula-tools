@@ -41,6 +41,9 @@ func Mount(mux *http.ServeMux, dir string, asvc *auth.Service) error {
 	mux.HandleFunc("POST /api/ai/flow/run", asvc.RequireRole("user", s.flowRun))
 	mux.HandleFunc("POST /api/ai/flow/chat", asvc.RequireRole("user", s.flowChat))
 	mux.HandleFunc("GET /api/ai/flow/export", asvc.RequireRole("user", s.flowExport))
+	mux.HandleFunc("POST /api/ai/order", asvc.RequireRole("user", s.orderCreate))
+	mux.HandleFunc("POST /api/ai/order/pay", asvc.RequireRole("user", s.orderPay))
+	mux.HandleFunc("GET /api/ai/orders", asvc.RequireRole("user", s.orderList))
 	return nil
 }
 
@@ -81,7 +84,7 @@ func (s *Service) resolveFeature(want string) (*admin.Store, string, *gateErr) {
 		}
 	}
 	if ge := checkGate(st, key); ge != nil {
-		return nil, "", ge
+		return nil, key, ge
 	}
 	return st, key, nil
 }
@@ -119,7 +122,8 @@ func (s *Service) chat(w http.ResponseWriter, r *http.Request) {
 		fail(w, 400, "参数错误: 需要 messages 数组")
 		return
 	}
-	if _, _, ge := s.resolveFeature(req.FeatureKey); ge != nil {
+	gu := s.auth.UserFrom(r)
+	if _, _, ge := s.gateCheck(gu, req.FeatureKey); ge != nil {
 		writeGate(w, ge)
 		return
 	}
