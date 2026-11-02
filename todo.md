@@ -250,3 +250,17 @@
 - 前端取证先定位正主资产再搜索：app.js 在 assets/ 根而非 js/ 子目录，搜错目录=全盘假阴性
 - 死链定谳三层穷尽：现役调用面+bak考古+子树，单层零命中只记嫌疑不定谳
 - 无门≠缺陷：先考古设计意图（GET /api/tools 匿名可见逻辑=有意公共化），设计意图取证优先于安全直觉
+
+### B-1 补正（7-3 ①C 执行发现）
+- 工具域实为**三族**非双族：/api/fx/*（filetools.go:344-348，pdf-merge/split/compress/to-docx/to-xlsx 五路由）前后端全链通（workspace EP map 直连）
+- filetools.go 身份修正：/api/fx handler 层 + fx* 共享助手（非纯助手层）
+- /api/upload/{tool} 文件轨（4 个 file.* 工具）仍零前端入口（与 /api/fx 功能域重叠，遗留待后续拍板）
+- 观察项(非阻塞)：img-process format=jpg 响应头为非规范 image/jpg（fxSend "image/"+format 直拼），magic 正确浏览器兼容；后续可选一行修（mime 映射 jpg→jpeg）
+
+## 过程规约（续34）
+- 前端接线复刻成熟模式而非全局化重构：runOne/dl/outName 是 workspace IIFE 局部作用域，复刻~15行远比动600行既有作用域安全
+- 同端点混合响应(JSON+blob)按 Content-Type 分流，不按端点硬编码——xlsx 默认JSON展示，opts.format=md 自动落下载分支
+- E2E 断言选双实现皆过的数值：csv 去重3行对 header分离/全行去重两种实现语义都成立
+- E2E 实例三隔离：独立二进制名(防pkill误杀8080)+独立data dir(防污染开发数据)+PORT env(114行唯一注入点)
+- 守卫判据与patch实际计数对齐再上链：nova-fx在patch内仅1次(sec.id)，判据写ge5必自堵——判据设计期就要grep实数
+- 功能真值与规范符合性分开断言：FAIL E4:ffd8ff 字面即"magic正确功能成功、仅MIME头非规范"——先取证响应头再定性，不把断言洁癖误报为功能故障

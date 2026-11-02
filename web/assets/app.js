@@ -610,5 +610,60 @@ function badges(){
 if(ADMIN_REQ){fetch('/api/auth/me').then(function(r){return r.ok?r.json():null}).then(function(j){if(j&&j.role==='admin'){document.body.dataset.admin='true';IS_ADMIN=true;ME_CACHE=j;currentID=computeCurrentID();if(document.body.dataset.adminPage==='users'){refreshUsers();refreshDoor()}if(document.body.dataset.adminPage==='index'){refreshOverview()}boot()}else{location.href='../login.html'}}).catch(function(){location.href='../login.html'})}else{boot()}
 })();
 
+/* stage7-3 ①C 接线: 传统文件工具区(/api/t/*) CSV清洗·图片处理·Excel剖析 — 需登录, 与试炼场并列, 自包含不依赖workspace作用域 */
+(function(){
+  if(!/tools\.html/.test(location.pathname))return;
+  function fxel(id){return document.getElementById(id)}
+  function fxt(m,k){try{toast(m,k)}catch(_){}}
+  function fxesc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+  function fxdl(b,name){var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},4000)}
+  function fxout(cd,fb){if(cd){var m2=/filename="?([^";]+)"?/i.exec(cd);if(m2)return m2[1]}return fb}
+  var FX_SCHEMA={"/api/t/csv-clean":[["charset","gbk 输出GBK（留空utf8）"],["dedupe","true=按整行去重"],["filterCol","过滤列名（表头）"],["filterVal","过滤值"],["filterMode","contains / eq / ne"],["keepCols","保留列（逗号分隔）"]],
+  "/api/t/img-process":[["width","目标宽度px 等比缩放"],["format","png / jpg"],["quality","jpg质量1-100 默认85"]],
+  "/api/t/xlsx-profile":[["format","md=下载报告（留空页面展示）"]]};
+  var FX_ACC={"/api/t/csv-clean":".csv","/api/t/img-process":"image/*","/api/t/xlsx-profile":".xlsx"};
+  function fxRender(){
+    var box=fxel("fx-opts");if(!box)return;
+    var v=fxel("fx-tool").value,sc=FX_SCHEMA[v]||[];
+    box.innerHTML=sc.map(function(f){return '<input data-opt="'+fxesc(f[0])+'" placeholder="'+fxesc(f[1])+'" class="nv-opt-input" spellcheck="false"/>'}).join("");
+    box.style.display=sc.length?"flex":"none";
+    var fi=fxel("fx-file");if(fi)fi.accept=FX_ACC[v]||"";
+  }
+  function fxInit(){
+    var lib=document.querySelector(".tool-library");if(!lib)return;
+    var sec=document.createElement("section");sec.id="nova-fx";sec.className="panel";
+    sec.style.cssText="margin:19px 0;border:1px solid #e9eef7;border-radius:14px;padding:18px";
+    sec.innerHTML='<div class="section-head"><div><h3>传统文件工具</h3><p>文件直传后端引擎（/api/t/*）：CSV 清洗 · 图片处理 · Excel 剖析；需登录，完成记录进个人历史。</p></div></div>'
+      +'<div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:10px 0">'
+      +'<select id="fx-tool" style="padding:9px 12px;border:1px solid #e2e8f4;border-radius:10px;background:#fff;font-size:13px;max-width:280px">'
+      +'<option value="/api/t/csv-clean">CSV 清洗 · /api/t/csv-clean</option>'
+      +'<option value="/api/t/img-process">图片处理 · /api/t/img-process</option>'
+      +'<option value="/api/t/xlsx-profile">Excel 剖析 · /api/t/xlsx-profile</option></select>'
+      +'<input type="file" id="fx-file" style="padding:8px;border:1px solid #e2e8f4;border-radius:10px;font-size:12px;background:#fff"/>'
+      +'<button id="fx-go" style="padding:9px 18px;border:0;border-radius:10px;background:#4f6ef7;color:#fff;cursor:pointer;font-size:13px">上传处理</button></div>'
+      +'<div id="fx-opts" style="display:none;gap:9px;flex-wrap:wrap;margin:9px 0"></div>'
+      +'<pre id="fx-out" style="margin:10px 0 0;padding:12px;min-height:52px;background:#f7f9fe;border:1px solid #e9eef7;border-radius:10px;font:12px/1.6 ui-monospace,monospace;white-space:pre-wrap;word-break:break-all;color:#33415e">文件处理结果将显示在这里（文件类自动下载）</pre>';
+    lib.parentNode.insertBefore(sec,lib.nextSibling);
+    fxel("fx-tool").addEventListener("change",fxRender);
+    fxRender();
+    fxel("fx-go").addEventListener("click",function(){
+      var f=fxel("fx-file").files&&fxel("fx-file").files[0];if(!f){fxt("请先选择文件","error");return}
+      var ep=fxel("fx-tool").value,o={};
+      Array.prototype.forEach.call(fxel("fx-opts").querySelectorAll("input[data-opt]"),function(i){var v=i.value.trim();if(v)o[i.getAttribute("data-opt")]=v});
+      var fd=new FormData();fd.append("files",f);if(Object.keys(o).length)fd.append("opts",JSON.stringify(o));
+      var out=fxel("fx-out");out.textContent="处理中…";
+      fetch(ep,{method:"POST",body:fd}).then(function(r){
+        if(r.status===401){fxt("请先登录后再处理文件","error");out.textContent="需登录：即将跳转登录页";setTimeout(function(){location.href="login.html"},600);return}
+        if(!r.ok){return r.json().catch(function(){return{}}).then(function(j){out.textContent="出错了："+((j&&j.error)||r.status);fxt("处理失败","error")})}
+        var ct=r.headers.get("Content-Type")||"";
+        if(ct.indexOf("json")>=0){return r.json().then(function(j){out.textContent=JSON.stringify(j,null,2);fxt("剖析完成","good")})}
+        return r.blob().then(function(b){var n=fxout(r.headers.get("Content-Disposition"),f.name);fxdl(b,n);out.textContent="已生成并下载："+n+"（"+Math.round(b.size/1024)+"KB）";fxt("处理完成","good")});
+      }).catch(function(){out.textContent="网络错误";fxt("网络错误","error")});
+    });
+  }
+  function fxBoot(){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",fxInit)}else{fxInit()}}
+  fxBoot();
+})();
+
 /* v2.8.0: tokens layer injector (last-loaded override) */
 (function(){try{var l=document.createElement("link");l.rel="stylesheet";l.href=(document.body.dataset.admin==='true'||document.body.dataset.adminReq==='true'?"../":"")+"assets/nova-tokens.css?v=288";document.head.appendChild(l)}catch(e){}})();
