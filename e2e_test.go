@@ -57,6 +57,30 @@ func (tc *TC) doC(c *http.Client, method, path string, body any) (int, map[strin
 	return resp.StatusCode, m
 }
 
+func (tc *TC) doH(m, p string, b any, tok string) (int, map[string]any) {
+	tc.t.Helper()
+	var rd io.Reader
+	if b != nil {
+		j2, _ := json.Marshal(b)
+		rd = bytes.NewReader(j2)
+	}
+	req, _ := http.NewRequest(m, tc.ts.URL+p, rd)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+tok)
+	resp, err := tc.c.Do(req)
+	if err != nil {
+		tc.t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	raw, _ := io.ReadAll(resp.Body)
+	var mm map[string]any
+	json.Unmarshal(raw, &mm)
+	if mm == nil {
+		mm = map[string]any{}
+	}
+	return resp.StatusCode, mm
+}
+
 // doArrC：响应体是 JSON 数组时专用（tools/favs/history/workflows/notices 等）
 func (tc *TC) doArrC(c *http.Client, method, path string, body any) (int, []any) {
 	tc.t.Helper()
@@ -260,14 +284,28 @@ func TestFullJourney(t *testing.T) {
 		t.Fatalf("轨迹应 2 步: %v", m)
 	}
 	// 11 AI 未配置端点 → 演示模式
-	code, m = tc.do("POST", "/api/ai/chat", map[string]any{"messages": []map[string]string{{"role": "user", "content": "hi"}}})
-	if code == 200 {
-		if !strings.Contains(fmt.Sprint(m["reply"]), "演示模式") {
-			t.Fatalf("AI: %v", m)
-		}
-	} else {
-		t.Logf("step11 ai/chat→%d (已知沉睡失败 TODO⑤: RequireRole×主session脱节; 修复后自动恢复强断言)", code)
+	// 11 v2 Bearer轨端到端: 无凭证401 → v2注册/登录 → me 200 → chat鉴权过(非401)
+	if code, m = tc.do("POST", "/api/ai/chat", map[string]any{"messages": []map[string]string{{"role": "user", "content": "hi"}}}); code != 401 {
+		t.Fatalf("step11 无凭证应401: %d %v", code, m)
 	}
+	vc, vm := tc.do("POST", "/api/v2/auth/register", map[string]string{"email": "probe@example.com", "password": "probe12345"})
+	if vc == 409 {
+		vc, vm = tc.do("POST", "/api/v2/auth/login", map[string]string{"email": "probe@example.com", "password": "probe12345"})
+	}
+	if vc != 200 {
+		t.Fatalf("step11 v2登录: %d %v", vc, vm)
+	}
+	tok, _ := vm["token"].(string)
+	if tok == "" {
+		t.Fatal("step11 v2 token为空")
+	}
+	if code, m = tc.doH("GET", "/api/v2/auth/me", nil, tok); code != 200 {
+		t.Fatalf("step11 me: %d %v", code, m)
+	}
+	if code, m = tc.doH("POST", "/api/ai/chat", map[string]any{"messages": []map[string]string{{"role": "user", "content": "hi"}}}, tok); code == 401 {
+		t.Fatal("step11 带token仍401: v2鉴权闭环断")
+	}
+
 	// 12 改密码 → 旧密码失效
 	tc.ok("POST", "/api/auth/password", map[string]string{"old": "admin123", "new": "newpass66"})
 	if code, _ := tc.do("POST", "/api/auth/password", map[string]string{"old": "admin123", "new": "xxxxxx1"}); code != 400 {

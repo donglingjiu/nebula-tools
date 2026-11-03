@@ -37,6 +37,13 @@ eq "工具数=23" "$(curl -s -b $J $B/api/tools | grep -o '"id"' | wc -l | tr -d
 UPC=$(curl -s -o /dev/null -w '%{http_code}' -b $J -X POST $B/api/upload/file.pdf -F f=x 2>/dev/null)
 if [ "$UPC" = "405" ]; then UPC="404"; fi
 eq "upload退役防复活" "$UPC" "404"
+VT=$(curl -s -X POST $B/api/v2/auth/login -H 'Content-Type: application/json' -d '{"email":"probe-ai@example.com","password":"probe12345"}')
+if [ -z "$(echo "$VT" | grep -o '"token"')" ]; then
+  VT=$(curl -s -X POST $B/api/v2/auth/register -H 'Content-Type: application/json' -d '{"email":"probe-ai@example.com","password":"probe12345"}')
+fi
+TK=$(echo "$VT" | grep -o '"token":"[^"]*"' | head -1 | cut -d'"' -f4)
+eq "v2鉴权闭环(me)" "$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $TK" $B/api/v2/auth/me)" "200"
+eq "v2鉴权闭环(ai-status)" "$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $TK" $B/api/ai/status)" "200"
 g "chmod 754" "$(curl -s -b $J -X POST $B/api/run/dev.chmod -d '{"input":"754","opts":{}}')" 'rwxr-xr--'
 g "subnet /26=62台" "$(curl -s -b $J -X POST $B/api/run/dev.subnet -d '{"input":"192.168.1.130/26","opts":{}}')" '62 台'
 g "yaml→json" "$(curl -s -b $J -X POST $B/api/run/dev.yaml -d '{"input":"a: 1","opts":{}}' | python3 -c 'import sys,json;print(json.load(sys.stdin).get("output",""))')" '"a": 1'
