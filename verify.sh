@@ -47,6 +47,8 @@ eq "v2鉴权闭环(ai-status)" "$(curl -s -o /dev/null -w '%{http_code}' -H "Aut
 eq "ai-chat页在位" "$(curl -s -o /dev/null -w '%{http_code}' $B/ai-chat.html)" "200"
 eq "chat契约锁(空messages=400)" "$(curl -s -o /dev/null -w '%{http_code}' -X POST $B/api/ai/chat -H "Authorization: Bearer $TK" -H 'Content-Type: application/json' -d '{"messages":[]}')" "400"
 eq "ai-chat.js形状锁" "$(grep -c 'messages: S.msgs' web/assets/js/ai-chat.js)" "1"
+eq "e2e隔离锁(os.Remove归零)" "$(grep -c 'os.Remove' e2e_test.go)" "0"
+eq "e2e临时目录锁(TempDir)" "$(grep -c 't.TempDir()' e2e_test.go)" "1"
 eq "资产版本棘轮(vhash-check)" "$(python3 vhash.py check >/dev/null 2>&1; echo $?)" "0"
 eq "ai-chat.html版本化引用" "$(grep -c 'ai-chat\.js?v=' web/ai-chat.html)" "1"
 g "chmod 754" "$(curl -s -b $J -X POST $B/api/run/dev.chmod -d '{"input":"754","opts":{}}')" 'rwxr-xr--'

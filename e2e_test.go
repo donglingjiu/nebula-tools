@@ -25,9 +25,16 @@ type TC struct {
 
 func start(t *testing.T) *TC {
 	t.Helper()
-	os.Remove("data/nova.json")
+	tmp := t.TempDir()
+	t.Setenv("NOVA_DATA_DIR", tmp)
+	cwd, _ := os.Getwd()
+	t.Cleanup(func() { _ = os.Chdir(cwd) })
+	if err := os.Chdir(tmp); err != nil {
+		t.Fatal(err)
+	}
+	_ = os.Symlink(cwd+"/web", tmp+"/web")
 	ts := httptest.NewServer(newRouter(Load()))
-	t.Cleanup(func() { ts.Close(); os.Remove("data/nova.json") })
+	t.Cleanup(func() { ts.Close() })
 	jar, _ := cookiejar.New(nil)
 	return &TC{t, ts, &http.Client{Jar: jar}}
 }
