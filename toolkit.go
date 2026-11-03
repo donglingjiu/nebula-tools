@@ -216,7 +216,11 @@ func hImgProcess(db *DB) http.HandlerFunc {
 			base = strings.TrimSuffix(base, sfx)
 		}
 		db.AddHist(u.Username, "t:img-process", names[0], fmt.Sprintf("%dx%d → %s %dKB", img.Bounds().Dx(), img.Bounds().Dy(), format, out.Len()/1024), time.Since(t0).Milliseconds())
-		fxSend(w, "processed-"+base+ext, out.Bytes(), "image/"+format)
+		outMime := "image/" + format
+		if format == "jpg" {
+			outMime = "image/jpeg"
+		}
+		fxSend(w, "processed-"+base+ext, out.Bytes(), outMime)
 	}
 }
 
