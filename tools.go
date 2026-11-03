@@ -15,12 +15,7 @@ import (
 	"errors"
 	"fmt"
 	"html"
-	"image"
-	"image/color"
-	"image/draw"
 	_ "image/gif"
-	"image/jpeg"
-	"image/png"
 	"io"
 	"math/big"
 	"net/url"
@@ -50,10 +45,6 @@ var ToolRegistry = map[string]Tool{
 	"gen.pwd":       {"gen.pwd", "密码生成", "key", "gen", "随机强密码批量生成", "text"},
 	"data.csv2json": {"data.csv2json", "CSV 转 JSON", "files", "data", "表格数据转 JSON 数组", "text"},
 	"data.json2csv": {"data.json2csv", "JSON 转 CSV", "files", "data", "JSON 数组转 CSV 表格", "text"},
-	"file.pdf":      {"file.pdf", "PDF 文本提取", "fileText", "file", "提取 PDF 中的文本内容", "file"},
-	"file.excel":    {"file.excel", "Excel 转 CSV", "chart", "file", "xlsx 表格转 CSV（≤30MB）", "file"},
-	"file.word":     {"file.word", "Word 文本提取", "files", "file", "提取 docx 中的文本段落", "file"},
-	"file.img":      {"file.img", "图片压缩转换", "image", "file", "压缩 / JPG / PNG / 缩放", "file"},
 }
 
 func runTool(id, in string, opts map[string]string) (string, error) {
@@ -89,19 +80,6 @@ func runTool(id, in string, opts map[string]string) (string, error) {
 	return "", fmt.Errorf("未知工具: %s", id)
 }
 
-func runToolFile(id string, b []byte, opts map[string]string) (string, error) {
-	switch id {
-	case "file.pdf":
-		return toolPDF(b)
-	case "file.excel":
-		return toolExcel(b)
-	case "file.word":
-		return toolWord(b)
-	case "file.img":
-		return toolImg(b, opts)
-	}
-	return "", fmt.Errorf("未知文件工具: %s", id)
-}
 
 /* ---------------- 文本工具 ---------------- */
 
@@ -713,44 +691,4 @@ func toolWord(b []byte) (string, error) {
 	return strings.Join(lines, "\n"), nil
 }
 
-func resizeNearest(src image.Image, w, h int) image.Image {
-	dst := image.NewRGBA(image.Rect(0, 0, w, h))
-	sw, sh := src.Bounds().Dx(), src.Bounds().Dy()
-	for y := 0; y < h; y++ {
-		for x := 0; x < w; x++ {
-			dst.Set(x, y, src.At(src.Bounds().Min.X+x*sw/w, src.Bounds().Min.Y+y*sh/h))
-		}
-	}
-	return dst
-}
 
-func toolImg(b []byte, opts map[string]string) (string, error) {
-	op := opts["op"]
-	if op == "" {
-		op = "compress"
-	}
-	src, _, err := image.Decode(bytes.NewReader(b))
-	if err != nil {
-		return "", errors.New("图片解码失败：支持 PNG / JPEG / GIF")
-	}
-	if mw, e := strconv.Atoi(opts["maxw"]); e == nil && mw > 0 && src.Bounds().Dx() > mw {
-		src = resizeNearest(src, mw, src.Bounds().Dy()*mw/src.Bounds().Dx())
-	}
-	var mime string
-	var buf bytes.Buffer
-	if op == "to_png" {
-		mime = "image/png"
-		png.Encode(&buf, src)
-	} else {
-		q, _ := strconv.Atoi(opts["quality"])
-		if q < 10 || q > 100 {
-			q = 80
-		}
-		dst := image.NewRGBA(image.Rect(0, 0, src.Bounds().Dx(), src.Bounds().Dy()))
-		draw.Draw(dst, dst.Bounds(), image.NewUniform(color.White), image.Point{}, draw.Src)
-		draw.Draw(dst, dst.Bounds(), src, src.Bounds().Min, draw.Over)
-		mime = "image/jpeg"
-		jpeg.Encode(&buf, dst, &jpeg.Options{Quality: q})
-	}
-	return "data:" + mime + ";base64," + base64.StdEncoding.EncodeToString(buf.Bytes()), nil
-}

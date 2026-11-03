@@ -31,3 +31,5 @@
    - 11-03 TODO①(定谳修正): 根因=静态资源无Cache-Control+浏览器陈旧副本(mtime倒退304陷阱), 非磁盘HEAD半成品——①C经[证108]全diff审查为纯增量且语法完好, 116校准合法; 修复=no-cache头+gate防御化+登录显式断言+浏览器清缓存; TODO③立项: 资产URL版本化(?v=hash)根治304陷阱
    - 11-03 TODO② 浏览器级冒烟: 静态grep棘轮查不出JS运行时错, 立项轻量前端冒烟(页面加载+核心工具点击)入verify可选段——与 /api/fx 合并 or 下线（功能重叠的双轨典型）
 3. 新接线区块发现性——页面底部区块 vs 主工具卡导航（曝光 vs 整洁）
+
+- 11-03 8-2 A批(迁后撤): upload四文件工具迁入t家族——新增/api/t/pdf-text|word-text|xlsx-text(fxUser登录门+AddHist+fxSend文本/CSV直出), img复用既有/api/t/img-process; 撤POST /api/upload/{tool}路由+runToolFile/toolImg/resizeNearest死代码链+registry四条目(工具数27→23)。行为变化: 文件处理由匿名改需登录(t家族安全基线); 错误webhook告警不再覆盖文件工具。e2e: 增upB助手(files字段+blob/文本三元), step07换断言+显式登录兜底; step11 ai/chat容错降级——pristine裸测[证136]实证沉睡失败(10-27 dacda7f llm wire移交internal/ai RequireRole后401×7天, journey后段12-13一并失覆), 降级=200强断言/非200 Logf续行(修复后棘轮自动收紧); tools_test: 快照锁23+fileCases空化+TestFileCoreDirect外提(三直调平移, img归e2e)。verify: 棘轮23+防复活断言(405归一404), 检数50→51。TODO④立项: ①C传统文件工具前端接线三新端点。TODO⑤立项(优先): internal/ai RequireRole与主session脱节——/api/ai/*全族(api.go:37-46十端点)对登录用户401, 前端AI助手可用性存疑, 修复方向=RequireRole对齐主session验证。规约#19附注: 探针三态=调用点/键名/计数常量([证129]盲区实证)。

@@ -282,47 +282,7 @@ func newRouter(db *DB) http.Handler {
 		}
 		J(w, map[string]any{"ok": true, "output": out, "ms": ms})
 	})
-	mux.HandleFunc("POST /api/upload/{tool}", func(w http.ResponseWriter, r *http.Request) {
-		id := r.PathValue("tool")
-		if _, ok := ToolRegistry[id]; !ok || !db.ToolOn(id) {
-			E(w, 403, "模块未开启或不存在")
-			return
-		}
-		r.Body = http.MaxBytesReader(w, r.Body, 32<<20)
-		f, _, err := r.FormFile("file")
-		if err != nil {
-			E(w, 400, "请选择文件")
-			return
-		}
-		defer f.Close()
-		b, err := io.ReadAll(f)
-		if err != nil {
-			E(w, 400, "读取文件失败")
-			return
-		}
-		opts := map[string]string{}
-		if sv := r.FormValue("opts"); sv != "" {
-			if err := json.Unmarshal([]byte(sv), &opts); err != nil {
-				E(w, 400, "opts 参数错误")
-				return
-			}
-		}
-		t0 := time.Now()
-		out, err := runToolFile(id, b, opts)
-		ms := time.Since(t0).Milliseconds()
-		if err != nil {
-			J(w, map[string]any{"ok": false, "error": err.Error()})
-			if u := s.user(r); u != nil {
-				go sendAlert(db.GetSettingSafe("alert_webhook"), id, u.Username, err.Error())
-			}
-			return
-		}
-		if u := s.user(r); u != nil {
-			db.AddHist(u.Username, id, "(文件 "+strconv.Itoa(len(b))+" 字节)", out, ms)
-		}
-		J(w, map[string]any{"ok": true, "output": out, "ms": ms})
-	})
-	mux.HandleFunc("GET /api/history", func(w http.ResponseWriter, r *http.Request) {
+		mux.HandleFunc("GET /api/history", func(w http.ResponseWriter, r *http.Request) {
 		u := s.user(r)
 		if u == nil {
 			E(w, 401, "未登录")

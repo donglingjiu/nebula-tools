@@ -374,4 +374,82 @@ func registerToolkit(mux *http.ServeMux, db *DB) {
 	mux.HandleFunc("POST /api/t/csv-clean", wrap(hCsvClean(db)))
 	mux.HandleFunc("POST /api/t/img-process", wrap(hImgProcess(db)))
 	mux.HandleFunc("POST /api/t/xlsx-profile", wrap(hXlsxProfile(db)))
+	mux.HandleFunc("POST /api/t/pdf-text", wrap(hPDFText(db)))
+	mux.HandleFunc("POST /api/t/word-text", wrap(hWordText(db)))
+	mux.HandleFunc("POST /api/t/xlsx-text", wrap(hXlsxText(db)))
+}
+func hPDFText(db *DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		u := fxUser(db, r)
+		if u == nil {
+			fxE(w, 401, "请先登录")
+			return
+		}
+		t0 := time.Now()
+		bs, names, ok := fxFiles(w, r)
+		if !ok {
+			return
+		}
+		if len(bs) != 1 {
+			fxE(w, 400, "请上传一个 PDF 文件")
+			return
+		}
+		out, err := toolPDF(bs[0])
+		if err != nil {
+			fxE(w, 422, "PDF 解析失败: "+err.Error())
+			return
+		}
+		db.AddHist(u.Username, "t:pdf-text", names[0], fmt.Sprintf("%d 字符", len(out)), time.Since(t0).Milliseconds())
+		fxSend(w, strings.TrimSuffix(names[0], ".pdf")+".txt", []byte(out), "text/plain; charset=utf-8")
+	}
+}
+func hWordText(db *DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		u := fxUser(db, r)
+		if u == nil {
+			fxE(w, 401, "请先登录")
+			return
+		}
+		t0 := time.Now()
+		bs, names, ok := fxFiles(w, r)
+		if !ok {
+			return
+		}
+		if len(bs) != 1 {
+			fxE(w, 400, "请上传一个 Word 文件")
+			return
+		}
+		out, err := toolWord(bs[0])
+		if err != nil {
+			fxE(w, 422, "Word 解析失败: "+err.Error())
+			return
+		}
+		db.AddHist(u.Username, "t:word-text", names[0], fmt.Sprintf("%d 字符", len(out)), time.Since(t0).Milliseconds())
+		fxSend(w, strings.TrimSuffix(names[0], ".docx")+".txt", []byte(out), "text/plain; charset=utf-8")
+	}
+}
+func hXlsxText(db *DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		u := fxUser(db, r)
+		if u == nil {
+			fxE(w, 401, "请先登录")
+			return
+		}
+		t0 := time.Now()
+		bs, names, ok := fxFiles(w, r)
+		if !ok {
+			return
+		}
+		if len(bs) != 1 {
+			fxE(w, 400, "请上传一个 Excel 文件")
+			return
+		}
+		out, err := toolExcel(bs[0])
+		if err != nil {
+			fxE(w, 422, "Excel 解析失败: "+err.Error())
+			return
+		}
+		db.AddHist(u.Username, "t:xlsx-text", names[0], fmt.Sprintf("%d 行", strings.Count(out, "\n")), time.Since(t0).Milliseconds())
+		fxSend(w, strings.TrimSuffix(names[0], ".xlsx")+".csv", []byte(out), "text/csv; charset=utf-8")
+	}
 }

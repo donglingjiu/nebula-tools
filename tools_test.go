@@ -2,7 +2,7 @@ package main
 
 // stage7-3 ③ 27工具可达矩阵: 分发链完整性测试(不测三方库解析能力)
 // 双向锁: ToolRegistry每个id必有case(漏测编译产物即红), case必在Registry(防注册名漂移)
-// 快照锁: 27 = 12主表文本 + 7 extra + 4 p02 + 4文件(B-1盘点口径)
+// 快照锁: 23 = 12主表文本 + 7 extra + 4 p02 (8-2迁后撤: 4文件工具已迁t家族)
 
 import (
 	"archive/zip"
@@ -159,30 +159,32 @@ func textCases() map[string]func(*testing.T) {
 }
 
 func fileCases() map[string]func(*testing.T) {
-	return map[string]func(*testing.T){
-		"file.pdf": func(t *testing.T) {
-			_, err := runToolFile("file.pdf", []byte("%PDF-1.4\nfake-xref"), nil)
-			dispatchOK(t, err)
-		},
-		"file.excel": func(t *testing.T) {
-			o, err := runToolFile("file.excel", fxXLSX(), nil)
-			mustOK(t, err)
-			has(t, o, "col1")
-		},
-		"file.word": func(t *testing.T) {
-			o, err := runToolFile("file.word", fxDocx(), nil)
-			dispatchOK(t, err)
-			if err == nil && !strings.Contains(o, "col1") {
-				t.Logf("docx解析成功但文本缺失: %.80s", o)
-			}
-		},
-		"file.img": func(t *testing.T) { _, err := runToolFile("file.img", fxPNG(), nil); mustOK(t, err) },
-	}
+	// 8-2迁后撤: file.*四条已迁t家族; HTTP层覆盖移交e2e step07
+	return map[string]func(*testing.T){}
 }
 
+// TestFileCoreDirect: 原fileCases三直调平移(8-2); img由e2e blob断言接管
+func TestFileCoreDirect(t *testing.T) {
+	t.Run("pdf", func(t *testing.T) {
+		_, err := toolPDF([]byte("%PDF-1.4\nfake-xref"))
+		dispatchOK(t, err)
+	})
+	t.Run("excel", func(t *testing.T) {
+		o, err := toolExcel(fxXLSX())
+		mustOK(t, err)
+		has(t, o, "col1")
+	})
+	t.Run("word", func(t *testing.T) {
+		o, err := toolWord(fxDocx())
+		dispatchOK(t, err)
+		if err == nil && !strings.Contains(o, "col1") {
+			t.Logf("docx解析成功但文本缺失: %.80s", o)
+		}
+	})
+}
 func TestRegistrySnapshot(t *testing.T) {
-	if n := len(ToolRegistry); n != 27 {
-		t.Errorf("注册表漂移: %d≠27 — 更新B-1报告与本矩阵case表", n)
+	if n := len(ToolRegistry); n != 23 {
+		t.Errorf("注册表漂移: %d≠23 — 更新快照注释与矩阵case表", n)
 	}
 	tc, fc := textCases(), fileCases()
 	for id, tool := range ToolRegistry {
