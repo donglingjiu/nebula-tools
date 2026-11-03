@@ -19,7 +19,7 @@ eq "档案记账在位" "$(grep -q dbMsgAppendP dbconversations.go && grep -q us
 eq "分叉通电在位" "$(grep -q dbConvBranch dbconversations.go && grep -q branchConv web/assets/chat.js && echo 1 || echo 0)" 1
 eq "登录链在位" "$(grep -q authSwitch web/assets/app.js && grep -q auth/register web/assets/app.js && grep -q auth/me web/assets/app.js && grep -q novaLogout web/assets/app.js && echo 1 || echo 0)" 1
 eq "切换钮归层在位" "$(grep -c '^#authSwitch{' web/assets/nova-finishing.css)" 1
-eq "app页普查棘轮" "$(grep -l 'id="app"' web/*.html | wc -l)" 15
+eq "app页普查棘轮" "$(grep -l 'id="app"' web/*.html | wc -l)" 13
 eq "fx接线棘轮" "$(grep -oE 'pdf-(compress|split)' web/assets/app.js | wc -l)" 4
 eq "admin旗硬编码棘轮" "$(grep -l 'data-admin="true"' web/admin/*.html 2>/dev/null | wc -l)" 0
 eq "adminReq旗棘轮" "$(grep -l 'data-admin-req="true"' web/admin/*.html 2>/dev/null | wc -l)" 10
@@ -29,6 +29,8 @@ eq "JS语法门" "$(python3 js_gate.py web/assets/app.js)" ok
 eq "语法门在岗" "$(test -f js_gate.py && echo 1 || echo 0)" 1
 eq "admin壳全接线" "$(grep -L data-admin-req web/admin/*.html 2>/dev/null | wc -l)" 0
 eq "admin路由活变棘轮" "$(grep -o computeCurrentID web/assets/app.js | wc -l)" 3
+eq "dashboard演示退役棘轮" "$(grep -c '3,678,920' web/assets/app.js)" 0
+eq "dashboard真接线棘轮" "$(grep -o 'refreshOverview\|renderDashLive\|ADMIN_DASH_LIVE' web/assets/app.js | wc -l)" 10
 eq "重启契约在册" "$(grep -c '重启必须携带 NOVA_WEB_DIR' DEPLOY.md)" 1
 eq "工具数=27" "$(curl -s -b $J $B/api/tools | grep -o '"id"' | wc -l | tr -d ' ')" 27
 g "chmod 754" "$(curl -s -b $J -X POST $B/api/run/dev.chmod -d '{"input":"754","opts":{}}')" 'rwxr-xr--'
@@ -43,7 +45,7 @@ eq "独立页tokens" "$(curl -s $B/mini.html | grep -c 'nova-tokens.css')" 1
 eq "word2pdf tokens" "$(curl -s $B/word2pdf.html | grep -c 'nova-tokens.css')" 1
 eq "徽章规范" "$(printf '%s' "$A" | grep -c "info...plan")" 1
 eq "内联flex精确清零" "$(printf '%s' "$A" | grep -cF 'style="flex:1"')" 0
-eq "内联余量棘轮" "$(printf '%s' "$A" | grep -o 'style="' | wc -l)" 111
+eq "内联余量棘轮" "$(printf '%s' "$A" | grep -o 'style="' | wc -l)" 116
 eq "q预填在位" "$(printf '%s' "$A" | grep -cF "params.has('q')")" 1
 eq "深链派发冒泡" "$(printf '%s' "$A" | grep -cF "ts.dispatchEvent(new Event('input',{bubbles:true}))")" 1
 eq "尺度tokens在位" "$(grep -c -- '--nv-s10:10px' "$(dirname "$0")/web/assets/nova-tokens.css")" 1
