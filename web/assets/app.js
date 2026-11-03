@@ -620,8 +620,9 @@ if(typeof ADMIN_REQ!=="undefined"&&ADMIN_REQ){fetch('/api/auth/me').then(functio
   function fxout(cd,fb){if(cd){var m2=/filename="?([^";]+)"?/i.exec(cd);if(m2)return m2[1]}return fb}
   var FX_SCHEMA={"/api/t/csv-clean":[["charset","gbk 输出GBK（留空utf8）"],["dedupe","true=按整行去重"],["filterCol","过滤列名（表头）"],["filterVal","过滤值"],["filterMode","contains / eq / ne"],["keepCols","保留列（逗号分隔）"]],
   "/api/t/img-process":[["width","目标宽度px 等比缩放"],["format","png / jpg"],["quality","jpg质量1-100 默认85"]],
-  "/api/t/xlsx-profile":[["format","md=下载报告（留空页面展示）"]]};
-  var FX_ACC={"/api/t/csv-clean":".csv","/api/t/img-process":"image/*","/api/t/xlsx-profile":".xlsx"};
+  "/api/t/xlsx-profile":[["format","md=下载报告（留空页面展示）"]],
+  "/api/t/pdf-text":[],"/api/t/word-text":[],"/api/t/xlsx-text":[]};
+  var FX_ACC={"/api/t/csv-clean":".csv","/api/t/img-process":"image/*","/api/t/xlsx-profile":".xlsx","/api/t/pdf-text":".pdf","/api/t/word-text":".docx","/api/t/xlsx-text":".xlsx"};
   function fxRender(){
     var box=fxel("fx-opts");if(!box)return;
     var v=fxel("fx-tool").value,sc=FX_SCHEMA[v]||[];
@@ -633,12 +634,15 @@ if(typeof ADMIN_REQ!=="undefined"&&ADMIN_REQ){fetch('/api/auth/me').then(functio
     var lib=document.querySelector(".tool-library");if(!lib)return;
     var sec=document.createElement("section");sec.id="nova-fx";sec.className="panel";
     sec.style.cssText="margin:19px 0;border:1px solid #e9eef7;border-radius:14px;padding:18px";
-    sec.innerHTML='<div class="section-head"><div><h3>传统文件工具</h3><p>文件直传后端引擎（/api/t/*）：CSV 清洗 · 图片处理 · Excel 剖析；需登录，完成记录进个人历史。</p></div></div>'
+    sec.innerHTML='<div class="section-head"><div><h3>传统文件工具</h3><p>文件直传后端引擎（/api/t/*）：CSV 清洗 · 图片处理 · Excel 剖析 · PDF/Word/Excel 文本提取；需登录，完成记录进个人历史。</p></div></div>'
       +'<div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:10px 0">'
       +'<select id="fx-tool" style="padding:9px 12px;border:1px solid #e2e8f4;border-radius:10px;background:#fff;font-size:13px;max-width:280px">'
       +'<option value="/api/t/csv-clean">CSV 清洗 · /api/t/csv-clean</option>'
       +'<option value="/api/t/img-process">图片处理 · /api/t/img-process</option>'
-      +'<option value="/api/t/xlsx-profile">Excel 剖析 · /api/t/xlsx-profile</option></select>'
+      +'<option value="/api/t/xlsx-profile">Excel 剖析 · /api/t/xlsx-profile</option>'
+      +'<option value="/api/t/pdf-text">PDF 提取文本 · /api/t/pdf-text</option>'
+      +'<option value="/api/t/word-text">Word 提取文本 · /api/t/word-text</option>'
+      +'<option value="/api/t/xlsx-text">Excel 转 CSV · /api/t/xlsx-text</option></select>'
       +'<input type="file" id="fx-file" style="padding:8px;border:1px solid #e2e8f4;border-radius:10px;font-size:12px;background:#fff"/>'
       +'<button id="fx-go" style="padding:9px 18px;border:0;border-radius:10px;background:#4f6ef7;color:#fff;cursor:pointer;font-size:13px">上传处理</button></div>'
       +'<div id="fx-opts" style="display:none;gap:9px;flex-wrap:wrap;margin:9px 0"></div>'

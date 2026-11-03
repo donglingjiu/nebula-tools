@@ -34,6 +34,7 @@ eq "dashboard演示退役棘轮" "$(grep -c '3,678,920' web/assets/app.js)" 0
 eq "dashboard真接线棘轮" "$(grep -o 'refreshOverview\|renderDashLive\|ADMIN_DASH_LIVE' web/assets/app.js | wc -l)" 10
 eq "重启契约在册" "$(grep -c '重启必须携带 NOVA_WEB_DIR' DEPLOY.md)" 1
 eq "工具数=23" "$(curl -s -b $J $B/api/tools | grep -o '"id"' | wc -l | tr -d ' ')" 23
+eq "①C三新端点计数锁" "$(grep -oE 'api/t/(pdf|word|xlsx)-text' web/assets/app.js | wc -l | tr -d ' ')" "12"
 UPC=$(curl -s -o /dev/null -w '%{http_code}' -b $J -X POST $B/api/upload/file.pdf -F f=x 2>/dev/null)
 if [ "$UPC" = "405" ]; then UPC="404"; fi
 eq "upload退役防复活" "$UPC" "404"
@@ -56,6 +57,7 @@ g "subnet /26=62台" "$(curl -s -b $J -X POST $B/api/run/dev.subnet -d '{"input"
 g "yaml→json" "$(curl -s -b $J -X POST $B/api/run/dev.yaml -d '{"input":"a: 1","opts":{}}' | python3 -c 'import sys,json;print(json.load(sys.stdin).get("output",""))')" '"a": 1'
 gx "cron 跳周末" "$(curl -s -b $J -X POST $B/api/run/dev.cron -d '{"input":"0 9 * * 1-5","opts":{}}')" 'Mon|Tue|Wed|Thu|Fri'
 A=$(curl -s $B/assets/app.js)
+g "①C三新端点在线(serve=磁盘)" "$A" 'pdf-text'
 eq "面板双join雷区" "$(printf '%s' "$A" | grep -c "join('').join('')")" 0
 eq "面板pages join" "$(printf '%s' "$A" | grep -c "join('')+nrt.map(")" 1
 eq "面板Enter兜底" "$(printf '%s' "$A" | grep -cF '||items[0];t&&t.click()')" 1
