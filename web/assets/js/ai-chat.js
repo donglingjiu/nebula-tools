@@ -1,8 +1,8 @@
-/* AI 对话 —— 接真 LLM
-   ============ 前后端契约（阶段5按此实现）============
-   POST /api/ai/chat {message, history:[{role,content} 最多20条]} -> SSE:
-     {type:"delta",text} {type:"usage",tokens_in,tokens_out} {type:"done"}
-   错误码：401 未登录 / 402 付费门 / 410 功能下线 / 429 限流（core 统一处理）
+/* AI 对话 —— v2 轨（Bearer + internal/ai）
+   ============ 前后端契约（internal/ai/api.go chat, dacda7f 起）============
+   POST /api/ai/chat {feature_key?, messages:[{role,content}]} -> SSE(透传OpenAI兼容流):
+     data: {"choices":[{"delta":{"content":增量}}]} … data: [DONE]
+   鉴权: v2 Bearer（NB.stream 自动附 authHeaders）; 错误码 401/402/410/429/503（core 统一处理）
    ==================================================== */
 (function(){
   'use strict';
@@ -45,10 +45,11 @@
     S.busy = true; $('btnSend').disabled = true;
     var acc = '';
     try {
-      await NB.stream('/api/ai/chat', { message: txt, history: S.msgs.slice(-21, -1) }, {
+      await NB.stream('/api/ai/chat', { messages: S.msgs.slice(-20) }, {
         onEvent: function(ev){
-          if(ev.type === 'delta'){ acc += ev.text || ''; b.textContent = acc; $('log').scrollTop = 1e9; }
-          else if(ev.type === 'usage'){ S.tin += ev.tokens_in || 0; S.tout += ev.tokens_out || 0; setStatus(); }
+          var c = ev.choices && ev.choices[0] && ev.choices[0].delta && ev.choices[0].delta.content;
+          if(c){ acc += c; b.textContent = acc; $('log').scrollTop = 1e9; }
+          else if(ev.usage){ S.tin += ev.usage.prompt_tokens || 0; S.tout += ev.usage.completion_tokens || 0; setStatus(); }
         },
         onError: function(e){ b.textContent = '失败：' + e.message; },
         onDone: function(){

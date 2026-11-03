@@ -44,6 +44,9 @@ fi
 TK=$(echo "$VT" | grep -o '"token":"[^"]*"' | head -1 | cut -d'"' -f4)
 eq "v2鉴权闭环(me)" "$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $TK" $B/api/v2/auth/me)" "200"
 eq "v2鉴权闭环(ai-status)" "$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $TK" $B/api/ai/status)" "200"
+eq "ai-chat页在位" "$(curl -s -o /dev/null -w '%{http_code}' $B/ai-chat.html)" "200"
+eq "chat契约锁(空messages=400)" "$(curl -s -o /dev/null -w '%{http_code}' -X POST $B/api/ai/chat -H "Authorization: Bearer $TK" -H 'Content-Type: application/json' -d '{"messages":[]}')" "400"
+eq "ai-chat.js形状锁" "$(grep -c 'messages: S.msgs' web/assets/js/ai-chat.js)" "1"
 g "chmod 754" "$(curl -s -b $J -X POST $B/api/run/dev.chmod -d '{"input":"754","opts":{}}')" 'rwxr-xr--'
 g "subnet /26=62台" "$(curl -s -b $J -X POST $B/api/run/dev.subnet -d '{"input":"192.168.1.130/26","opts":{}}')" '62 台'
 g "yaml→json" "$(curl -s -b $J -X POST $B/api/run/dev.yaml -d '{"input":"a: 1","opts":{}}' | python3 -c 'import sys,json;print(json.load(sys.stdin).get("output",""))')" '"a": 1'
