@@ -7,7 +7,8 @@ g(){ if printf '%s' "$2" | grep -qF -- "$3"; then ok "$1"; else no "$1" "未命�
 gx(){ if printf '%s' "$2" | grep -qE -- "$3"; then ok "$1"; else no "$1" "未命中 $3"; fi; }
 eq(){ if [ "$2" = "$3" ]; then ok "$1"; else no "$1" "got=[$2] want=[$3]"; fi; }
 eq "root=200" "$(curl -s -o /dev/null -w '%{http_code}' $B/)" 200
-curl -s -c $J -X POST $B/api/auth/login -d '{"username":"admin","password":"Admin123456"}' >/dev/null
+LC=$(curl -s -o /dev/null -w '%{http_code}' -c $J -X POST $B/api/auth/login -d '{"username":"admin","password":"Admin123456"}')
+[ "$LC" = "200" ] && echo '(登录探针 200)' || echo "WARN 登录=$LC 凭据漂移→认证类检查可能失真"
 eq "DB权限600" "$(stat -c '%a' "${NOVA_DB:-/home/work/fanguohui/data/nova.db}" 2>/dev/null)" 600
 eq "会话持久化在位" "$(python3 -c "import sqlite3,os;p=os.environ.get('NOVA_DB') or '/home/work/fanguohui/data/nova.db';print(sqlite3.connect(p).execute('select count(*) from schema_migrations where version=1').fetchone()[0])" 2>/dev/null)" 1
 eq "档案库SQLite化" "$(python3 -c "import sqlite3,os;p=os.environ.get('NOVA_DB') or '/home/work/fanguohui/data/nova.db';n=sqlite3.connect(p).execute('select count(*) from profiles').fetchone()[0];j=not os.path.exists('/home/work/fanguohui/data/llm_profiles.json');print(1 if n>0 and j else 0)" 2>/dev/null)" 1

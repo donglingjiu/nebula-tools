@@ -615,11 +615,11 @@ func newRouter(db *DB) http.Handler {
 	registerToolkit(mux, db)
 	// ---------- 静态资源（embed 进二进制，部署只需一个可执行文件） ----------
 	sub, _ := fs.Sub(webFS, "web")
-	fileServer := http.FileServer(http.FS(sub))
+	fileServer := noCacheHandler(http.FileServer(http.FS(sub)))
 	if d := os.Getenv("NOVA_WEB_DIR"); d != "" {
 		if _, err := os.Stat(d + "/assets/app.js"); err == nil {
 			log.Printf("静态资源磁盘优先: %s", d)
-			fileServer = http.FileServer(http.Dir(d))
+			fileServer = noCacheHandler(http.FileServer(http.Dir(d)))
 		}
 	}
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -633,4 +633,11 @@ func newRouter(db *DB) http.Handler {
 	})
 
 	return s.logMW(mux)
+}
+
+func noCacheHandler(next http.Handler) http.Handler {
+return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+w.Header().Set("Cache-Control", "no-cache")
+next.ServeHTTP(w, r)
+})
 }

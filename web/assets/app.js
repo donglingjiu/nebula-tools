@@ -607,7 +607,7 @@ function badges(){
     }).catch(function(){});
   }
   function boot(){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init)}else{init()}}
-if(ADMIN_REQ){fetch('/api/auth/me').then(function(r){return r.ok?r.json():null}).then(function(j){if(j&&j.role==='admin'){document.body.dataset.admin='true';IS_ADMIN=true;ME_CACHE=j;currentID=computeCurrentID();if(document.body.dataset.adminPage==='users'){refreshUsers();refreshDoor()}if(document.body.dataset.adminPage==='index'){refreshOverview()}boot()}else{location.href='../login.html'}}).catch(function(){location.href='../login.html'})}else{boot()}
+if(typeof ADMIN_REQ!=="undefined"&&ADMIN_REQ){fetch('/api/auth/me').then(function(r){return r.ok?r.json():null}).then(function(j){if(j&&j.role==='admin'){document.body.dataset.admin='true';IS_ADMIN=true;ME_CACHE=j;currentID=computeCurrentID();if(document.body.dataset.adminPage==='users'){refreshUsers();refreshDoor()}if(document.body.dataset.adminPage==='index'){refreshOverview()}boot()}else{location.href='../login.html'}}).catch(function(){location.href='../login.html'})}else{boot()}
 })();
 
 /* stage7-3 ①C 接线: 传统文件工具区(/api/t/*) CSV清洗·图片处理·Excel剖析 — 需登录, 与试炼场并列, 自包含不依赖workspace作用域 */
