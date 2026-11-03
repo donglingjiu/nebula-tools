@@ -18,6 +18,11 @@
 
 12. **壳变量≠环境变量**：`NT=$(cat ...)` 只进 shell，python os.environ 拿不到（KeyError 实测）——跨进程传参用 export 或硬编码路径
 13. **终验必须验远端态**：本地 log grep 只证明 commit 存在不证明 push 成功（product-expert-team 直推被拒后本地终验仍✓=假阳性）——远端确认以 push 成功输出或 git ls-remote 为准
+14. **计数守卫只保数量不保内容**——他源工作区存在时 git add 前须逐文件审 diff；对称行数指纹≠零功能变化（gofmt批内藏verify.sh棘轮改动, [证56]先证后add才免盲收）
+15. **||链失败语义笼统**——commit落袋仅push断链会被误报"拦截"(8944a53实例)；守卫链尾先echo"落袋hash"再push, 落袋/断链可分辨
+16. **门红即停是资产**——verify.sh 1 FAIL拦截逼出"超前棘轮"(期望15/110 vs 磁盘13)；棘轮锁现状不锁愿景；8080契约重启后新资产口径116自然转绿
+17. **外部契约先探后用**——认证端点(/api/auth/login非/api/login)、magic字节数(od须取三字节)、multipart字段名(files/opts)——M2 404→E4' 401→E4''绿, 三次学费
+18. **多行批落脚本文件再执行**——粘贴进交互shell, exit踢登录会话、引号嵌套被粘贴破坏(断线案)；cat>file<<'EOF'再bash之, exit只退脚本/内容不被解释/失败可回看
 ## 反模式记录
 - 守卫判据写 `nova-fx>=5` 但 patch 内实仅 1 次 → 判据设计期必须 grep 实数
 - 假设"生成型工具零输入可跑" → totp 密钥必需；用例输入按契约（NR_SCHEMA）填，不按直觉省略
