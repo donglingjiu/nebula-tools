@@ -13,6 +13,7 @@ import (
 	"net/http/cookiejar"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -33,6 +34,13 @@ func start(t *testing.T) *TC {
 		t.Fatal(err)
 	}
 	_ = os.Symlink(cwd+"/web", tmp+"/web")
+	d, derr := openDBAt(filepath.Join(tmp, "nova.db"))
+	if derr != nil {
+		t.Fatal(derr)
+	}
+	savedDB := novaDB
+	novaDB = d
+	t.Cleanup(func() { novaDB = savedDB; d.Close() })
 	ts := httptest.NewServer(newRouter(Load()))
 	t.Cleanup(func() { ts.Close() })
 	jar, _ := cookiejar.New(nil)

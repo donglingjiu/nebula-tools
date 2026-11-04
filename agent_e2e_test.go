@@ -4,21 +4,12 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"path/filepath"
 	"strings"
 	"testing"
 )
 
 func TestAgentRunE2E(t *testing.T) {
 	tc := start(t)
-
-	d, err := openDBAt(filepath.Join(t.TempDir(), "nova.db"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	savedDB := novaDB
-	novaDB = d
-	t.Cleanup(func() { novaDB = savedDB; d.Close() })
 
 	mockCalls := 0
 	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

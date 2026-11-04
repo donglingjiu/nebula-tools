@@ -1,0 +1,8 @@
+{"id":"t01","input":"帮我把这段 JSON 格式化缩进两空格: {\"b\":2,\"a\":1}","expectTool":"dev.json"}
+{"id":"t02","input":"把这份 JSON 数据转成 CSV 表格","expectTool":"data.json2csv"}
+{"id":"t03","input":"把这份 CSV 数据转成 JSON","expectTool":"data.csv2json"}
+{"id":"t04","input":"计算 hello 的 MD5 哈希值","expectTool":"dev.hash"}
+{"id":"t05","input":"统计这段文本一共有多少行","expectTool":"dev.count"}
+{"id":"t06","input":"比较 file1.txt 与 file2.txt 两个文件的差异","expectTool":"dev.diff"}
+{"id":"t07","input":"把 hello world 转成全大写字母","expectTool":"dev.case"}
+{"id":"t08","input":"对 a=1&b=2 做百分号 URL 编码","expectTool":"dev.encode"}

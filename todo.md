@@ -307,7 +307,7 @@
 
 ## N1 P0 Agent Harness
 
-> N1.7（新增）: start(t) 统一装配 novaDB——sqlite 域并入 e2e 标准基建, conversations 系 e2e 覆盖顺带补齐（/api/agent/run）
+> N1.7 ✅(@N7): start(t) 统一装配 novaDB——sqlite 域并入 e2e 标准基建, conversations 系 e2e 覆盖顺带补齐（/api/agent/run）
 
 > 金标口径 @N4e：nova.json 为 8080 活体 DB，已剔出金标集合（运行态非不变量）。
 - [x] N1.1 agent.go：loop = llmCallU <-> runTool；system 注入 ToolRegistry 清单(Id/Name/Desc/输入格式)；模型输出 JSON tool-call；上限 maxRounds(默认4)
@@ -318,6 +318,8 @@
 - [ ] N1.6 前端接真 run（宿主待Q5定位；演示回退保留为无key降级）
 
 ## N2 P1 评测框架（/api/eval/run）
+
+> N2.1 tasks.jsonl 任务集8条已落地仓根(@N7), N7b eval.go go:embed 消费
 - [ ] N2.1 data/tasks.jsonl 任务集 8+ 条（输入+期望tool+期望输出片段）
 - [ ] N2.2 eval.go：批量 agent run -> tool-match 评分 -> 报表 JSON
 - [ ] N2.3 e2e + 棘轮 + eval 报表页
