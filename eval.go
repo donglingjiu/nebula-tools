@@ -4,6 +4,8 @@ import (
 	"embed"
 	"encoding/json"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -47,6 +49,43 @@ func evalLoadTasks() []evalTask {
 		}
 	}
 	return out
+}
+
+// evalHistory — 跑批快照历史(上限50轮), 持久副作用可见
+func evalHistoryPath(db *DB) string {
+	return filepath.Join(filepath.Dir(db.path), "eval-history.json")
+}
+
+func evalHistoryLoad(db *DB) []map[string]any {
+	b, err := os.ReadFile(evalHistoryPath(db))
+	if err != nil {
+		return nil
+	}
+	var h []map[string]any
+	if json.Unmarshal(b, &h) != nil {
+		return nil
+	}
+	return h
+}
+
+func evalHistoryAppend(db *DB, res map[string]any) {
+	snap := map[string]any{
+		"ts":        time.Now().Format("2006-01-02 15:04:05"),
+		"total":     res["total"],
+		"toolMatch": res["toolMatch"],
+		"pct":       res["pct"],
+		"ms":        res["ms"],
+	}
+	h := append(evalHistoryLoad(db), snap)
+	if len(h) > 50 {
+		h = h[len(h)-50:]
+	}
+	b, err := json.MarshalIndent(h, "", "  ")
+	if err != nil {
+		return
+	}
+	_ = os.MkdirAll(filepath.Dir(evalHistoryPath(db)), 0755)
+	_ = os.WriteFile(evalHistoryPath(db), b, 0644)
 }
 
 func evalRunAll(db *DB, client *http.Client, p LLMProfile) map[string]any {
@@ -113,6 +152,11 @@ func registerEvalRoutes(mux *http.ServeMux, s *srv, db *DB) {
 			return
 		}
 		client := &http.Client{Timeout: 90 * time.Second}
-		J(w, evalRunAll(db, client, cands[0]))
+		res := evalRunAll(db, client, cands[0])
+		evalHistoryAppend(db, res)
+		J(w, res)
+	}))
+	mux.HandleFunc("GET /api/agent/eval/history", s.admin(func(w http.ResponseWriter, r *http.Request) {
+		J(w, map[string]any{"ok": true, "history": evalHistoryLoad(db)})
 	}))
 }
