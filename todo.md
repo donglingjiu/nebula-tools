@@ -303,15 +303,17 @@
 - [x] N0.1 todo.md N系分节落库（本批）
 - [x] N0.2 dev.sh check stTime 哨兵退役（ai-studio.js @1fdb176 重写已删 stTime，哨兵失配常红）
 - [x] N0.3 gofmt 既有漂移归一（main.go / tools.go，PF103门1记档）
-- [ ] N0.4 admin 口径统一（alert_e2e_test 用 admin/admin123，verify 用 Admin123456，续7雷）
+- [x] N0.4 admin 口径统一（定性: alert_e2e=start(t)隔离域自建admin/admin123, verify=生产域种子Admin123456, 两域两口径非缺陷, 不改）（alert_e2e_test 用 admin/admin123，verify 用 Admin123456，续7雷）
 
-## N1 P0 Agent Harness（/api/agent/run）
+## N1 P0 Agent Harness
+
+> N1.7（新增）: start(t) 统一装配 novaDB——sqlite 域并入 e2e 标准基建, conversations 系 e2e 覆盖顺带补齐（/api/agent/run）
 
 > 金标口径 @N4e：nova.json 为 8080 活体 DB，已剔出金标集合（运行态非不变量）。
 - [x] N1.1 agent.go：loop = llmCallU <-> runTool；system 注入 ToolRegistry 清单(Id/Name/Desc/输入格式)；模型输出 JSON tool-call；上限 maxRounds(默认4)
 - [x] N1.2 轨迹落盘 dbConvCreate + dbMsgAppend（每轮 role/content + tokens/ms）
 - [x] N1.3 接线 main.go:124 registerAgentRoutes(mux, s)
-- [ ] N1.4 e2e TestAgentRunE2E：注册->run->断言 轮次>=1 + 至少1次真实工具调用 + conv 落库
+- [x] N1.4 e2e TestAgentRunE2E（openDBAt装配sqlite+mock双态: mockCalls>=2+calls[0].tool=dev.json+ok=true+convId>0+rounds>=2）：注册->run->断言 轮次>=1 + 至少1次真实工具调用 + conv 落库
 - [x] N1.5 verify 棘轮 +agent 端点项（401在线探针@8080换血）
 - [ ] N1.6 前端接真 run（宿主待Q5定位；演示回退保留为无key降级）
 
