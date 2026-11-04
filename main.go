@@ -124,6 +124,7 @@ func newRouter(db *DB) http.Handler {
 	registerLLMRoutes(mux, s)
 	registerConvRoutes(mux, s)
 	registerAgentRoutes(mux, s, db)
+	registerEvalRoutes(mux, s, db)
 	dataDir := os.Getenv("NOVA_DATA_DIR")
 	if dataDir == "" {
 		dataDir = "data"

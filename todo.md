@@ -319,7 +319,7 @@
 
 ## N2 P1 评测框架（/api/eval/run）
 
-> N2.1 tasks.jsonl 任务集8条已落地仓根(@N7), N7b eval.go go:embed 消费
+> N2.1 ✅(@N7e): tasks.jsonl+eval.go go:embed+POST /api/agent/eval+TestAgentEvalE2E(toolMatch=8/8)
 - [ ] N2.1 data/tasks.jsonl 任务集 8+ 条（输入+期望tool+期望输出片段）
 - [ ] N2.2 eval.go：批量 agent run -> tool-match 评分 -> 报表 JSON
 - [ ] N2.3 e2e + 棘轮 + eval 报表页

@@ -76,6 +76,59 @@ func agentExec(db *DB, tool, input string, opts map[string]string) (string, bool
 	return out, true, ms
 }
 
+// agentRunOnce 抽取自 /api/agent/run 循环核: 单profile完整跑一轮agent
+// convID>0 落轨迹, eval传0纯跑. 返回 answer/calls/rounds/tokens/ms/err
+func agentRunOnce(db *DB, client *http.Client, p LLMProfile, input string, maxRounds, maxTokens int, convID int64) (string, []agentCall, int, int64, int64, error) {
+	msgs := []map[string]string{
+		{"role": "system", "content": agentToolPrompt()},
+		{"role": "user", "content": input},
+	}
+	var calls []agentCall
+	answer, es := "", ""
+	rounds := 0
+	var tokTotal int64
+	t0 := time.Now()
+	for rd := 0; rd < maxRounds; rd++ {
+		content, tok, _, err := llmCallU(client, p, msgs, maxTokens)
+		if err != nil {
+			es = err.Error()
+			break
+		}
+		rounds++
+		tokTotal += tok
+		tool, input2, opts, isCall := agentParseToolCall(content)
+		if !isCall {
+			answer = content
+			break
+		}
+		msgs = append(msgs, map[string]string{"role": "assistant", "content": content})
+		out, okc, ms2 := agentExec(db, tool, input2, opts)
+		calls = append(calls, agentCall{Tool: tool, Input: llmTrunc(input2, 500), Output: llmTrunc(out, 4000), OK: okc, MS: ms2})
+		if convID > 0 {
+			tag := "fail"
+			if okc {
+				tag = "ok"
+			}
+			_, _ = dbMsgAppend(convID, "assistant", fmt.Sprintf("[tool] %s %s (%dms)\n%s", tool, tag, ms2, llmTrunc(out, 2000)))
+		}
+		msgs = append(msgs, map[string]string{"role": "user", "content": "工具结果: " + llmTrunc(out, 8000)})
+	}
+	ms := time.Since(t0).Milliseconds()
+	if rounds == 0 {
+		return "", calls, 0, 0, ms, fmt.Errorf("%s", llmTrunc(es, 200))
+	}
+	if answer == "" {
+		if convID > 0 {
+			_, _ = dbMsgAppend(convID, "assistant", fmt.Sprintf("轮次耗尽(%d轮,%d次工具调用)", rounds, len(calls)))
+		}
+		return "", calls, rounds, tokTotal, ms, fmt.Errorf("maxRounds 耗尽")
+	}
+	if convID > 0 {
+		_, _ = dbMsgAppendP(convID, "assistant", answer, p.Name, tokTotal)
+	}
+	return answer, calls, rounds, tokTotal, ms, nil
+}
+
 func registerAgentRoutes(mux *http.ServeMux, s *srv, db *DB) {
 	st := newLLMStore()
 	client := &http.Client{Timeout: 90 * time.Second}
@@ -124,56 +177,16 @@ func registerAgentRoutes(mux *http.ServeMux, s *srv, db *DB) {
 		}
 		var errs []string
 		for _, p := range cands {
-			msgs := []map[string]string{
-				{"role": "system", "content": agentToolPrompt()},
-				{"role": "user", "content": in.Input},
-			}
-			var calls []agentCall
-			answer, es := "", ""
-			rounds, nCalls := 0, 0
-			var tokTotal int64
-			t0 := time.Now()
-			for rd := 0; rd < in.MaxRounds; rd++ {
-				content, tok, _, err := llmCallU(client, p, msgs, in.MaxTokens)
-				if err != nil {
-					es = err.Error()
-					break
+			answer, calls, rounds, tokTotal, ms, aerr := agentRunOnce(db, client, p, in.Input, in.MaxRounds, in.MaxTokens, convID)
+			if aerr != nil {
+				if rounds == 0 {
+					errs = append(errs, p.Name+": "+llmTrunc(aerr.Error(), 120))
+					continue
 				}
-				rounds++
-				tokTotal += tok
-				tool, input, opts, isCall := agentParseToolCall(content)
-				if !isCall {
-					answer = content
-					break
-				}
-				msgs = append(msgs, map[string]string{"role": "assistant", "content": content})
-				out, okc, ms2 := agentExec(db, tool, input, opts)
-				nCalls++
-				calls = append(calls, agentCall{Tool: tool, Input: llmTrunc(input, 500), Output: llmTrunc(out, 4000), OK: okc, MS: ms2})
-				if convID > 0 {
-					tag := "fail"
-					if okc {
-						tag = "ok"
-					}
-					_, _ = dbMsgAppend(convID, "assistant", fmt.Sprintf("[tool] %s %s (%dms)\n%s", tool, tag, ms2, llmTrunc(out, 2000)))
-				}
-				msgs = append(msgs, map[string]string{"role": "user", "content": "工具结果: " + llmTrunc(out, 8000)})
-			}
-			if rounds == 0 {
-				errs = append(errs, p.Name+": "+llmTrunc(es, 120))
-				continue
-			}
-			if answer == "" {
-				if convID > 0 {
-					_, _ = dbMsgAppend(convID, "assistant", fmt.Sprintf("轮次耗尽(%d轮,%d次工具调用)", rounds, nCalls))
-				}
-				J(w, map[string]any{"ok": false, "error": "maxRounds 耗尽", "conversationId": convID, "rounds": rounds, "calls": calls, "profile": p.Name})
+				J(w, map[string]any{"ok": false, "error": aerr.Error(), "conversationId": convID, "rounds": rounds, "calls": calls, "profile": p.Name})
 				return
 			}
-			if convID > 0 {
-				_, _ = dbMsgAppendP(convID, "assistant", answer, p.Name, tokTotal)
-			}
-			J(w, map[string]any{"ok": true, "conversationId": convID, "rounds": rounds, "calls": calls, "answer": answer, "profile": p.Name, "tokens": tokTotal, "ms": time.Since(t0).Milliseconds()})
+			J(w, map[string]any{"ok": true, "conversationId": convID, "rounds": rounds, "calls": calls, "answer": answer, "profile": p.Name, "tokens": tokTotal, "ms": ms})
 			return
 		}
 		E(w, 502, strings.Join(errs, " | "))
