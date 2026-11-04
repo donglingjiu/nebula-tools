@@ -588,13 +588,46 @@ func newRouter(db *DB) http.Handler {
 		for i := len(db.AICalls) - 1; i >= len(db.AICalls)-n; i-- {
 			recent = append(recent, db.AICalls[i])
 		}
+		// 层2: 工具/错误/活跃聚合
+		var toolMs int64
+		toolN, logN, err4xx := 0, 0, 0
+		users := map[string]bool{}
+		for _, h := range db.History {
+			if h.At.Format("2006-01-02") == today {
+				toolN++
+				toolMs += h.Ms
+				if h.User != "" {
+					users[h.User] = true
+				}
+			}
+		}
+		for _, l := range db.Logs {
+			if l.At.Format("2006-01-02") == today {
+				logN++
+				if l.Status >= 400 {
+					err4xx++
+				}
+			}
+		}
+		for _, c := range db.AICalls {
+			if c.At.Format("2006-01-02") == today && c.User != "" {
+				users[c.User] = true
+			}
+		}
 		db.mu.Unlock()
 		rate, avg := 100, int64(0)
 		if calls > 0 {
 			rate = okN * 100 / calls
 			avg = msSum / int64(calls)
 		}
-		J(w, map[string]any{"today": map[string]any{"tokens": toks, "calls": calls, "success_rate": rate, "avg_ms": avg}, "recent": recent})
+		toolAvg, errRate := int64(0), 0
+		if toolN > 0 {
+			toolAvg = toolMs / int64(toolN)
+		}
+		if logN > 0 {
+			errRate = err4xx * 100 / logN
+		}
+		J(w, map[string]any{"today": map[string]any{"tokens": toks, "calls": calls, "success_rate": rate, "avg_ms": avg, "tool_calls": toolN, "tool_avg_ms": toolAvg, "error_rate": errRate, "active_users": len(users)}, "recent": recent})
 	}))
 	mux.HandleFunc("GET /api/admin/logs", s.admin(func(w http.ResponseWriter, r *http.Request) {
 		J(w, db.LogsLast(200))

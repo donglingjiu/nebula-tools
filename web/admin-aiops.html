@@ -60,6 +60,9 @@
         <div class="nb-metric"><b id="m_calls">–</b><span>调用次数</span></div>
         <div class="nb-metric"><b id="m_rate">–</b><span>成功率</span></div>
         <div class="nb-metric"><b id="m_ms">–</b><span>平均延迟</span></div>
+        <div class="nb-metric"><b id="m_tools">–</b><span>工具调用</span></div>
+        <div class="nb-metric"><b id="m_err">–</b><span>请求错误率</span></div>
+        <div class="nb-metric"><b id="m_active">–</b><span>活跃用户</span></div>
       </div>
     </div>
     <div class="nb-card">
@@ -92,6 +95,9 @@
       $('m_calls').textContent = NB.fmtNum(r.today.calls);
       $('m_rate').textContent = r.today.success_rate + '%';
       $('m_ms').textContent = r.today.avg_ms + 'ms';
+      $('m_tools').textContent = NB.fmtNum(r.today.tool_calls);
+      $('m_err').textContent = r.today.error_rate + '%';
+      $('m_active').textContent = NB.fmtNum(r.today.active_users);
       var tb = $('rows'); tb.innerHTML = '';
       (r.recent || []).forEach(function(x){
         var tr = document.createElement('tr');

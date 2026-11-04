@@ -10,7 +10,7 @@
 - [ ] 功能池最小开关机制（AI 模块上下线）
 ## R2 · 功能池运营 + 监控报警
 - [x] T-05 报警渠道：邮件 / Webhook / 钉钉 / 飞书 （alerts.go加notifySend四渠道+alertFanout+test端点+verify三棘轮@N11c/e 全闭环）
-- [x] T-06 用户行为分析 + 功能池全量运营看板（QPS/延迟/错误率/工具调用成败/token/活跃） （AI侧接真@N12g/h: AICall落盘50环形+llmproxy双路径+stats聚合端点+前端双fetch; 工具侧/活跃@后）
+- [x] T-06 用户行为分析 + 功能池全量运营看板（QPS/延迟/错误率/工具调用成败/token/活跃） （AI侧接真@N12g/h: AICall落盘50环形+llmproxy双路径+stats聚合端点+前端双fetch; 工具侧/活跃@N12k: stats端点四键扩展+7卡看板）
 - [ ] 功能灰度：按用户百分比放量
 ## R3 · 工具轻量扩展
 - [ ] 文档：在线查看 + 格式转换 + 合并拆分
