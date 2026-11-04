@@ -315,7 +315,7 @@
 - [x] N1.3 接线 main.go:124 registerAgentRoutes(mux, s)
 - [x] N1.4 e2e TestAgentRunE2E（openDBAt装配sqlite+mock双态: mockCalls>=2+calls[0].tool=dev.json+ok=true+convId>0+rounds>=2）：注册->run->断言 轮次>=1 + 至少1次真实工具调用 + conv 落库
 - [x] N1.5 verify 棘轮 +agent 端点项（401在线探针@8080换血）
-- [ ] N1.6 前端接真 run（宿主待Q5定位；演示回退保留为无key降级）
+- [x] N1.6 前端接真 run（宿主待Q5定位；演示回退保留为无key降级） （agent.html壳复刻+agent.js cookie轨+nav AI组+vhash bump+8080重嵌入@N9d）
 
 ## N2 P1 评测框架（/api/eval/run）
 

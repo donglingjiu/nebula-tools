@@ -24,6 +24,7 @@ eq "app页普查棘轮" "$(grep -l 'id="app"' web/*.html | wc -l)" 13
 eq "fx接线棘轮" "$(grep -oE 'pdf-(compress|split|encrypt)' web/assets/app.js | wc -l)" 7
 eq "agent端点在线" "$(curl -s -o /dev/null -w '%{http_code}' -X POST $B/api/agent/run)" 401
 eq "eval端点在线" "$(curl -s -o /dev/null -w '%{http_code}' -X POST $B/api/agent/eval)" 401
+eq "agent页在线" "$(curl -s -o /dev/null -w '%{http_code}' $B/agent.html)" 200
 eq "eval任务集8条" "$(wc -l < tasks.jsonl | tr -d ' ')" 8
 eq "admin旗硬编码棘轮" "$(grep -l 'data-admin="true"' web/admin/*.html 2>/dev/null | wc -l)" 0
 eq "adminReq旗棘轮" "$(grep -l 'data-admin-req="true"' web/admin/*.html 2>/dev/null | wc -l)" 10
