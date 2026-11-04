@@ -50,6 +50,13 @@
         <div class="nb-metric"><b id="m_ms">–</b><span>总耗时</span></div>
       </div>
     </div>
+    <div class="nb-card" style="margin-bottom:14px">
+      <div class="nb-run-bar">
+        <h3 style="margin:0;font-size:15px;flex:1">历史趋势</h3>
+        <select class="nb-input" id="selHist" style="max-width:220px"><option value="">加载中…</option></select>
+      </div>
+      <p class="nb-sub" id="stHist">–</p>
+    </div>
     <div class="nb-card">
       <h3 style="margin:0 0 10px;font-size:15px">任务明细</h3>
       <table class="nb-table" style="width:100%">
@@ -65,7 +72,7 @@
 /* 契约: eval 端点(s.admin) -> evalRunAll 汇总 map; 逐任务字段见 eval.go json tag */
 (function(){
   var NB = window.NB, $ = function(id){ return document.getElementById(id); };
-  var busy = false;
+  var busy = false; var S = { lastPct: null };
   $('btnRun').onclick = function(){
     if(busy) return;
     busy = true; $('btnRun').disabled = true;
@@ -82,7 +89,7 @@
       $('m_pct').textContent = total ? (match/total*100).toFixed(1) + '%' : '–';
       $('m_tok').textContent = NB.fmtNum(x.tokens || 0);
       $('m_ms').textContent = (x.ms || 0) + 'ms';
-      $('stRun').textContent = '完成 · 档案 ' + (x.profileId || '–') + ' · ' + new Date().toLocaleTimeString();
+      $('stRun').textContent = '完成 · 档案 ' + (x.profileId || '–') + (S.lastPct !== null ? ' · Δ' + (x.pct >= S.lastPct ? '+' : '') + (x.pct - S.lastPct) + '% vs 上轮' : '') + ' · ' + new Date().toLocaleTimeString();
       var tb = $('rows'); tb.innerHTML = '';
       if(!rs.length){ tb.innerHTML = '<tr><td colspan="8" style="color:var(--text-sub)">无结果返回</td></tr>'; return; }
       rs.forEach(function(r){
@@ -99,12 +106,31 @@
       });
     }).catch(function(e){
       $('stRun').textContent = '失败：' + ((e && e.message) || e);
-    }).then(function(){ busy = false; $('btnRun').disabled = false; });
+    }).then(function(){ loadHist(); busy = false; $('btnRun').disabled = false; });
   };
+  function loadHist(){
+    NB.api('/api/agent/eval/history').then(function(x){
+      var h = x.history || [], sel = $('selHist'), st = $('stHist');
+      if(!h.length){
+        sel.innerHTML = '<option value="">暂无历史（跑一轮后生成）</option>';
+        st.textContent = '首次跑批后，这里会显示 pct 趋势';
+        S.lastPct = null; return;
+      }
+      sel.innerHTML = '';
+      for(var k = h.length - 1; k >= 0; k--){
+        var o = document.createElement('option');
+        o.value = String(k); o.textContent = h[k].ts + ' · ' + h[k].pct + '%';
+        sel.appendChild(o);
+      }
+      S.lastPct = h[h.length - 1].pct;
+      st.textContent = '共 ' + h.length + ' 轮 · 最近: ' + h[h.length - 1].ts + ' · pct ' + S.lastPct + '%';
+    }).catch(function(e){ $('stHist').textContent = '历史加载失败: ' + ((e && e.message) || e); });
+  }
   NB.adminNav();
   NB.adminGate(function(){
     $('btnRun').disabled = false;
     $('stRun').textContent = '就绪 · 单轮约 1-2 分钟 · 消耗真实 token';
+    loadHist();
   });
   NB.bindUserChip($('userChip'));
 })();
