@@ -80,7 +80,6 @@ func runTool(id, in string, opts map[string]string) (string, error) {
 	return "", fmt.Errorf("未知工具: %s", id)
 }
 
-
 /* ---------------- 文本工具 ---------------- */
 
 func toolJSON(in string, opts map[string]string) (string, error) {
@@ -690,5 +689,3 @@ func toolWord(b []byte) (string, error) {
 	}
 	return strings.Join(lines, "\n"), nil
 }
-
-

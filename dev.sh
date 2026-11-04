@@ -44,16 +44,6 @@ ok = True
 for f in files:
     p = pathlib.Path(f)
     b = p.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
-    if f.endswith("ai-studio.js"):
-        lines = b.split(b"\n")
-        for i, ln in enumerate(lines):
-            if b"stTime" in ln:
-                j = i + 1
-                if j < len(lines) and lines[j].strip() != b"}":
-                    print("autofix line", j + 1, "-> '  }'")
-                    lines[j] = b"  }"
-                    b = b"\n".join(lines)
-                break
     p.write_bytes(b)
     try:
         b.decode("utf-8"); u = "OK"
@@ -62,15 +52,6 @@ for f in files:
     mo = (b"\xef\xbf\xbd" in b) or (b"\xc3\xaf\xc2\xbf\xc2\xbd" in b)
     if mo: ok = False
     print(f, "utf8:" + u, "mojibake:" + ("YES" if mo else "no"))
-s = pathlib.Path("web/assets/js/ai-studio.js").read_text(encoding="utf-8")
-ls = s.splitlines()
-idx = next((i for i, l in enumerate(ls) if "stTime" in l), -1)
-if idx < 0:
-    ok = False; print("sentinel stTime: MISSING")
-else:
-    nxt = ls[idx + 1]
-    print("sentinel stTime.next:", repr(nxt))
-    if nxt.strip() != "}": ok = False
 h = pathlib.Path("web/ai-studio.html").read_text(encoding="utf-8")
 if '/ai-chat.html">AI' not in h:
     ok = False; print("sentinel nav: FAIL")

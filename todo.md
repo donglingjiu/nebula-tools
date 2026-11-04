@@ -290,3 +290,42 @@
 
 ## 过程规约（续35·终）
 - 收官清理三判据：跟踪态定删除方式、进程占用定保留边界、ignore覆盖定补口需求——物理删除仅对"未跟踪+价值已收割+无进程依赖"三者同时成立的文件
+
+
+---
+
+# N 系 TODO（JD 对位：Agent Harness / 评测 / 数据生产 / 分布式叙事）
+
+## 存档（已落袋）
+- [x] PF101-105 pdf-encrypt 全链 @aafab63（handler+加密卡+e2e+棘轮7+vhash+8080换血+线上401探针）
+
+## N0 卫生批（先行，不碰功能）
+- [x] N0.1 todo.md N系分节落库（本批）
+- [x] N0.2 dev.sh check stTime 哨兵退役（ai-studio.js @1fdb176 重写已删 stTime，哨兵失配常红）
+- [x] N0.3 gofmt 既有漂移归一（main.go / tools.go，PF103门1记档）
+- [ ] N0.4 admin 口径统一（alert_e2e_test 用 admin/admin123，verify 用 Admin123456，续7雷）
+
+## N1 P0 Agent Harness（/api/agent/run）
+
+> 金标口径 @N4e：nova.json 为 8080 活体 DB，已剔出金标集合（运行态非不变量）。
+- [x] N1.1 agent.go：loop = llmCallU <-> runTool；system 注入 ToolRegistry 清单(Id/Name/Desc/输入格式)；模型输出 JSON tool-call；上限 maxRounds(默认4)
+- [x] N1.2 轨迹落盘 dbConvCreate + dbMsgAppend（每轮 role/content + tokens/ms）
+- [x] N1.3 接线 main.go:124 registerAgentRoutes(mux, s)
+- [ ] N1.4 e2e TestAgentRunE2E：注册->run->断言 轮次>=1 + 至少1次真实工具调用 + conv 落库
+- [ ] N1.5 verify 棘轮 +agent 端点项
+- [ ] N1.6 前端接真 run（宿主待Q5定位；演示回退保留为无key降级）
+
+## N2 P1 评测框架（/api/eval/run）
+- [ ] N2.1 data/tasks.jsonl 任务集 8+ 条（输入+期望tool+期望输出片段）
+- [ ] N2.2 eval.go：批量 agent run -> tool-match 评分 -> 报表 JSON
+- [ ] N2.3 e2e + 棘轮 + eval 报表页
+
+## N3 P1 数据生产与清洗
+- [ ] N3.1 data.jsonlvalid（chatml结构校验）/ data.dedup（精确+近似）/ data.qc（长度/FFFD质检）三工具
+- [ ] N3.2 ToolRegistry 注册 + tools_test 三锁（happy/边缘/拒绝）
+- [ ] N3.3 verify 棘轮
+
+## N4 P2 分布式叙事
+- [ ] N4.1 job 表 + Idempotency-Key 幂等键
+- [ ] N4.2 docs/ADR-001 单机->分布式三步
+- [ ] N4.3 e2e 同 key 双发断言单执行

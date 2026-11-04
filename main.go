@@ -123,6 +123,7 @@ func newRouter(db *DB) http.Handler {
 	mux := http.NewServeMux()
 	registerLLMRoutes(mux, s)
 	registerConvRoutes(mux, s)
+	registerAgentRoutes(mux, s, db)
 	dataDir := os.Getenv("NOVA_DATA_DIR")
 	if dataDir == "" {
 		dataDir = "data"
@@ -282,7 +283,7 @@ func newRouter(db *DB) http.Handler {
 		}
 		J(w, map[string]any{"ok": true, "output": out, "ms": ms})
 	})
-		mux.HandleFunc("GET /api/history", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /api/history", func(w http.ResponseWriter, r *http.Request) {
 		u := s.user(r)
 		if u == nil {
 			E(w, 401, "未登录")
@@ -596,8 +597,8 @@ func newRouter(db *DB) http.Handler {
 }
 
 func noCacheHandler(next http.Handler) http.Handler {
-return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-w.Header().Set("Cache-Control", "no-cache")
-next.ServeHTTP(w, r)
-})
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-cache")
+		next.ServeHTTP(w, r)
+	})
 }
