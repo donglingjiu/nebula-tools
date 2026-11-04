@@ -312,7 +312,7 @@
 - [x] N1.2 轨迹落盘 dbConvCreate + dbMsgAppend（每轮 role/content + tokens/ms）
 - [x] N1.3 接线 main.go:124 registerAgentRoutes(mux, s)
 - [ ] N1.4 e2e TestAgentRunE2E：注册->run->断言 轮次>=1 + 至少1次真实工具调用 + conv 落库
-- [ ] N1.5 verify 棘轮 +agent 端点项
+- [x] N1.5 verify 棘轮 +agent 端点项（401在线探针@8080换血）
 - [ ] N1.6 前端接真 run（宿主待Q5定位；演示回退保留为无key降级）
 
 ## N2 P1 评测框架（/api/eval/run）
