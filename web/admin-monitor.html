@@ -6,6 +6,13 @@
 <title>监控报警 · 后台</title>
 <link rel="stylesheet" href="/assets/css/tokens.css?v=55919b84">
 <link rel="stylesheet" href="/assets/css/admin.css?v=1c287817">
+<style>
+.nb-ch-rows { display:grid; gap:14px; }
+.nb-ch b { font-size:14px; display:block; }
+.nb-ch small { color:var(--text-sub); font-size:12px; display:block; margin:2px 0 6px; }
+.nb-ch-ctl { display:flex; gap:8px; }
+.nb-ch-ctl .nb-input { flex:1; }
+</style>
 </head>
 <body class="nb-skin">
 <header class="nb-header">
@@ -27,18 +34,89 @@
   </aside>
   <main class="nb-main">
     <h2>监控报警</h2>
-    <p class="sub">R2 接真。</p>
+    <p class="sub" id="tip">配置报警渠道——工具调用失败时 fanout 到所有已配置渠道（Webhook/钉钉/飞书真实推送，邮件当前占位打日志）。</p>
+        <div class="nb-card" style="margin-bottom:14px">
+      <h3 style="margin:0 0 12px;font-size:15px">报警渠道</h3>
+      <div class="nb-ch-rows">
+        <div class="nb-ch">
+          <b>Webhook（通用）</b>
+          <small>POST 结构化 JSON：event/tool/user/error/time</small>
+          <div class="nb-ch-ctl">
+            <input class="nb-input" id="in_webhook" placeholder="https://hooks.example/...">
+            <button class="nb-btn nb-btn--sm" data-ch="webhook">测试</button>
+          </div>
+        </div>
+        <div class="nb-ch">
+          <b>钉钉机器人</b>
+          <small>官方 text 消息格式</small>
+          <div class="nb-ch-ctl">
+            <input class="nb-input" id="in_dingtalk" placeholder="https://oapi.dingtalk.com/robot/send?...">
+            <button class="nb-btn nb-btn--sm" data-ch="dingtalk">测试</button>
+          </div>
+        </div>
+        <div class="nb-ch">
+          <b>飞书机器人</b>
+          <small>官方 text 消息格式</small>
+          <div class="nb-ch-ctl">
+            <input class="nb-input" id="in_feishu" placeholder="https://open.feishu.cn/open-apis/bot/v2/hook/...">
+            <button class="nb-btn nb-btn--sm" data-ch="feishu">测试</button>
+          </div>
+        </div>
+        <div class="nb-ch">
+          <b>邮件（占位）</b>
+          <small>当前仅打日志，SMTP 接真后置</small>
+          <div class="nb-ch-ctl">
+            <input class="nb-input" id="in_email" placeholder="admin@example.com">
+            <button class="nb-btn nb-btn--sm" data-ch="email">测试</button>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:14px">
+        <button class="nb-btn nb-btn--ai" id="btnSave">保存渠道配置</button>
+      </div>
+    </div>
     <div class="nb-card">
-      <p class="nb-todo-card">规划：QPS/延迟/错误率/工具调用/AI token/活跃用户；报警通道邮件、Webhook、钉钉、飞书；阈值配置与历史记录。</p>
+      <p class="nb-todo-card">规划中：QPS/延迟/错误率/工具调用/AI token/活跃用户看板；阈值配置与历史记录。</p>
     </div>
   </main>
 </div>
 <script src="/assets/js/core.js?v=088441b8"></script>
 <script src="/assets/js/admin.js?v=97826989"></script>
 <script>
-NB.adminNav();
-NB.adminGate(function(){});
-NB.bindUserChip(document.getElementById('userChip'));
+(function(){
+  var NB = window.NB, $ = function(id){ return document.getElementById(id); };
+  function loadSettings(){
+    NB.api('/api/admin/settings').then(function(x){
+      var st = (x && x.settings) || x || {};
+      $('in_webhook').value = st.alert_webhook || '';
+      $('in_dingtalk').value = st.alert_dingtalk || '';
+      $('in_feishu').value = st.alert_feishu || '';
+      $('in_email').value = st.alert_email || '';
+    }).catch(function(e){ $('tip').textContent = '加载失败: ' + ((e && e.message) || e); });
+  }
+  $('btnSave').onclick = function(){
+    NB.api('/api/admin/settings', { method: 'POST', body: {
+      alert_webhook: $('in_webhook').value.trim(),
+      alert_dingtalk: $('in_dingtalk').value.trim(),
+      alert_feishu: $('in_feishu').value.trim(),
+      alert_email: $('in_email').value.trim()
+    }}).then(function(){ NB.toast('渠道配置已保存'); }).catch(function(){});
+  };
+  var btns = document.querySelectorAll('[data-ch]');
+  for(var i = 0; i < btns.length; i++){
+    (function(btn){
+      btn.onclick = function(){
+        var ch = btn.getAttribute('data-ch');
+        NB.api('/api/admin/alert/test', { method: 'POST', body: { channel: ch } })
+          .then(function(){ NB.toast('测试通知已发出（' + ch + '）'); })
+          .catch(function(e){ NB.toast('测试失败: ' + ((e && e.message) || e)); });
+      };
+    })(btns[i]);
+  }
+  NB.adminNav();
+  NB.adminGate(function(){ loadSettings(); });
+  NB.bindUserChip($('userChip'));
+})();
 </script>
 </body>
 </html>
