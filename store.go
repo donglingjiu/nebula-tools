@@ -48,6 +48,16 @@ type LogEntry struct {
 	Status int       `json:"status"`
 	Ms     int64     `json:"ms"`
 }
+type AICall struct {
+	At     time.Time `json:"ts"`
+	User   string    `json:"user"`
+	Module string    `json:"module"`
+	Model  string    `json:"model"`
+	Tokens int64     `json:"tokens"`
+	Ms     int64     `json:"ms"`
+	Ok     bool      `json:"ok"`
+}
+
 type Workflow struct {
 	Id    int64    `json:"id"`
 	User  string   `json:"user"`
@@ -63,6 +73,7 @@ type DB struct {
 	Settings  map[string]string
 	ToolState map[string]bool
 	History   []Hist
+	AICalls   []AICall `json:"ai_calls,omitempty"`
 	Favs      map[string]map[string]bool
 	Logs      []LogEntry
 	Notices   []Notice
@@ -190,6 +201,15 @@ func (d *DB) AddHist(user, tool, in, out string, ms int64) {
 	d.History = append(d.History, Hist{Id: d.nextId(), User: user, Tool: tool, Input: in, Output: out, Ms: ms, At: time.Now()})
 	if len(d.History) > 3000 {
 		d.History = d.History[len(d.History)-3000:]
+	}
+}
+
+func (d *DB) AddAICall(user, module, model string, tokens, ms int64, ok bool) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	d.AICalls = append(d.AICalls, AICall{At: time.Now(), User: user, Module: module, Model: model, Tokens: tokens, Ms: ms, Ok: ok})
+	if len(d.AICalls) > 50 {
+		d.AICalls = d.AICalls[len(d.AICalls)-50:]
 	}
 }
 func (d *DB) HistOf(user string) []Hist {

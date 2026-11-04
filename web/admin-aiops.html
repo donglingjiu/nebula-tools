@@ -77,6 +77,7 @@
 /* 契约(阶段5):
    GET /api/admin/ai/ops -> {switches:{ai_enabled,paid_mode,default_profile_id},today:{tokens,calls,success_rate,avg_ms},recent:[{ts,user,module,model,tokens,ms,ok}]}
    PUT /api/admin/ai/ops {ai_enabled?|paid_mode?|default_profile_id?} 仅超级管理员
+   GET /api/admin/ai/stats -> {today:{tokens,calls,success_rate,avg_ms},recent:[...]} 实时聚合(db.AICalls)
    GET /api/admin/llm/profiles 复用密钥页接口填充默认模型下拉 */
 (function(){
   var NB = window.NB, $ = function(id){ return document.getElementById(id); };
@@ -84,6 +85,9 @@
     NB.api('/api/admin/ai/ops').then(function(r){
       $('sw_ai').checked = !!r.switches.ai_enabled;
       $('sw_paid').checked = !!r.switches.paid_mode;
+    }).catch(function(e){ $('tip').textContent = '加载失败(阶段5接入): ' + e.message; });
+  function loadStats(){
+    NB.api('/api/admin/ai/stats').then(function(r){
       $('m_tok').textContent = NB.fmtNum(r.today.tokens);
       $('m_calls').textContent = NB.fmtNum(r.today.calls);
       $('m_rate').textContent = r.today.success_rate + '%';
@@ -97,7 +101,8 @@
           '<td>' + (x.ok ? '成功' : '<span class="nb-badge-paid">失败</span>') + '</td>';
         tb.appendChild(tr);
       });
-    }).catch(function(e){ $('tip').textContent = '加载失败(阶段5接入): ' + e.message; });
+    }).catch(function(e){ $('tip').textContent = '统计加载失败: ' + e.message; });
+  }
   }
   function loadModels(){
     NB.api('/api/admin/llm/profiles').then(function(r){
@@ -130,7 +135,7 @@
       .then(function(){ NB.toast('默认模型已更新'); }).catch(function(){});
   };
   NB.adminNav();
-  NB.adminGate(function(){ loadOps(); loadModels(); });
+  NB.adminGate(function(){ loadOps(); loadStats(); loadModels(); });
   NB.bindUserChip($('userChip'));
 })();
 </script>

@@ -21,6 +21,7 @@ import (
 var webFS embed.FS
 
 var Version = "v2.2.1"
+var db *DB
 var started = time.Now()
 
 type srv struct{ db *DB }
@@ -103,7 +104,7 @@ func (s *srv) logMW(next http.Handler) http.Handler {
 
 func main() {
 	openDB()
-	db := Load()
+	db = Load()
 	go func() {
 		for {
 			time.Sleep(30 * time.Second)
@@ -563,6 +564,37 @@ func newRouter(db *DB) http.Handler {
 		}
 		go notifySend(url, ch, map[string]string{"event": "test", "tool": "alert-test", "user": "admin", "error": "渠道测试", "time": time.Now().Format(time.RFC3339)})
 		J(w, map[string]any{"ok": true})
+	}))
+	mux.HandleFunc("GET /api/admin/ai/stats", s.admin(func(w http.ResponseWriter, r *http.Request) {
+		db.mu.Lock()
+		var toks, msSum int64
+		okN, calls := 0, 0
+		today := time.Now().Format("2006-01-02")
+		for _, c := range db.AICalls {
+			if c.At.Format("2006-01-02") == today {
+				toks += c.Tokens
+				msSum += c.Ms
+				calls++
+				if c.Ok {
+					okN++
+				}
+			}
+		}
+		n := len(db.AICalls)
+		if n > 20 {
+			n = 20
+		}
+		recent := make([]AICall, 0, n)
+		for i := len(db.AICalls) - 1; i >= len(db.AICalls)-n; i-- {
+			recent = append(recent, db.AICalls[i])
+		}
+		db.mu.Unlock()
+		rate, avg := 100, int64(0)
+		if calls > 0 {
+			rate = okN * 100 / calls
+			avg = msSum / int64(calls)
+		}
+		J(w, map[string]any{"today": map[string]any{"tokens": toks, "calls": calls, "success_rate": rate, "avg_ms": avg}, "recent": recent})
 	}))
 	mux.HandleFunc("GET /api/admin/logs", s.admin(func(w http.ResponseWriter, r *http.Request) {
 		J(w, db.LogsLast(200))

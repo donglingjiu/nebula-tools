@@ -238,6 +238,10 @@ func registerLLMRoutes(mux *http.ServeMux, s *srv) {
 			}
 			in.Messages[i]["content"] = llmTrunc(in.Messages[i]["content"], 16000)
 		}
+		var chatUser string
+		if u := s.user(r); u != nil {
+			chatUser = u.Username
+		}
 		var cands []LLMProfile
 		if in.ProfileID != "" {
 			if p, ok := st.get(in.ProfileID); ok {
@@ -270,11 +274,13 @@ func registerLLMRoutes(mux *http.ServeMux, s *srv) {
 						_, _ = dbMsgAppendP(in.ConversationID, "assistant", content, p.Name, tok)
 					}
 				}
+				db.AddAICall(chatUser, "chat", p.Name, tok, int64(ms), true)
 				llmWriteJSON(w, map[string]interface{}{"ok": true, "content": content, "profile": p.Name, "ms": ms, "tokens": tok})
 				return
 			}
 			errs = append(errs, p.Name+": "+llmTrunc(err.Error(), 120))
 		}
+		db.AddAICall(chatUser, "chat", "—", 0, 0, false)
 		llmWriteJSON(w, map[string]interface{}{"ok": false, "error": strings.Join(errs, " | ")})
 	})
 }
