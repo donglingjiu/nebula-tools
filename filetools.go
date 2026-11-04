@@ -17,6 +17,7 @@ import (
 
 	"github.com/ledongthuc/pdf"
 	"github.com/pdfcpu/pdfcpu/pkg/api"
+	"github.com/pdfcpu/pdfcpu/pkg/pdfcpu/model"
 	"github.com/xuri/excelize/v2"
 )
 
@@ -346,4 +347,36 @@ func registerFileTools(mux *http.ServeMux, db *DB) {
 	mux.HandleFunc("POST /api/fx/pdf-compress", wrap(hPdfCompress(db)))
 	mux.HandleFunc("POST /api/fx/pdf-to-docx", wrap(hPdfToDocx(db)))
 	mux.HandleFunc("POST /api/fx/pdf-to-xlsx", wrap(hPdfToXlsx(db)))
+	mux.HandleFunc("POST /api/fx/pdf-encrypt", wrap(hPdfEncrypt(db)))
+}
+func hPdfEncrypt(db *DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		u := fxUser(db, r)
+		if u == nil {
+			fxE(w, 401, "请先登录")
+			return
+		}
+		t0 := time.Now()
+		bs, names, ok := fxFiles(w, r)
+		if !ok {
+			return
+		}
+		pw := r.FormValue("pw")
+		if pw == "" {
+			fxE(w, 400, "请填写加密密码")
+			return
+		}
+		if len(bs) != 1 || !fxPDF(bs[0]) {
+			fxE(w, 400, "请上传一个 PDF 文件")
+			return
+		}
+		var out bytes.Buffer
+		conf := model.NewAESConfiguration(pw, pw, 256)
+		if err := api.Encrypt(context.Background(), bytes.NewReader(bs[0]), &out, conf); err != nil {
+			fxE(w, 422, "加密失败: "+err.Error())
+			return
+		}
+		db.AddHist(u.Username, "fx:pdf-encrypt", names[0], "已加密", time.Since(t0).Milliseconds())
+		fxSend(w, "encrypted-"+names[0], out.Bytes(), "application/pdf")
+	}
 }

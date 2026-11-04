@@ -373,3 +373,54 @@ func TestSecondUserIsNotAdmin(t *testing.T) {
 		t.Fatal("第二个用户不应是管理员")
 	}
 }
+
+func TestPdfEncryptE2E(t *testing.T) {
+	tc := start(t)
+	tc.ok("POST", "/api/auth/register", map[string]string{"username": "e2enc1", "password": "E2enc123456"})
+
+	pdf := []byte("%PDF-1.4\n" +
+		"1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n" +
+		"2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n" +
+		"3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] >>\nendobj\n")
+
+	up := func(pw string, content []byte) (int, []byte) {
+		var buf bytes.Buffer
+		w := multipart.NewWriter(&buf)
+		fw, _ := w.CreateFormFile("files", "a.pdf")
+		fw.Write(content)
+		if pw != "" {
+			w.WriteField("pw", pw)
+		}
+		w.Close()
+		req, _ := http.NewRequest("POST", tc.ts.URL+"/api/fx/pdf-encrypt", &buf)
+		req.Header.Set("Content-Type", w.FormDataContentType())
+		resp, err := tc.c.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close()
+		b, _ := io.ReadAll(resp.Body)
+		return resp.StatusCode, b
+	}
+
+	code, out := up("secret123", pdf)
+	if code != 200 {
+		t.Fatalf("encrypt want 200 got %d: %s", code, out)
+	}
+	if !bytes.HasPrefix(out, []byte("%PDF")) {
+		t.Fatalf("output not PDF: %q", out[:20])
+	}
+	if len(out) == len(pdf) {
+		t.Fatal("output identical to input, encryption may be no-op")
+	}
+
+	c2, _, _ := tc.upB(tc.c, "/api/fx/pdf-compress", "a.pdf", out)
+	if c2 == 200 {
+		t.Fatalf("encrypted PDF readable without password (code=200) - encryption NOT effective")
+	}
+
+	c3, b3 := up("", pdf)
+	if c3 != 400 {
+		t.Fatalf("empty pw want 400 got %d: %s", c3, b3)
+	}
+}
