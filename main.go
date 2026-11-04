@@ -275,7 +275,7 @@ func newRouter(db *DB) http.Handler {
 		if err != nil {
 			J(w, map[string]any{"ok": false, "error": err.Error()})
 			if u := s.user(r); u != nil {
-				go sendAlert(db.GetSettingSafe("alert_webhook"), id, u.Username, err.Error())
+				go alertFanout(db, id, u.Username, err.Error())
 			}
 			return
 		}
@@ -532,13 +532,36 @@ func newRouter(db *DB) http.Handler {
 			E(w, 400, "参数错误")
 			return
 		}
-		allow := map[string]bool{"site_name": true, "allow_register": true, "ai_endpoint": true, "ai_key": true, "ai_model": true, "alert_webhook": true}
+		allow := map[string]bool{"site_name": true, "allow_register": true, "ai_endpoint": true, "ai_key": true, "ai_model": true, "alert_webhook": true, "alert_dingtalk": true, "alert_feishu": true, "alert_email": true}
 		for k, v := range req {
 			if allow[k] {
 				db.SetSetting(k, v)
 			}
 		}
 		db.Save()
+		J(w, map[string]any{"ok": true})
+	}))
+	mux.HandleFunc("POST /api/admin/alert/test", s.admin(func(w http.ResponseWriter, r *http.Request) {
+		var in struct {
+			Channel string `json:"channel"`
+		}
+		_ = body(r, &in)
+		var url, ch string
+		switch in.Channel {
+		case "dingtalk":
+			url, ch = db.GetSettingSafe("alert_dingtalk"), "dingtalk"
+		case "feishu":
+			url, ch = db.GetSettingSafe("alert_feishu"), "feishu"
+		case "email":
+			url, ch = db.GetSettingSafe("alert_email"), "email"
+		default:
+			url, ch = db.GetSettingSafe("alert_webhook"), "webhook"
+		}
+		if url == "" {
+			E(w, 422, "该渠道未配置 URL")
+			return
+		}
+		go notifySend(url, ch, map[string]string{"event": "test", "tool": "alert-test", "user": "admin", "error": "渠道测试", "time": time.Now().Format(time.RFC3339)})
 		J(w, map[string]any{"ok": true})
 	}))
 	mux.HandleFunc("GET /api/admin/logs", s.admin(func(w http.ResponseWriter, r *http.Request) {
