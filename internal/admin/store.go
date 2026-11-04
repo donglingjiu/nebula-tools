@@ -30,6 +30,7 @@ type Feature struct {
 	Enabled  bool    `json:"enabled"`
 	IsPaid   bool    `json:"is_paid"`
 	Price    float64 `json:"price"`
+	Percent  int     `json:"percent"`
 }
 
 type Ops struct {

@@ -275,7 +275,7 @@ func (s *Service) listFeatures(w http.ResponseWriter, r *http.Request) {
 	for _, f := range s.st.Features {
 		arr = append(arr, map[string]any{
 			"id": f.ID, "key": f.Key, "name": f.Name, "category": f.Category,
-			"enabled": f.Enabled, "is_paid": f.IsPaid, "price": f.Price,
+			"enabled": f.Enabled, "is_paid": f.IsPaid, "price": f.Price, "percent": f.Percent,
 			"calls_7d": 0, "success_rate": 100,
 		})
 	}
@@ -288,6 +288,7 @@ func (s *Service) putFeature(w http.ResponseWriter, r *http.Request) {
 		Enabled *bool    `json:"enabled"`
 		IsPaid  *bool    `json:"is_paid"`
 		Price   *float64 `json:"price"`
+		Percent *int     `json:"percent"`
 	}
 	if json.NewDecoder(r.Body).Decode(&req) != nil {
 		fail(w, 400, "参数错误")
@@ -299,6 +300,9 @@ func (s *Service) putFeature(w http.ResponseWriter, r *http.Request) {
 		if s.st.Features[i].ID == id {
 			if req.Enabled != nil {
 				s.st.Features[i].Enabled = *req.Enabled
+			}
+			if req.Percent != nil {
+				s.st.Features[i].Percent = *req.Percent
 			}
 			if req.IsPaid != nil {
 				s.st.Features[i].IsPaid = *req.IsPaid
