@@ -321,7 +321,7 @@
 
 > N2.1 ✅(@N7e): tasks.jsonl+eval.go go:embed+POST /api/agent/eval+TestAgentEvalE2E(toolMatch=8/8)
 - [ ] N2.1 data/tasks.jsonl 任务集 8+ 条（输入+期望tool+期望输出片段）
-- [ ] N2.2 eval.go：批量 agent run -> tool-match 评分 -> 报表 JSON
+- [x] N2.2 eval.go：批量 agent run -> tool-match 评分 -> 报表 JSON （admin-eval.html跑批+5指标卡+明细表+侧栏入口+verify双棘轮@N10b）
 - [ ] N2.3 e2e + 棘轮 + eval 报表页
 
 ## N3 P1 数据生产与清洗

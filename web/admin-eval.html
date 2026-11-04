@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent 评测 · 后台</title>
+<link rel="stylesheet" href="/assets/css/tokens.css?v=55919b84">
+<link rel="stylesheet" href="/assets/css/admin.css?v=1c287817">
+<style>
+.nb-run-bar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.nb-metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-top:12px; }
+.nb-sub { color:var(--text-sub); font-size:12px; margin:4px 0 0; }
+</style>
+</head>
+<body class="nb-skin">
+<header class="nb-header">
+  <a class="nb-logo" href="/"><i aria-hidden="true"></i>Nova Tools</a>
+  <span class="nb-admin-tag">管理后台</span>
+  <div class="nb-user" id="userChip"></div>
+</header>
+<div class="nb-admin">
+  <aside class="nb-side">
+    <div class="grp">运营</div>
+    <a href="/admin.html">概览</a>
+    <a href="/admin-features.html">功能池</a>
+    <a href="/admin-aiops.html">AI 运营</a>
+    <a href="/admin-eval.html">Agent 评测</a>
+    <div class="grp">系统</div>
+    <a href="/admin-keys.html">LLM 密钥</a>
+    <a href="/admin-users.html">用户</a>
+    <a href="/admin-monitor.html">监控报警</a>
+  </aside>
+  <main class="nb-main">
+    <h2>Agent 评测</h2>
+    <p class="sub" id="tip">对内嵌 8 任务跑 toolMatch 评测——将调用真实 LLM 档案并消耗 token，非 mock。</p>
+    <div class="nb-card" style="margin-bottom:14px">
+      <div class="nb-run-bar">
+        <h3 style="margin:0;font-size:15px;flex:1">跑批控制</h3>
+        <button class="nb-btn nb-btn--ai" id="btnRun" disabled>跑一轮评测</button>
+      </div>
+      <p class="nb-sub" id="stRun">需管理员权限（登录后按钮解锁）· 单轮约 1-2 分钟</p>
+    </div>
+    <div class="nb-card" style="margin-bottom:14px">
+      <h3 style="margin:0 0 4px;font-size:15px">本轮结果</h3>
+      <div class="nb-metrics">
+        <div class="nb-metric"><b id="m_total">–</b><span>任务总数</span></div>
+        <div class="nb-metric"><b id="m_match">–</b><span>工具匹配</span></div>
+        <div class="nb-metric"><b id="m_pct">–</b><span>匹配率</span></div>
+        <div class="nb-metric"><b id="m_tok">–</b><span>tokens</span></div>
+        <div class="nb-metric"><b id="m_ms">–</b><span>总耗时</span></div>
+      </div>
+    </div>
+    <div class="nb-card">
+      <h3 style="margin:0 0 10px;font-size:15px">任务明细</h3>
+      <table class="nb-table" style="width:100%">
+        <thead><tr><th>任务</th><th>期望工具</th><th>实际工具</th><th>匹配</th><th>轮次</th><th>tokens</th><th>耗时</th><th>状态</th></tr></thead>
+        <tbody id="rows"><tr><td colspan="8" style="color:var(--text-sub)">点击「跑一轮评测」开始</td></tr></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+<script src="/assets/js/core.js?v=088441b8"></script>
+<script src="/assets/js/admin.js?v=97826989"></script>
+<script>
+/* 契约: eval 端点(s.admin) -> evalRunAll 汇总 map; 逐任务字段见 eval.go json tag */
+(function(){
+  var NB = window.NB, $ = function(id){ return document.getElementById(id); };
+  var busy = false;
+  $('btnRun').onclick = function(){
+    if(busy) return;
+    busy = true; $('btnRun').disabled = true;
+    $('stRun').textContent = '跑批中…（8 任务 × 真实 LLM）';
+    $('rows').innerHTML = '<tr><td colspan="8" style="color:var(--text-sub)">评测运行中，勿关闭页面…</td></tr>';
+    NB.api('/api/agent/eval', { method:'POST', body:{} }).then(function(x){
+      var rs = x.results || [];
+      var total = (typeof x.total === 'number') ? x.total : rs.length;
+      var match = (typeof x.toolMatch === 'number') ? x.toolMatch : (typeof x.match === 'number' ? x.match : null);
+      if(match === null){ match = 0; rs.forEach(function(r){ if(r.toolMatch) match++; }); }
+      if(!total) total = rs.length;
+      $('m_total').textContent = total;
+      $('m_match').textContent = match;
+      $('m_pct').textContent = total ? (match/total*100).toFixed(1) + '%' : '–';
+      $('m_tok').textContent = NB.fmtNum(x.tokens || 0);
+      $('m_ms').textContent = (x.ms || 0) + 'ms';
+      $('stRun').textContent = '完成 · 档案 ' + (x.profileId || '–') + ' · ' + new Date().toLocaleTimeString();
+      var tb = $('rows'); tb.innerHTML = '';
+      if(!rs.length){ tb.innerHTML = '<tr><td colspan="8" style="color:var(--text-sub)">无结果返回</td></tr>'; return; }
+      rs.forEach(function(r){
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td title="' + NB.escape(r.input || '') + '">' + NB.escape(r.taskId || '') + '</td>' +
+          '<td>' + NB.escape(r.expectTool || '') + '</td>' +
+          '<td>' + NB.escape(r.toolCalled || '–') + '</td>' +
+          '<td>' + (r.toolMatch ? '✓' : '<span class="nb-badge-paid">✗</span>') + '</td>' +
+          '<td>' + (r.rounds || 0) + '</td>' +
+          '<td>' + NB.fmtNum(r.tokens || 0) + '</td>' +
+          '<td>' + (r.ms || 0) + 'ms</td>' +
+          '<td title="' + NB.escape(r.error || r.answer || '') + '">' + (r.ok ? '成功' : '<span class="nb-badge-paid">失败</span>') + '</td>';
+        tb.appendChild(tr);
+      });
+    }).catch(function(e){
+      $('stRun').textContent = '失败：' + ((e && e.message) || e);
+    }).then(function(){ busy = false; $('btnRun').disabled = false; });
+  };
+  NB.adminNav();
+  NB.adminGate(function(){
+    $('btnRun').disabled = false;
+    $('stRun').textContent = '就绪 · 单轮约 1-2 分钟 · 消耗真实 token';
+  });
+  NB.bindUserChip($('userChip'));
+})();
+</script>
+</body>
+</html>

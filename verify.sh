@@ -25,6 +25,8 @@ eq "fx接线棘轮" "$(grep -oE 'pdf-(compress|split|encrypt)' web/assets/app.js
 eq "agent端点在线" "$(curl -s -o /dev/null -w '%{http_code}' -X POST $B/api/agent/run)" 401
 eq "eval端点在线" "$(curl -s -o /dev/null -w '%{http_code}' -X POST $B/api/agent/eval)" 401
 eq "agent页在线" "$(curl -s -o /dev/null -w '%{http_code}' $B/agent.html)" 200
+eq "eval报表页在线" "$(curl -s -o /dev/null -w '%{http_code}' $B/admin-eval.html)" "200"
+eq "eval报表壳接线" "$(grep -c 'api/agent/eval' web/admin-eval.html)" "1"
 eq "eval任务集8条" "$(wc -l < tasks.jsonl | tr -d ' ')" 8
 eq "admin旗硬编码棘轮" "$(grep -l 'data-admin="true"' web/admin/*.html 2>/dev/null | wc -l)" 0
 eq "adminReq旗棘轮" "$(grep -l 'data-admin-req="true"' web/admin/*.html 2>/dev/null | wc -l)" 10
