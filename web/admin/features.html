@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>功能池管理 - Nebula Admin</title>
+<style>
+:root{--bg:#FFF8F0;--card:#fff;--ink:#4A3728;--muted:#A1887F;--acc:#F5A623;--line:rgba(245,166,35,.25)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"PingFang SC",sans-serif;background:var(--bg);color:var(--ink);padding:24px}
+h1{font-size:20px;margin-bottom:4px}
+.bar{display:flex;gap:14px;align-items:center;margin:12px 0 16px;font-size:13px;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block;margin-right:6px}
+.dot.live{background:#4CAF50}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);font-size:13px}
+th{background:rgba(245,166,35,.08)}
+select,input{border:1px solid var(--line);border-radius:8px;padding:4px 8px;font-size:13px}
+button{background:var(--acc);border:0;color:#fff;border-radius:8px;padding:5px 14px;cursor:pointer;font-size:13px}
+.st{font-size:11px;padding:2px 8px;border-radius:999px;color:#fff}
+.online{background:#4CAF50}.beta{background:#FF9800}.gray{background:#9C27B0}.offline{background:#9E9E9E}
+#msg{margin-top:10px;font-size:13px;color:#2E7D32}
+</style>
+</head>
+<body>
+<h1>功能池管理</h1>
+<div class="bar">
+  <span><span class="dot" id="live"></span><span id="liveTxt">SSE 未连接</span></span>
+  <span>ADMIN_TOKEN: <input id="tok" type="password" size="14" placeholder="留空=dev 模式"></span>
+</div>
+<table><thead><tr><th>ID</th><th>分类</th><th>名称</th><th>当前</th><th>新状态</th><th>灰度%</th><th>操作</th></tr></thead>
+<tbody id="rows"></tbody></table>
+<div id="msg"></div>
+<script>
+document.getElementById("tok").value=localStorage.getItem("ntAdminTok")||"";
+document.getElementById("tok").addEventListener("change",function(){localStorage.setItem("ntAdminTok",this.value);});
+function tok(){return document.getElementById("tok").value||"";}
+function esc(s){return (s||"").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];});}
+function row(f){return '<tr><td>'+esc(f.id)+'</td><td>'+esc(f.category)+'</td><td>'+esc(f.name)+'</td>'+
+ '<td><span class="st '+f.status+'">'+f.status+'</span></td>'+
+ '<td><select id="sel-'+f.id+'"><option>online</option><option>beta</option><option>gray</option><option>offline</option></select></td>'+
+ '<td><input type="number" id="gp-'+f.id+'" value="'+(f.grayPercent||0)+'" min="0" max="100" style="width:64px"></td>'+
+ '<td><button data-id="'+f.id+'">保存</button></td></tr>';}
+function load(){fetch("/api/admin/features",{headers:{"X-Admin-Token":tok()}}).then(function(r){return r.json();}).then(function(d){
+  var fs=d.features||[],h="";fs.forEach(function(f){h+=row(f);});
+  document.getElementById("rows").innerHTML=h;});}
+document.getElementById("rows").addEventListener("click",function(e){
+  var id=e.target.getAttribute&&e.target.getAttribute("data-id");if(!id)return;
+  var st=document.getElementById("sel-"+id).value,gp=parseInt(document.getElementById("gp-"+id).value||"0",10);
+  fetch("/api/admin/features/toggle",{method:"POST",headers:{"Content-Type":"application/json","X-Admin-Token":tok()},
+   body:JSON.stringify({id:id,status:st,grayPercent:gp})}).then(function(r){return r.json();}).then(function(d){
+    document.getElementById("msg").textContent=d.ok?("已更新 "+id+" -> "+st):("失败: "+(d.error||""));
+    if(d.ok)load();});});
+try{
+ var es=new EventSource("/api/features/stream");
+ es.onopen=function(){document.getElementById("live").className="dot live";document.getElementById("liveTxt").textContent="SSE 已连接";};
+ es.onmessage=function(e){var d=JSON.parse(e.data);if(d.type=="update"&&d.feature)load();};
+}catch(e){}
+load();
+</script>
+</body>
+</html>

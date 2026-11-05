@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>功能池 - Nebula Tools</title>
+<style>
+:root{--bg:#FFF8F0;--card:#fff;--ink:#4A3728;--muted:#A1887F;--acc:#F5A623;--coral:#FF8A65;--line:rgba(245,166,35,.25)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);padding:24px}
+h1{font-size:22px;margin-bottom:4px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+.cats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.cat-btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;cursor:pointer}
+.cat-btn.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(245,166,35,.08)}
+.card h3{font-size:15px;margin-bottom:6px}
+.card p{font-size:12px;color:var(--muted);margin-bottom:10px;min-height:32px}
+.foot{display:flex;justify-content:space-between;align-items:center}
+.badge{font-size:11px;padding:2px 10px;border-radius:999px;color:#fff}
+.online{background:#4CAF50}.beta{background:#FF9800}.gray{background:#9C27B0}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#ccc;margin-right:6px}
+.dot.live{background:#4CAF50}
+a{color:var(--coral)}
+</style>
+</head>
+<body>
+<h1>功能池</h1>
+<div class="sub"><span class="dot" id="live"></span><span id="liveTxt">实时连接未建立</span> · 功能由后台实时上下线</div>
+<div class="cats" id="cats"></div>
+<div class="grid" id="grid"></div>
+<script>
+var ALL=[], CAT={document:"文档",spreadsheet:"表格",data:"数据",ppt:"PPT",mindmap:"脑图",workflow:"AI 与工作流"}, CUR="all";
+function esc(s){return (s||"").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];});}
+function badge(f){var extra=(f.status=="gray"&&f.grayPercent>0)?(" "+f.grayPercent+"%"):"";var ai=f.ai?" · AI":"";return '<span class="badge '+f.status+'">'+f.status+extra+ai+'</span>';}
+function render(){
+  var ch="",k;
+  for(k in CAT){ch+='<button class="cat-btn'+(CUR==k?" on":"")+'" data-c="'+k+'">'+CAT[k]+'</button>';}
+  document.getElementById("cats").innerHTML='<button class="cat-btn'+(CUR=="all"?" on":"")+'" data-c="all">全部</button>'+ch;
+  var out="";
+  ALL.filter(function(f){return CUR=="all"||f.category==CUR;}).forEach(function(f){
+    out+='<div class="card"><h3>'+esc(f.name)+'</h3><p>'+esc(f.desc)+'</p><div class="foot">'+badge(f)+(f.route?'<a href="'+esc(f.route)+'">打开</a>':'')+'</div></div>';
+  });
+  document.getElementById("grid").innerHTML=out||'<p style="color:var(--muted)">暂无功能</p>';
+}
+document.getElementById("cats").addEventListener("click",function(e){
+  var c=e.target.getAttribute&&e.target.getAttribute("data-c");if(c){CUR=c;render();}
+});
+function apply(f){
+  var i=-1;for(var j=0;j<ALL.length;j++){if(ALL[j].id==f.id){i=j;break;}}
+  if(i>=0)ALL[i]=f;else ALL.push(f);
+  render();
+}
+fetch("/api/features").then(function(r){return r.json();}).then(function(d){ALL=d.features||[];render();});
+try{
+  var es=new EventSource("/api/features/stream");
+  es.onopen=function(){document.getElementById("live").className="dot live";document.getElementById("liveTxt").textContent="实时连接已建立";};
+  es.onmessage=function(e){var d=JSON.parse(e.data);if(d.type=="update"&&d.feature)apply(d.feature);};
+  es.onerror=function(){document.getElementById("live").className="dot";document.getElementById("liveTxt").textContent="连接中断，自动重试";};
+}catch(e){}
+</script>
+</body>
+</html>

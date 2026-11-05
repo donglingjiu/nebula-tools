@@ -1,46 +1,21 @@
-name: build
+name: build-and-validate
 on:
   push:
-    branches: [main]        # push 到 main 自动编译
-  workflow_dispatch:         # Actions 页面出现 Run workflow 按钮
-
-permissions:
-  contents: write
-
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.24.x'
-
-      - name: Pin dependencies & build
-        run: |
-          go get github.com/pdfcpu/pdfcpu@v0.16.2
-          go get github.com/xuri/excelize/v2@v2.8.1
-          go get github.com/ledongthuc/pdf@latest
-          go mod tidy
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-          go build -ldflags "-s -w -X main.Version=v2.2.1-${GITHUB_RUN_NUMBER}" \
-          -o nova-server-linux-amd64 .
-
-
-      - name: Build static linux binary
-        run: |
-          go mod tidy
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-          go build -ldflags "-s -w -X main.Version=v2.2.1-${GITHUB_RUN_NUMBER}" \
-          -o nova-server-linux-amd64 .
-
-      - name: Push binary to dist branch
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout --orphan dist-tmp
-          git rm -rf --cached . >/dev/null 2>&1 || true
-          git add -f nova-server-linux-amd64
-          git commit -m "build #${GITHUB_RUN_NUMBER}"
-          git push -f origin dist-tmp:dist
+          go-version-file: go.mod
+      - name: build (CGO off)
+        run: CGO_ENABLED=0 go build -o nebula-tools .
+      - name: vet
+        run: go vet ./...
+        continue-on-error: true
+      - name: structure check
+        run: bash scripts/validate.sh
