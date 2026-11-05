@@ -288,7 +288,7 @@ func newRouter(db *DB) http.Handler {
 	mux.HandleFunc("GET /api/history", func(w http.ResponseWriter, r *http.Request) {
 		u := s.user(r)
 		if u == nil {
-			E(w, 401, "未登录")
+			J(w, []any{}) // 匿名返回空历史，消除未登录时前端 401 噪音
 			return
 		}
 		J(w, db.HistOf(u.Username))

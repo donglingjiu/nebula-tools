@@ -24,8 +24,9 @@
 - [ ] 功能池与现有 ToolRegistry/ToolOn 及 T-07 rollout 管理侧合并去重（Feature.Percent/putFeature/listFeatures）
 - [ ] Makefile（build.sh 已覆盖 build/dev/smoke/verify，可按需补 Makefile 薄封装）
 - [x] 首页横幅修复（破损标签残留清除 + 尾部重复去重，见 OPT-006）
-- [ ] /api/history 未登录 401 静默报错（前端应隐藏入口或友好提示）
+- [x] /api/history 匿名返回 200 空数组（语义：未登录=无历史，消除控制台 401）
 - [ ] ai-studio.html 与 pipeline.html 双流程工作台合并去重
 - [ ] pipeline 导出 MD 应包含未保存的当前 textarea 内容
 - [ ] AI token 级统计挂 llmCall usage（对齐 llmops-metrics.md tokens_in/out，接 aiops AICall 三件套）
 - [ ] /api/metrics 未鉴权（生产需 ADMIN_TOKEN 校验或反代门禁；当前开发网可用）
+- [ ] 观察：若 /api/favs 匿名 401 也出现在控制台，同法处理（当前仅 history 有噪音）
