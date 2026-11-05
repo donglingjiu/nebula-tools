@@ -30,3 +30,18 @@
 
 ### 影响面
 - NT-2/NT-4 复用同一 wrap/init/SSE 模式与 CI 流水线
+
+## [2026-11-05] OPT-001b 接线修复 + 冲突保护
+
+### 变更
+- main.go 接线：secMiddleware(newRouter(db)) -> secMiddleware(FeatureWrap(newRouter(db)))，改用老 sed 兼容的字面替换（开发机 sed 无 -E）
+- 冲突保护：检测到其他 Go 文件已占用 api/features 时自动改挂 /api/pool/*，避免遮蔽本地 T-07 rollout 体系
+- TODO 新增：功能池与 ToolRegistry/ToolOn、T-07 rollout 合并去重
+
+### 优点
+1. 不侵入 newRouter 内部，一行包装即生效；auth 仍由 secMiddleware 统一管辖
+2. 与本地已有的工具开关/rollout 体系共存互不破坏
+
+### 缺点 / 已知限制
+1. 若 secMiddleware 对 /api/* 统一鉴权，功能池管理接口需带会话或豁免（见 smoke 401 时处理）
+2. 功能池与 ToolOn 双体系并存，待合并

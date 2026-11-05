@@ -21,3 +21,4 @@
 - [ ] 真实鉴权（JWT + RBAC，替换 ADMIN_TOKEN dev 放行）
 - [ ] 真实文件转换后端（替换演示数据）
 - [ ] E2E 浏览器自动化 + 负载测试
+- [ ] 功能池与现有 ToolRegistry/ToolOn 及 T-07 rollout 管理侧合并去重（Feature.Percent/putFeature/listFeatures）
