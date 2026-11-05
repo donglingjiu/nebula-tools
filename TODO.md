@@ -30,3 +30,4 @@
 - [ ] AI token 级统计挂 llmCall usage（对齐 llmops-metrics.md tokens_in/out，接 aiops AICall 三件套）
 - [ ] /api/metrics 未鉴权（生产需 ADMIN_TOKEN 校验或反代门禁；当前开发网可用）
 - [ ] 观察：若 /api/favs 匿名 401 也出现在控制台，同法处理（当前仅 history 有噪音）
+- [ ] all-pages sweep 的 curl 加 -L 跟随重定向（/index.html→/ 301 是正常目录跳转，修正误报）
