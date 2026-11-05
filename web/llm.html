@@ -89,4 +89,78 @@ $('chatBtn').addEventListener('click',function(){var q=$('chatIn').value;if(!q.r
  finally(function(){$('chatBtn').disabled=false;$('chatBtn').textContent='发送'})});
 loadList();
 </script>
+<div class="ntp-wrap" id="ntp-preset">
+<style>
+.ntp-wrap{font-family:system-ui,-apple-system,"PingFang SC",sans-serif;max-width:1080px;margin:18px auto;padding:0 16px}
+.ntp-h{font-size:15px;font-weight:600;margin:14px 0 8px;color:#4A3728}
+.ntp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.ntp-card{border:1px solid rgba(245,166,35,.35);background:#FFF8F0;border-radius:12px;padding:10px 12px;cursor:pointer;transition:.15s}
+.ntp-card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(245,166,35,.18)}
+.ntp-card b{display:block;font-size:13px;color:#4A3728;margin-bottom:3px}
+.ntp-card span{font-size:11px;color:#A1887F;word-break:break-all}
+.ntp-form{margin-top:12px;border:1px solid rgba(245,166,35,.35);border-radius:12px;background:#fff;padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ntp-form label{font-size:12px;color:#A1887F;display:block;margin-bottom:3px}
+.ntp-form input{width:100%;box-sizing:border-box;border:1px solid rgba(245,166,35,.4);border-radius:8px;padding:7px 9px;font-size:13px}
+.ntp-act{grid-column:1/-1;display:flex;gap:10px;align-items:center}
+.ntp-btn{background:#F5A623;border:0;color:#fff;border-radius:8px;padding:8px 18px;cursor:pointer;font-size:13px}
+.ntp-btn.ghost{background:#fff;color:#F5A623;border:1px solid #F5A623}
+.ntp-msg{font-size:12px;color:#2E7D32;min-width:120px}
+.ntp-note{grid-column:1/-1;font-size:11px;color:#A1887F;line-height:1.6}
+@media(max-width:640px){.ntp-form{grid-template-columns:1fr}}
+</style>
+<div class="ntp-h">6 家模型预设（点击卡片自动填充）</div>
+<div class="ntp-grid">
+  <div class="ntp-card" data-n="OpenAI 官方" data-u="https://api.openai.com/v1" data-m="gpt-4o-mini"><b>OpenAI</b><span>api.openai.com/v1 · gpt-4o-mini</span></div>
+  <div class="ntp-card" data-n="DeepSeek" data-u="https://api.deepseek.com" data-m="deepseek-chat"><b>DeepSeek</b><span>api.deepseek.com · deepseek-chat</span></div>
+  <div class="ntp-card" data-n="智谱 GLM" data-u="https://open.bigmodel.cn/api/paas/v4" data-m="glm-4-flash"><b>智谱 GLM</b><span>open.bigmodel.cn · glm-4-flash</span></div>
+  <div class="ntp-card" data-n="Kimi" data-u="https://api.moonshot.cn/v1" data-m="moonshot-v1-8k"><b>Kimi</b><span>api.moonshot.cn · moonshot-v1-8k</span></div>
+  <div class="ntp-card" data-n="通义 Qwen" data-u="https://dashscope.aliyuncs.com/compatible-mode/v1" data-m="qwen-plus"><b>通义 Qwen</b><span>dashscope compatible-mode · qwen-plus</span></div>
+  <div class="ntp-card" data-n="Anthropic(兼容网关)" data-u="https://openrouter.ai/api/v1" data-m="anthropic/claude-3.5-sonnet"><b>Anthropic</b><span>官方为 /v1/messages 协议；走 OpenAI 兼容网关（预设填 OpenRouter，可改）</span></div>
+</div>
+<div class="ntp-form">
+  <div><label>名称</label><input id="ntp-name" placeholder="如 智谱-生产"></div>
+  <div><label>Base URL</label><input id="ntp-url" placeholder="https://..."></div>
+  <div><label>模型 Model</label><input id="ntp-model" placeholder="如 glm-4-flash"></div>
+  <div><label>API Key（编辑已有档案留空=保留旧值）</label><input id="ntp-key" type="password" placeholder="sk-..."></div>
+  <div class="ntp-act">
+    <button class="ntp-btn" id="ntp-save">保存档案</button>
+    <button class="ntp-btn ghost" id="ntp-test">试一句</button>
+    <span class="ntp-msg" id="ntp-msg"></span>
+  </div>
+  <div class="ntp-note">保存后到下方「模型档案」列表查看；「试一句」走同源 /api/llm/chat 全链路验证。Anthropic 官方 API 为 /v1/messages 协议，本服务走 OpenAI 兼容 /chat/completions，故经兼容网关接入；Key 仅存服务端并加密，页面只显示掩码。若保存提示 401 请先登录后台。</div>
+</div>
+<script>
+(function(){
+  var g=function(id){return document.getElementById(id);};
+  document.querySelectorAll(".ntp-card").forEach(function(c){
+    c.addEventListener("click",function(){
+      g("ntp-name").value=c.getAttribute("data-n");
+      g("ntp-url").value=c.getAttribute("data-u");
+      g("ntp-model").value=c.getAttribute("data-m");
+      g("ntp-key").value="";
+      g("ntp-msg").textContent="已填充，填 Key 后保存";
+      g("ntp-key").focus();
+    });
+  });
+  function jf(u,o){return fetch(u,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(o)}).then(function(r){return r.json();});}
+  g("ntp-save").addEventListener("click",function(){
+    var name=g("ntp-name").value.trim(),url=g("ntp-url").value.trim(),model=g("ntp-model").value.trim(),key=g("ntp-key").value.trim();
+    if(!name||!url||!model){g("ntp-msg").style.color="#C62828";g("ntp-msg").textContent="名称/BaseURL/Model 必填";return;}
+    var p={id:"",name:name,baseUrl:url,model:model,apiKey:key,enabled:true};
+    jf("/api/llm/profiles",p).then(function(d){
+      g("ntp-msg").style.color=d.ok?"#2E7D32":"#C62828";
+      g("ntp-msg").textContent=d.ok?("已保存 "+(d.profile&&d.profile.id||"")):("失败: "+(d.error||"?"));
+      if(d.ok){g("ntp-key").value="";}
+    }).catch(function(e){g("ntp-msg").style.color="#C62828";g("ntp-msg").textContent="网络错误: "+e;});
+  });
+  g("ntp-test").addEventListener("click",function(){
+    g("ntp-msg").textContent="测试中…";
+    jf("/api/llm/chat",{profileId:"",messages:[{role:"user",content:"请只回复两个字:正常"}],maxTokens:16}).then(function(d){
+      g("ntp-msg").style.color=d.ok?"#2E7D32":"#C62828";
+      g("ntp-msg").textContent=d.ok?("正常 ("+(d.ms||"?")+"ms) "+(d.content||"")):("失败: "+(d.error||"?"));
+    }).catch(function(e){g("ntp-msg").textContent="网络错误: "+e;});
+  });
+})();
+</script>
+</div>
 </body></html>

@@ -45,3 +45,27 @@
 ### 缺点 / 已知限制
 1. 若 secMiddleware 对 /api/* 统一鉴权，功能池管理接口需带会话或豁免（见 smoke 401 时处理）
 2. 功能池与 ToolOn 双体系并存，待合并
+
+## [2026-11-05] OPT-002 六家模型预设一键填充（NT-2 收尾）
+
+### 变更
+- web/llm.html 注入自包含预设区块（ntp- 前缀零冲突，幂等注入 </body> 前）：6 家厂商卡片点击自动填 名称/BaseUrl/Model + 独立保存/试一句按钮，直调既有 /api/llm/profiles 与 /api/llm/chat
+- TODO.md 核销：Dockerfile/docker-compose/release/README 部署章节均已在库（此前 16 个本地提交），NT-2 标记完成
+
+### 对标来源
+- Dify 模型供应商预设（点选厂商→填 Key 即用，免手填 endpoint）
+- Coze 插件配置卡（卡片化参数预设）
+
+### 优点
+1. 后端 llmproxy.go（CRUD/test/chat+故障切换）与 dbprofiles.go（SQLite+Key 加密+掩码）复用既有实现，零后端改动
+2. 注入式增强不碰现有表单/JS，可重复执行；Anthropic 协议差异已标注（官方 /v1/messages → 走 OpenAI 兼容网关）
+3. 六家预设：OpenAI/DeepSeek/智 GLM/Kimi/Qwen 兼容模式/Anthropic(OpenRouter)
+
+### 缺点 / 已知限制
+1. 试一句按钮固定走候选链第一个可用档案，未按档案单独测试（既有列表区已有单档案测试则够用）
+2. OpenRouter 预设仅为 Anthropic 兼容示例，用户需自备其 Key；官方直连需等 /v1/messages 协议适配（TODO）
+3. 若后台对 /api/llm/* 强制登录，未登录保存会 401（页面已提示先登录）
+
+### 影响面
+- NT-3 全流程 7 步可直接消费 /api/llm/chat（多档案 fallback 已就绪）
+- NT-4 监控的 AI token 统计挂在 llmCall 返回 usage 上（dbprofiles/aiops 已有 AICall 三件套）
