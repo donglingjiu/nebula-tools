@@ -60,7 +60,7 @@
   });
   document.getElementById('btnReg').onclick = async function(){
     var email = document.getElementById('email').value.trim();
-    var p1 = pwd.value, p2 = document.(document.getElementById('confirm') || document.querySelectorAll('.nb-auth-card input')[2] || {value:''}).value;
+    var p1 = pwd.value, p2 = (document.getElementById('confirm') || document.querySelectorAll('.nb-auth-card input')[2] || {value:''}).value;
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ NB.toast('邮箱格式不正确','warn'); return; }
     if(p1.length < 8){ NB.toast('密码至少 8 位','warn'); return; }
     if(p1 !== p2){ NB.toast('两次输入的密码不一致','warn'); return; }
