@@ -23,7 +23,7 @@
 - [ ] E2E 浏览器自动化 + 负载测试
 - [ ] 功能池与现有 ToolRegistry/ToolOn 及 T-07 rollout 管理侧合并去重（Feature.Percent/putFeature/listFeatures）
 - [ ] Makefile（build.sh 已覆盖 build/dev/smoke/verify，可按需补 Makefile 薄封装）
-- [ ] 首页横幅内联样式文本泄漏（index.html hero 区把 style 串显示为文本，2026-11-05 截图）修复
+- [x] 首页横幅修复（破损标签残留清除 + 尾部重复去重，见 OPT-006）
 - [ ] /api/history 未登录 401 静默报错（前端应隐藏入口或友好提示）
 - [ ] ai-studio.html 与 pipeline.html 双流程工作台合并去重
 - [ ] pipeline 导出 MD 应包含未保存的当前 textarea 内容
