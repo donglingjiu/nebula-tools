@@ -69,3 +69,28 @@
 ### 影响面
 - NT-3 全流程 7 步可直接消费 /api/llm/chat（多档案 fallback 已就绪）
 - NT-4 监控的 AI token 统计挂在 llmCall 返回 usage 上（dbprofiles/aiops 已有 AICall 三件套）
+
+## [2026-11-05] OPT-003 全流程 7 步（NT-3）
+
+### 变更
+- 新增 pipeline.go：7 步状态机（todo/running/done + current 推进）+ JSON 落盘 data/pipelines/ + chatbody 组装端点（把上一步产物嵌入 prompt）
+- 新增 web/pipeline.html：stepper + AI 生成/保存/完成 + 全流程导出 MD，暖色治愈系
+- main.go 接线 secMiddleware(PipelineWrap(FeatureWrap(newRouter(db))))；功能池 wf-pipeline-7 种子切 online
+
+### 对标来源
+- product-expert-team 7 步产物模板（头脑风暴→评估→分析→方案→拆解→实现→测试）
+- Dify 工作流节点逐步执行 / Coze 多轮产物沉淀
+
+### 优点
+1. 两段式 AI：后端零 AI 依赖（组装 chatbody），前端直调 /api/llm/chat 复用多档案 fallback，天然支持重新生成与人工修订
+2. 产物 JSON 落盘，导出 MD 一步到位；7 步 prompt 内置上下文链（每步自动带上一步全文，超 4000 字截断）
+3. 功能池卡片直达，与 NT-1/NT-2 形成完整链路：功能池 → 模型档案 → 全流程
+
+### 缺点 / 已知限制
+1. prompt 组装为固定模板，暂未开放自定义（P2 配置化）
+2. 步间上下文只带上一步全文（非全部历史），长流程可能丢早期信息
+3. 无并发编辑保护（单管理员场景够用）
+4. AI 生成质量依赖所配模型（glm-4-flash 实测可用）
+
+### 影响面
+- NT-4 监控可在此链路上统计每步 token/耗时（chatbody→chat 已有明确埋点位）

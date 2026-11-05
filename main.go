@@ -116,7 +116,7 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	log.Fatal(http.ListenAndServe(":"+port, secMiddleware(FeatureWrap(newRouter(db)))))
+	log.Fatal(http.ListenAndServe(":"+port, secMiddleware(PipelineWrap(FeatureWrap(newRouter(db))))))
 }
 
 func newRouter(db *DB) http.Handler {

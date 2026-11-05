@@ -51,7 +51,7 @@ func ntSeedFeatures() []*Feature {
 		mk("wf-ai-chat", "workflow", "AI 对话", "多模型对话工作台", "/ai.html", "online", 100, true),
 		mk("wf-ai-workflow", "workflow", "AI 工作流", "可视化工作流编排", "/aiworkflow.html", "online", 100, true),
 		mk("wf-flowchart", "workflow", "流程图", "流程图绘制", "/flowchart.html", "online", 100, false),
-		mk("wf-pipeline-7", "workflow", "全流程 7 步", "头脑风暴到测试落地", "/pipeline.html", "offline", 0, true),
+		mk("wf-pipeline-7", "workflow", "全流程 7 步", "头脑风暴到测试落地", "/pipeline.html", "online", 100, true),
 	}
 }
 

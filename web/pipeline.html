@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>全流程 7 步 - Nova Tools</title>
+<style>
+:root{--bg:#FFF8F0;--card:#fff;--ink:#4A3728;--muted:#A1887F;--acc:#F5A623;--line:rgba(245,166,35,.3)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"PingFang SC",sans-serif;background:var(--bg);color:var(--ink);padding:20px}
+h1{font-size:20px;margin-bottom:4px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:16px}
+.wrap{display:grid;grid-template-columns:260px 1fr;gap:16px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.panel h3{font-size:14px;margin-bottom:10px}
+.run-item{padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;margin-bottom:6px;border:1px solid transparent}
+.run-item:hover{background:rgba(245,166,35,.08)}
+.run-item.on{border-color:var(--acc);background:rgba(245,166,35,.12)}
+.run-item small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+input,textarea{border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:13px;width:100%;font-family:inherit}
+textarea{font-family:ui-monospace,Consolas,monospace;line-height:1.6}
+label{font-size:12px;color:var(--muted);display:block;margin:8px 0 3px}
+button{background:var(--acc);border:0;color:#fff;border-radius:8px;padding:7px 16px;cursor:pointer;font-size:13px}
+button.ghost{background:#fff;color:var(--acc);border:1px solid var(--acc)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.steps{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.stp{padding:5px 10px;border-radius:999px;font-size:12px;border:1px solid var(--line);cursor:pointer;background:#fff}
+.stp.cur{background:var(--acc);color:#fff;border-color:var(--acc)}
+.stp.done{background:#E8F5E9;border-color:#4CAF50;color:#2E7D32}
+.stp.todo{color:var(--muted)}
+.ed-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.badge{font-size:11px;padding:2px 10px;border-radius:999px;color:#fff}
+.todo{background:#BDBDBD}.running{background:#1E88E5}.done{background:#4CAF50}
+.acts{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap;align-items:center}
+#np-msg{font-size:12px;color:#2E7D32;min-height:18px}
+@media(max-width:760px){.wrap{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<h1>全流程 7 步</h1>
+<div class="sub">头脑风暴 → 评估 → 分析 → 方案 → 拆解 → 实现 → 测试 · 每步 AI 生成 + 人工修订，产物落盘 data/pipelines</div>
+<div class="wrap">
+  <div class="panel">
+    <h3>新建流程</h3>
+    <label>标题</label><input id="np-title" placeholder="如：批量重命名工具">
+    <label>原始想法</label><textarea id="np-idea" rows="3" placeholder="一句话描述想做什么"></textarea>
+    <div style="margin-top:8px"><button id="np-create">创建</button> <button class="ghost" id="np-export">导出全部 MD</button></div>
+    <h3 style="margin-top:16px">流程列表</h3>
+    <div id="np-runs"><small style="color:var(--muted)">加载中…</small></div>
+  </div>
+  <div class="panel">
+    <div id="np-editor"><small style="color:var(--muted)">← 从列表选择一个流程，或新建一个开始</small></div>
+  </div>
+</div>
+<script>
+var RUN=null, CUR=1, BUSY=false;
+var g=function(id){return document.getElementById(id);};
+function esc(s){return (s||"").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];});}
+function jf(u,o){var opt=o?{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(o)}:{};return fetch(u,opt).then(function(r){return r.json();});}
+function loadList(){
+  jf("/api/pipeline/list").then(function(d){
+    var h="";
+    (d.runs||[]).forEach(function(r){
+      h+='<div class="run-item'+(RUN&&RUN.id==r.id?" on":"")+'" data-id="'+r.id+'">'+esc(r.title)+
+        '<small>进行到第 '+r.current+'/7 步 · '+new Date(r.updatedAt).toLocaleString()+'</small></div>';
+    });
+    g("np-runs").innerHTML=h||'<small style="color:var(--muted)">暂无流程</small>';
+  });
+}
+g("np-runs").addEventListener("click",function(e){
+  var it=e.target.closest(".run-item");if(!it)return;
+  jf("/api/pipeline/get?id="+it.getAttribute("data-id")).then(function(d){if(d.ok){RUN=d.run;CUR=RUN.current;render();}});
+});
+g("np-create").addEventListener("click",function(){
+  var t=g("np-title").value.trim(),i=g("np-idea").value.trim();
+  if(!i){msg("请先填原始想法","#C62828");return;}
+  jf("/api/pipeline/new",{title:t,idea:i}).then(function(d){
+    if(d.ok){RUN=d.run;CUR=1;g("np-title").value="";g("np-idea").value="";loadList();render();msg("已创建","#2E7D32");}
+  });
+});
+function msg(t,c){var m=g("np-msg");if(m){m.textContent=t;m.style.color=c||"#2E7D32";}}
+function render(){
+  if(!RUN)return;
+  var sh="";
+  RUN.steps.forEach(function(s){
+    sh+='<span class="stp '+s.status+(s.index==CUR?" cur":"")+'" data-i="'+s.index+'">'+s.index+" "+esc(s.title)+'</span>';
+  });
+  var s=RUN.steps[CUR-1];
+  g("np-editor").innerHTML=
+    '<div class="ed-head"><b>第 '+CUR+'/7 步 · '+esc(s.title)+'</b><span class="badge '+s.status+'">'+s.status+'</span></div>'+
+    '<div class="steps">'+sh+'</div>'+
+    '<label>产物（可 AI 生成后人工修订）</label>'+
+    '<textarea id="np-out" rows="16">'+esc(s.output)+'</textarea>'+
+    '<div class="acts">'+
+    '<button id="np-gen"'+(BUSY?" disabled":"")+'>AI 生成'+(s.output?"（重新）":"")+'</button>'+
+    '<button class="ghost" id="np-save">保存</button>'+
+    '<button class="ghost" id="np-done">保存并完成此步</button>'+
+    '<span id="np-msg"></span></div>';
+  g("np-gen").addEventListener("click",genStep);
+  g("np-save").addEventListener("click",function(){saveStep("running");});
+  g("np-done").addEventListener("click",function(){saveStep("done");});
+  var stepsEl=document.querySelector(".steps");
+  stepsEl.addEventListener("click",function(e){
+    var st=e.target.closest(".stp");if(!st)return;
+    CUR=parseInt(st.getAttribute("data-i"),10);render();
+  });
+}
+function genStep(){
+  if(BUSY||!RUN)return;BUSY=true;msg("AI 生成中…（走 /api/llm/chat 多档案 fallback）");
+  var btn=g("np-gen");if(btn)btn.disabled=true;
+  jf("/api/pipeline/chatbody?id="+RUN.id+"&index="+CUR).then(function(body){
+    return jf("/api/llm/chat",body);
+  }).then(function(d){
+    BUSY=false;
+    if(d.ok&&d.content){
+      g("np-out").value=d.content;
+      msg("已生成 "+((d.ms||"?")+"ms")+"，可修订后保存","#2E7D32");
+    }else{msg("生成失败: "+(d.error||"?"),"#C62828");}
+    if(btn)btn.disabled=false;
+  }).catch(function(e){BUSY=false;msg("网络错误: "+e,"#C62828");if(btn)btn.disabled=false;});
+}
+function saveStep(st){
+  if(!RUN)return;
+  var out=g("np-out").value;
+  jf("/api/pipeline/save",{id:RUN.id,index:CUR,output:out,status:st}).then(function(d){
+    if(d.ok){RUN=d.run;CUR=RUN.current;render();loadList();msg(st=="done"?"已完成第 "+CUR+" 步（注意：current 已推进）":"已保存","#2E7D32");}
+    else msg("保存失败: "+(d.error||"?"),"#C62828");
+  });
+}
+g("np-export").addEventListener("click",function(){
+  if(!RUN)return;
+  var md="# "+RUN.title+"\n\n> 原始想法: "+RUN.idea+"\n";
+  RUN.steps.forEach(function(s){
+    md+="\n## "+("0"+s.index).slice(-2)+" "+s.title+"（"+s.status+"）\n\n"+(s.output||"(待完成)")+"\n";
+  });
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([md],{type:"text/markdown"}));
+  a.download=RUN.title||"pipeline";a.click();
+});
+loadList();
+</script>
+</body>
+</html>
