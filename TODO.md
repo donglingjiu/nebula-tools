@@ -28,3 +28,4 @@
 - [ ] ai-studio.html 与 pipeline.html 双流程工作台合并去重
 - [ ] pipeline 导出 MD 应包含未保存的当前 textarea 内容
 - [ ] AI token 级统计挂 llmCall usage（对齐 llmops-metrics.md tokens_in/out，接 aiops AICall 三件套）
+- [ ] /api/metrics 未鉴权（生产需 ADMIN_TOKEN 校验或反代门禁；当前开发网可用）

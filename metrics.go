@@ -161,7 +161,7 @@ func (w *mWriter) WriteHeader(code int) {
 func MetricsWrap(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, metP) {
-			next.ServeHTTP(w, r)
+			metHJSON(w, r)
 			return
 		}
 		mw := &mWriter{ResponseWriter: w, status: 200}

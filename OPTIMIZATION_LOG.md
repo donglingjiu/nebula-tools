@@ -116,3 +116,18 @@
 1. 内存态，重启清零（TODO 已记持久化/导出）
 2. token 级统计未挂（需动 llmproxy，P2 接 AICall 三件套）
 3. 单实例视角，多副本部署需聚合层
+
+## [2026-11-05] OPT-004b 修复 /api/metrics 404（看板空白根因）
+
+### 变更
+- MetricsWrap 内 metrics 路径分支由 next.ServeHTTP（透传给内层，无人处理→404）改为 metHJSON 直接服务
+- admin-metrics.html LLM P95 卡片修正运算优先级（||0+"ms" → Math.round(...)+"ms"）
+- TODO 记入：metrics 端点生产环境需鉴权门禁
+
+### 根因复盘
+- MetricsWrap 设计意图是"自身路径自己服务、不计数"，但误写成透传；内层 mux（newRouter）无此路由 → 404
+- 前端 fetch 的 catch 静默吞错，放大为"页面空白无提示"；后续前端统一加 console.warn
+
+### 经验
+1. Wrap 链里"短路服务"与"透传"必须显式区分；smoke 里对新增端点本身要做 200 断言（本次 smoke 恰好暴露，价值验证）
+2. 静默 catch 适合轮询页面，但首次加载失败应有可见提示（后续改进）
