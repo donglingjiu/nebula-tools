@@ -147,3 +147,16 @@
 ### 经验
 1. 注入 HTML 必须"检测已存在再操作"，替换目标须精确到完整标签边界
 2. go:embed 下改 web 文件需重编译重启才生效（已纳入本次 smoke）
+
+## [2026-11-05] OPT-006b 修复 metrics.go 结构体 tag（CI vet 红根因）
+
+### 变更
+- mPathStat.TotalMs 的 tag `json:"-"` 补回丢失的闭合引号（nt4 heredoc 转义笔误），vet 恢复通过
+
+### 根因复盘
+- unquoted heredoc + 反引号转义写 struct tag，闭合引号丢失；编译/测试/运行均不受影响，唯 vet 静态检查拦截
+- 发布流水线（tidy+vet+test）在 16 个提交合入后首次跑 vet，被本次新代码触发
+
+### 经验
+1. heredoc 生成含反引号的 Go 代码极易出错，struct tag 优先用 awk printf %c(96) 重建整行
+2. vet 是 CI 里唯一拦住此问题的关卡，继续保留 continue-on-error=false

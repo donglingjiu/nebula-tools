@@ -18,7 +18,7 @@ const metP = "/api/metrics"
 type mPathStat struct {
 	Count   int   `json:"count"`
 	Errs    int   `json:"errs"`
-	TotalMs int64 `json:"-`
+	TotalMs int64 `json:"-"`
 }
 
 type mRecent struct {
