@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>监控看板 - Nova Tools</title>
+<style>
+:root{--bg:#FFF8F0;--card:#fff;--ink:#4A3728;--muted:#A1887F;--acc:#F5A623;--line:rgba(245,166,35,.3)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"PingFang SC",sans-serif;background:var(--bg);color:var(--ink);padding:20px}
+h1{font-size:20px;margin-bottom:4px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:16px}
+.sub b{color:var(--acc)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.card .v{font-size:24px;font-weight:700}
+.card .k{font-size:12px;color:var(--muted);margin-top:4px}
+.card.warn .v{color:#C62828}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.panel h3{font-size:14px;margin-bottom:10px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{padding:6px 8px;text-align:left;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:500}
+.sc{padding:1px 8px;border-radius:999px;color:#fff;font-size:11px}
+.s2{background:#4CAF50}.s4{background:#EF5350}.s5{background:#EF5350}.s3{background:#FF9800}
+@media(max-width:760px){.cols{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<h1>监控看板</h1>
+<div class="sub">每 5 秒自动刷新 · 口径对齐 AutoDev llmops-metrics.md · <b id="ts">-</b></div>
+<div class="grid" id="cards"></div>
+<div class="cols">
+  <div class="panel"><h3>Top 路径</h3><table id="top"><thead><tr><th>路径</th><th>次数</th><th>均耗时</th><th>错误</th></tr></thead><tbody></tbody></table></div>
+  <div class="panel"><h3>最近请求</h3><table id="recent"><thead><tr><th>时间</th><th>路径</th><th>状态</th><th>耗时</th></tr></thead><tbody></tbody></table></div>
+</div>
+<script>
+function fnum(n){return (n>=1000)?(n/1000).toFixed(1)+"k":n;}
+function render(d){
+  var cards=[
+    ["总请求",fnum(d.req_total||0),""],
+    ["每分钟请求",d.rpm||0,""],
+    ["错误率",(d.error_rate||0).toFixed(2)+"%",(d.error_rate>5?"warn":"")],
+    ["LLM 调用",(d.llm&&d.llm.calls)||0,""],
+    ["LLM 错误",(d.llm&&d.llm.errors)||0,((d.llm&&d.llm.errors)>0?"warn":"")],
+    ["LLM 均耗时",Math.round((d.llm&&d.llm.avg_ms)||0)+"ms",""],
+    ["LLM P95",(d.llm&&d.llm.p95_ms)||0+"ms",""],
+    ["运行时长",(d.uptime_sec>=3600?(d.uptime_sec/3600).toFixed(1)+"h":Math.round((d.uptime_sec||0)/60)+"min"),""]
+  ];
+  document.getElementById("cards").innerHTML=cards.map(function(c){
+    return '<div class="card '+c[2]+'"><div class="v">'+c[1]+'</div><div class="k">'+c[0]+'</div></div>';
+  }).join("");
+  var th="";
+  (d.top||[]).forEach(function(t){
+    th+='<tr><td>'+t.path+'</td><td>'+t.count+'</td><td>'+Math.round(t.avgMs)+'ms</td><td>'+(t.errs||0)+'</td></tr>';
+  });
+  document.querySelector("#top tbody").innerHTML=th||'<tr><td colspan=4 style="color:#A1887F">暂无数据</td></tr>';
+  var tr="";
+  (d.recent||[]).slice(0,20).forEach(function(r){
+    var cls=r.status<300?"s2":(r.status<500?"s3":"s5");
+    tr+='<tr><td>'+r.ts+'</td><td>'+r.path+'</td><td><span class="sc '+cls+'">'+r.status+'</span></td><td>'+r.ms+'ms</td></tr>';
+  });
+  document.querySelector("#recent tbody").innerHTML=tr||'<tr><td colspan=4 style="color:#A1887F">暂无数据</td></tr>';
+  document.getElementById("ts").textContent=new Date().toLocaleTimeString();
+}
+function load(){fetch("/api/metrics").then(function(r){return r.json();}).then(render).catch(function(){});}
+load();setInterval(load,5000);
+</script>
+</body>
+</html>

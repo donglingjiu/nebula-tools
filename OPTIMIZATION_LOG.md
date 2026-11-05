@@ -94,3 +94,25 @@
 
 ### 影响面
 - NT-4 监控可在此链路上统计每步 token/耗时（chatbody→chat 已有明确埋点位）
+
+## [2026-11-05] OPT-004 监控看板（NT-4）
+
+### 变更
+- 新增 metrics.go：MetricsWrap 最外层中间件（计数含鉴权拒绝）+ /api/metrics 快照端点（req_total/rpm/error_rate/LLM calls+avg+p95/top8 路径/最近 60 条）
+- 新增 web/admin-metrics.html：8 指标卡 + Top 路径 + 最近请求表，5 秒轮询，暖色系
+- main.go 接线 MetricsWrap(secMiddleware(PipelineWrap(FeatureWrap(...))))；功能池新增"监控看板"卡片
+- SSE /stream 路径计数但豁免延迟统计（长连接不污染 P95）
+
+### 对标来源
+- AutoDev references/llmops-metrics.md（指标 schema、三层聚合、报警阈值 error_rate>5%）
+- Dify LLMOps 看板（token/延迟/成本）；Grafana RED 方法（Rate/Error/Duration）
+
+### 优点
+1. 零依赖内存实现，快照 JSON 一发即用，后续可对接 Prometheus exporter
+2. 最外层包装连 401/404 都计入，错误率真实；LLM P95 直接支撑容量评估（NT-3 实测单次 30s）
+3. 看板补齐 admin-monitor.html 里"规划中"的看板位，与其报警渠道形成闭环
+
+### 缺点 / 已知限制
+1. 内存态，重启清零（TODO 已记持久化/导出）
+2. token 级统计未挂（需动 llmproxy，P2 接 AICall 三件套）
+3. 单实例视角，多副本部署需聚合层

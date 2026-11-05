@@ -52,6 +52,7 @@ func ntSeedFeatures() []*Feature {
 		mk("wf-ai-workflow", "workflow", "AI 工作流", "可视化工作流编排", "/aiworkflow.html", "online", 100, true),
 		mk("wf-flowchart", "workflow", "流程图", "流程图绘制", "/flowchart.html", "online", 100, false),
 		mk("wf-pipeline-7", "workflow", "全流程 7 步", "头脑风暴到测试落地", "/pipeline.html", "online", 100, true),
+		mk("wf-metrics", "workflow", "监控看板", "QPS/延迟/错误率/LLM 调用", "/admin-metrics.html", "online", 100, false),
 	}
 }
 
