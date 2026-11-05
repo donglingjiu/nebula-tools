@@ -31,3 +31,4 @@
 - [ ] /api/metrics 未鉴权（生产需 ADMIN_TOKEN 校验或反代门禁；当前开发网可用）
 - [ ] 观察：若 /api/favs 匿名 401 也出现在控制台，同法处理（当前仅 history 有噪音）
 - [ ] all-pages sweep 的 curl 加 -L 跟随重定向（/index.html→/ 301 是正常目录跳转，修正误报）
+- [ ] 登录页 GitHub/Google/微信 按钮为装饰未接后端（2026-11-05 截图），接 OAuth 或移除

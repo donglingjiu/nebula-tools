@@ -138,3 +138,57 @@ func (s *Store) Create(email, pw string) (*User, error) {
 	}
 	return u, nil
 }
+
+// ===== 管理员工具 API（cmd/pwreset 使用）=====
+
+// SetPassword 重置指定邮箱的密码
+func (s *Store) SetPassword(email, pw string) error {
+	h, err := HashPassword(pw)
+	if err != nil {
+		return err
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for i := range s.users {
+		if s.users[i].Email == email {
+			s.users[i].Hash = h
+			return s.saveLocked()
+		}
+	}
+	return errors.New("user not found")
+}
+
+// SetRole 设置用户角色（user|admin|super）
+func (s *Store) SetRole(email, role string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for i := range s.users {
+		if s.users[i].Email == email {
+			s.users[i].Role = role
+			return s.saveLocked()
+		}
+	}
+	return errors.New("user not found")
+}
+
+// Remove 删除用户
+func (s *Store) Remove(email string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for i := range s.users {
+		if s.users[i].Email == email {
+			s.users = append(s.users[:i], s.users[i+1:]...)
+			return s.saveLocked() == nil
+		}
+	}
+	return false
+}
+
+// List 返回用户快照
+func (s *Store) List() []User {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	out := make([]User, len(s.users))
+	copy(out, s.users)
+	return out
+}

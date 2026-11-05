@@ -188,3 +188,18 @@
 ### 经验
 1. HTML 修复断言必须双向：坏模式清零 + 好模式（<a href= 精确匹配）就位
 2. 前端页面无编译期检查，语法错误只在浏览器控制台暴露——全页 sweep 纳入 smoke
+
+## [2026-11-05] OPT-007 用户管理 CLI（cmd/pwreset）
+
+### 变更
+- internal/auth/store.go 增导出方法：SetPassword/SetRole/Remove/List（复用内部锁与 saveLocked）
+- 新增 cmd/pwreset：list/setpw/verify/rm/promote 五子命令，复用项目自身哈希函数保证格式一致
+- 清理 smoke_ 测试账号；重置 admin@example.com 密码并验证（HTTP 登录 200）
+
+### 取舍
+- 不做文件手术：store 内存常驻，直接改 users.json 会被下次保存覆盖；必须走工具 + 重启
+- 本机 gcc 过老无法编 cgo 运行时，全部构建/运行统一 CGO_ENABLED=0（与主程序一致）
+
+### 缺点 / 已知限制
+- pwreset 无鉴权（本机执行），生产环境应限制数据目录的主机访问权限
+- 管理操作后建议重启服务，避免与服务端内存副本的并发写窗口
