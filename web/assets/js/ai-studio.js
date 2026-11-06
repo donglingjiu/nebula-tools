@@ -98,6 +98,9 @@
     var r2 = await api('POST', '/api/ai/flow/run', { id: r.data.id });
     if (!r2.ok) { handleErr(r2); note('流程已创建, 可用「推进一步」继续'); return; }
     renderFlow(r2.data);
+    if (r2.data && r2.data.state === 'error') {
+      note('生成失败: 上游 AI 未配置或不可达(见步骤 error), 配置 AI Profile 后可「推进一步」重试');
+    } else { note('七步全部完成'); }
   }
   async function stepAdvance() {
     window.nbswRetry = stepAdvance;
@@ -201,7 +204,7 @@
     document.getElementById('nbsw-export').onclick = exportMd;
     // OPT-009: 标准七步入口 + 历史流程
     var b7 = document.createElement('button');
-    b7.textContent = '��� 标准七步（一句话 → 成品方案）';
+    b7.textContent = '▶ 标准七步（一句话 → 成品方案）';
     b7.style.cssText = 'margin:6px 6px 0 0;padding:10px 16px;background:#7c3aed;color:#fff;border:0;border-radius:10px;cursor:pointer;font-size:14px';
     b7.onclick = async function () {
       var idea = (document.getElementById('nbsw-idea').value || '').trim();

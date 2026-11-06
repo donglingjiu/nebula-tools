@@ -245,3 +245,23 @@
 - 一键跑 7 步×真实 AI 耗时较长，超时/付费墙时降级为「推进一步」
 - 历史列表返回完整 Flow（含全部输出），流量偏大；>10 条不分页
 - styled hero 与页尾组件的双 UI 打通记 TODO
+
+## [2026-11-06] OPT-010 pipeline 跳转化 + 收尾打磨（P2-1 步骤 C，双台归一完成）
+
+### 变更
+- pipeline.html → 自动跳转页（meta refresh + location.replace → /ai-studio.html），文案说明承接关系
+- feature 卡片 /pipeline.html → /ai-studio.html（Go 源锚点验证）
+- ai-studio.js：���→▶ 字体兼容；flow/run state=error 时提示「上游 AI 未配置」替代误导性「生成中」
+- sweep 加 -L 修正 301 误报
+
+### 验收（浏览器实测）
+- 标准七步按钮 / 历史列表 / 打开渲染 7 步 / 追问导出接管 全通过
+- AI 步骤 error 根因 = 上游占位符 api.example.com（配置问题非代码），机械链路完整验证
+
+### 缺点 / 已知限制
+- 旧 /api/pipeline* API 保留过渡，前端已无调用方
+- aiworkflow.html（P2-2）待盘点裁决
+
+### 勘误（OPT-010 补，nt15b）
+- nt15 提交步骤路径笔误（web/ai-studio.js ≠ web/assets/js/ai-studio.js）致 git add fatal，变更滞留工作区；nt15b 修正提交
+- feature 卡片为裸字符串 "/pipeline.html"（非 href=），nt15 探测模式漏改；nt15b 改 feature.go 并过 gate

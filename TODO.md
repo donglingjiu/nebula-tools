@@ -30,10 +30,12 @@
 - [ ] AI token 级统计挂 llmCall usage（对齐 llmops-metrics.md tokens_in/out，接 aiops AICall 三件套）
 - [ ] /api/metrics 未鉴权（生产需 ADMIN_TOKEN 校验或反代门禁；当前开发网可用）
 - [ ] 观察：若 /api/favs 匿名 401 也出现在控制台，同法处理（当前仅 history 有噪音）
-- [ ] all-pages sweep 的 curl 加 -L 跟随重定向（/index.html→/ 301 是正常目录跳转，修正误报）
+- [x] sweep 已加 -L（301 误报修正）
 - [ ] 登录页 GitHub/Google/微信 按钮为装饰未接后端（2026-11-05 截图），接 OAuth 或移除
 - [ ] P2-1 双工作台合并（侦察已完成，方案定稿待拍板）：以 ai-studio 为基座（JWT/付费墙 402·410/追问 flow/chat/流式/导出 zip+md 齐备，首页+导航正式入口），移植 pipeline 独有三件套：①7 步精选提示词模板（pipeline.go pipePrompt）②历史列表 ③data/pipelines 持久化。三步走：A) internal/ai/flow.go 加 standard7 模板 + flow/list 端点 B) ai-studio.js/html 加"标准 7 步"入口 C) pipeline.html 变跳转页、feature.go 卡片改路由、旧 API 留一版本后清理。动手前先读 flow.go 全文（9.8KB，含 flow_test.go 7KB）
 - [ ] P2-2 第三工作台盘点：web/aiworkflow.html（17.6KB）与 ai-studio 重叠度未知，随 P2-1 一并裁决去留
 - [x] P2-1.A 后端标准7步：start7/list 端点 + truncRunes 护栏（OPT-008）
 - [x] P2-1.B 前端标准七步：ai-studio 注入入口+历史列表（OPT-009）
 - [ ] ai-studio 双 UI 统一：styled hero 的「开始全流程」按钮/单选与页尾 nbsw 组件接线打通（当前 hero 半装饰）
+- [x] P2-1.C pipeline.html 跳转 ai-studio + feature 卡片改路由（OPT-010）
+- [ ] AI Profile 配置：上游为占位符 api.example.com（DNS 不存在→所有 AI 步骤 error），需真实 LLM endpoint+key+model（nt16）
