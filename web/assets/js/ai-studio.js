@@ -136,6 +136,48 @@
       URL.revokeObjectURL(a.href);
     } catch (err) { note('网络异常: ' + err); }
   }
+  // ===== OPT-009 (nt14): 标准七步 + 历史流程 =====
+  async function runStd7(idea) {
+    window.nbswRetry = runStd7;
+    var r = await api('POST', '/api/ai/flow/start7', { title: '', idea: idea });
+    if (!r.ok) { handleErr(r); return; }
+    renderFlow(r.data);
+    note('七步流程已创建, 服务端逐步生成中（7 步×真实 AI, 稍等）...');
+    var r2 = await api('POST', '/api/ai/flow/run', { id: r.data.id });
+    if (!r2.ok) { handleErr(r2); note('流程已创建, 可用「推进一步」逐段生成'); return; }
+    renderFlow(r2.data);
+  }
+  async function loadHist() {
+    window.nbswRetry = loadHist;
+    var r = await api('GET', '/api/ai/flow/list');
+    if (!r.ok) { handleErr(r); return; }
+    var hp = document.getElementById('nbsw-hist');
+    if (!hp) return;
+    var fs = r.data || [];
+    if (!fs.length) {
+      hp.innerHTML = '<div style="color:#64748b;font-size:13px;padding:6px 0">暂无历史流程</div>';
+      return;
+    }
+    hp.innerHTML = '';
+    fs.slice(0, 10).forEach(function (f) {
+      var it = document.createElement('div');
+      it.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;margin:4px 0;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:13px';
+      var left = document.createElement('span');
+      left.style.cssText = 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+      left.textContent = (f.title || '(无标题)') + ' · ' + f.state + ' · ' + String(f.created_at || '').slice(0, 16).replace('T', ' ');
+      var open = document.createElement('button');
+      open.textContent = '打开';
+      open.style.cssText = 'flex:none;padding:4px 10px;background:#7c3aed;color:#fff;border:0;border-radius:6px;cursor:pointer';
+      open.onclick = function () {
+        window.nbswFlowId = f.id;
+        renderFlow(f);
+        note('已载入: ' + f.title + '（可推进一步 / 追问 / 导出）');
+      };
+      it.appendChild(left);
+      it.appendChild(open);
+      hp.appendChild(it);
+    });
+  }
   function ui() {
     if (document.getElementById('nbsw-out')) return;
     var w = document.createElement('div');
@@ -157,6 +199,26 @@
     document.getElementById('nbsw-adv').onclick = stepAdvance;
     document.getElementById('nbsw-cgo').onclick = chat;
     document.getElementById('nbsw-export').onclick = exportMd;
+    // OPT-009: 标准七步入口 + 历史流程
+    var b7 = document.createElement('button');
+    b7.textContent = '��� 标准七步（一句话 → 成品方案）';
+    b7.style.cssText = 'margin:6px 6px 0 0;padding:10px 16px;background:#7c3aed;color:#fff;border:0;border-radius:10px;cursor:pointer;font-size:14px';
+    b7.onclick = async function () {
+      var idea = (document.getElementById('nbsw-idea').value || '').trim();
+      if (!idea) { note('请先在上方输入你的想法'); return; }
+      b7.disabled = true;
+      await runStd7(idea);
+      b7.disabled = false;
+    };
+    var hb = document.createElement('button');
+    hb.textContent = '↻ 历史流程';
+    hb.style.cssText = 'margin:6px 6px 0 0;padding:10px 16px;background:#475569;color:#fff;border:0;border-radius:10px;cursor:pointer;font-size:14px';
+    hb.onclick = loadHist;
+    var hp = document.createElement('div');
+    hp.id = 'nbsw-hist';
+    hp.style.cssText = 'margin:10px 0 0';
+    w.appendChild(b7); w.appendChild(hb); w.appendChild(hp);
+    loadHist();
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', ui);

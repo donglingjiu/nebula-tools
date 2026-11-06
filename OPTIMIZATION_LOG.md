@@ -229,3 +229,19 @@
 ### 经验
 1. 锚点镜像必须镜像整行语义（含中间件包裹），只取前缀会漏掉横切关注点
 2. 管理操作（pwreset setpw）必须在服务停止后执行，运行中内存副本会覆盖文件写入
+
+## [2026-11-06] OPT-009 ai-studio 前端接入标准七步 + 历史流程（P2-1 步骤 B）
+
+### 变更
+- web/assets/js/ai-studio.js（纯增量，闭包内）：runStd7（start7→flow/run 一键，失败提示逐步兜底）+ loadHist（flow/list 前10条，点击载入 renderFlow 并设 nbswFlowId，追问/导出/推进一步全复用）
+- ui() 尾部注入「��� 标准七步」「↻ 历史流程」两按钮 + nbsw-hist 容器
+- vhash bump 防 JS 缓存
+
+### 取舍
+- 独立按钮而非第三 radio：不触碰 createRun 与 select innerHTML（raw 字节不可信），零回归面
+- 新代码插在闭包内 function ui() 前，复用 api/note/handleErr/renderFlow，不重复造轮子
+
+### 缺点 / 已知限制
+- 一键跑 7 步×真实 AI 耗时较长，超时/付费墙时降级为「推进一步」
+- 历史列表返回完整 Flow（含全部输出），流量偏大；>10 条不分页
+- styled hero 与页尾组件的双 UI 打通记 TODO
