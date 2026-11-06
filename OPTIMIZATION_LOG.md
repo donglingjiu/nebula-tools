@@ -305,3 +305,18 @@
 - 字节模式：marker 正则修复 + surrogateescape 剥离全部非法字节 + 严格解码复验 + 侍服内容复验
 ### 规约（即刻生效）
 - 一切经终端 cat 粘贴的脚本/代码：禁用全部 4 字节 emoji；符号仅用 BMP（▶ ↻ ✓ -）；每次改 JS 后必须过严格 UTF-8 解码门
+
+## [2026-11-06] OPT-013 死壳清扫 + hero 接线（P2 收尾）
+
+### 侦破
+- ai-studio.html 静态壳 = G5 时代多层克隆（hero/状态条/nbst 两步卡/阶段面板/产出汇总栏），全部无接线
+- 活工作台为 ai-studio.js 纯 JS 构建（静态 html 无任何 nbsw-* id），与死壳三层叠放造成混淆
+- ai-chat.html 零 API 引用 + 「阶段5接入」陈年占位 = 纯死壳
+
+### 变更
+- hero btnStart -> runStd7（死按钮变标准七步真入口）
+- 死壳 CSS 隐藏，带护栏：候选 id 凡被 live js getElementById 引用一律豁免（防误杀活容器）
+- ai-chat.html 跳转化 -> ai-studio
+
+### 缺点 / 已知限制
+- hero 单选「单阶段逐步跑」成装饰（点击一律 std7）；隐藏后若留空壳容器再微调

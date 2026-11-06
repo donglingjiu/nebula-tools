@@ -36,8 +36,9 @@
 - [ ] P2-2 第三工作台盘点：web/aiworkflow.html（17.6KB）与 ai-studio 重叠度未知，随 P2-1 一并裁决去留
 - [x] P2-1.A 后端标准7步：start7/list 端点 + truncRunes 护栏（OPT-008）
 - [x] P2-1.B 前端标准七步：ai-studio 注入入口+历史列表（OPT-009）
-- [ ] ai-studio 双 UI 统一：styled hero 的「开始全流程」按钮/单选与页尾 nbsw 组件接线打通（当前 hero 半装饰）
+- [x] ai-studio 双 UI 统一：hero btnStart 接 runStd7 + 死壳 CSS 隐藏（护栏: live 引用 id 自动豁免）（OPT-013）
 - [x] P2-1.C pipeline.html 跳转 ai-studio + feature 卡片改路由（OPT-010）
 - [x] AI Profile 配置：glm-4-flash 接入（OPT-011/glm）
 - [x] P2-2 aiworkflow 全量移植：edit-step/材料/按流程选模型 + 跳转化（OPT-012）
 - [ ] flowChat 模型 override（advanceOne 已支持, chat 端点待同款补丁）+ 材料入库存储
+- [ ] P3 候选：flowChat 模型 override / 独立快聊页(relaySSE) / 材料入库存储 / hero 单选第二项语义 / 旧 /api/llm 下线盘点
