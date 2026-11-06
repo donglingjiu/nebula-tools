@@ -38,4 +38,4 @@
 - [x] P2-1.B 前端标准七步：ai-studio 注入入口+历史列表（OPT-009）
 - [ ] ai-studio 双 UI 统一：styled hero 的「开始全流程」按钮/单选与页尾 nbsw 组件接线打通（当前 hero 半装饰）
 - [x] P2-1.C pipeline.html 跳转 ai-studio + feature 卡片改路由（OPT-010）
-- [ ] AI Profile 配置：上游为占位符 api.example.com（DNS 不存在→所有 AI 步骤 error），需真实 LLM endpoint+key+model（nt16）
+- [x] AI Profile 配置：glm-4-flash 接入（OPT-011/glm）

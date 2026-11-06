@@ -265,3 +265,16 @@
 ### 勘误（OPT-010 补，nt15b）
 - nt15 提交步骤路径笔误（web/ai-studio.js ≠ web/assets/js/ai-studio.js）致 git add fatal，变更滞留工作区；nt15b 修正提交
 - feature 卡片为裸字符串 "/pipeline.html"（非 href=），nt15 探测模式漏改；nt15b 改 feature.go 并过 gate
+
+## [2026-11-06] OPT-011b key 清洗 + 上游验证（glm）
+
+### 诊断链（nt16b→c→d）
+1. nt16c C 步全量解析定位：net/http invalid header = key 含 \r（剪贴板 CRLF 粘贴，read 只吃 \n）
+2. 错误 URL=open.bigmodel.cn → default_profile_id 生效（占位符嫌疑排除）
+3. curl exit=60 → 该域 TLS 证书验证失败（git/github 正常 → 疑似企业网对 AI 域名的选择性拦截）
+4. nt16d：粘贴清洗（tr -d 空白）重建 profile → 默认切换 → 按 TLS 结果条件回落 mock
+
+### 结果
+- 真实调用 glm-4-flash 验证通过（nt16d 清洗 key 后）
+### 经验
+- 一切粘贴输入的 secret 必须在入口清洗空白字符；HTTP 头非法字符错误 = 数据脏不是网络断
