@@ -31,6 +31,7 @@ type FlowStep struct {
 type Flow struct {
 	ID        string              `json:"id"`
 	UserID    string              `json:"user_id,omitempty"`
+	ProfileID string              `json:"profile_id,omitempty"`
 	Title     string              `json:"title"`
 	State     string              `json:"state"`
 	CreatedAt string              `json:"created_at"`
@@ -214,6 +215,11 @@ func (s *Service) advanceOne(f *Flow, u *auth.User) (*FlowStep, *gateErr) {
 		return nil, nil
 	}
 	prof, key, ge := s.gateNow(u, "")
+	if f.ProfileID != "" {
+		if p2, k2, e2 := admin.ResolveProfileByID(s.dir, f.ProfileID); e2 == nil {
+			prof, key = p2, k2
+		}
+	}
 	if ge != nil {
 		return nil, ge
 	}

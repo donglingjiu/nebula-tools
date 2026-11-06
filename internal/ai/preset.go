@@ -1,9 +1,8 @@
 package ai
 
-// OPT-008: 标准 7 步模板（自 NT-3 pipeline 移植）。复用 flow 引擎的
-// 服务端 AI 调用 / 门禁付费墙 / 上下文链 / 追问 / 导出。
-// 上一步结论经 advanceOne 注入的 system 消息（前序步骤输出）传递，
-// 模板内不做运行时插值；truncRunes 为长链上下文防膨胀护栏。
+// OPT-008/012: 标准7步模板(自NT-3移植) + 材料注入 + 按流程选模型 + 步骤产出编辑。
+// 复用 flow 引擎: 服务端AI/门禁付费墙/上下文链/追问/导出。
+// 上一步结论经 advanceOne 注入的 system 消息传递; truncRunes 为长链护栏。
 
 import (
 	"encoding/json"
@@ -11,6 +10,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"nova/internal/admin"
 )
 
 type stdStep struct {
@@ -29,7 +30,6 @@ var std7 = []stdStep{
 	{"testing", "测试落地", "你是测试工程师，基于实现计划输出测试方案与执行记录。\n【上一步结论】（见系统消息「前序步骤输出」最后一段）\n输出 markdown：\n## 测试场景清单\n| # | 场景 | 步骤 | 预期 | 结果(待执行) |\n## 缺陷记录\n| # | 描述 | 严重级 | 状态 |\n## 上线检查单\n逐条可勾选"},
 }
 
-// truncRunes 按字符数截断（rune 安全），保护长流程上下文
 func truncRunes(s string, n int) string {
 	r := []rune(s)
 	if len(r) <= n {
@@ -38,12 +38,13 @@ func truncRunes(s string, n int) string {
 	return string(r[:n]) + "…(截断)"
 }
 
-// flowStartStd POST /api/ai/flow/start7 {title, idea}
-// 用标准 7 步模板创建 Flow（AI 消耗在后续 advance/run 时发生）
+// flowStartStd POST /api/ai/flow/start7 {title, idea, material?, profile_id?}
 func (s *Service) flowStartStd(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		Title string `json:"title"`
-		Idea  string `json:"idea"`
+		Title     string `json:"title"`
+		Idea      string `json:"idea"`
+		Material  string `json:"material,omitempty"`
+		ProfileID string `json:"profile_id,omitempty"`
 	}
 	if json.NewDecoder(r.Body).Decode(&req) != nil ||
 		strings.TrimSpace(req.Idea) == "" {
@@ -53,6 +54,10 @@ func (s *Service) flowStartStd(w http.ResponseWriter, r *http.Request) {
 	u := s.auth.UserFrom(r)
 	if u == nil {
 		fail(w, 401, "未登录")
+		return
+	}
+	if req.ProfileID != "" && !admin.ProfileAvailable(s.dir, req.ProfileID) {
+		fail(w, 400, "指定的模型 Profile 不可用")
 		return
 	}
 	title := strings.TrimSpace(req.Title)
@@ -70,11 +75,15 @@ func (s *Service) flowStartStd(w http.ResponseWriter, r *http.Request) {
 		Title:     title,
 		State:     "created",
 		CreatedAt: time.Now().Format(time.RFC3339),
+		ProfileID: req.ProfileID,
 	}
 	for i, sd := range std7 {
 		p := sd.Tmpl
 		if i == 0 {
 			p = strings.Replace(p, "{{IDEA}}", strings.TrimSpace(req.Idea), 1)
+			if m := strings.TrimSpace(req.Material); m != "" {
+				p += "\n\n【参考资料】\n" + truncRunes(m, 8000)
+			}
 		}
 		f.Steps = append(f.Steps, FlowStep{Name: sd.Title, Prompt: p, Status: "pending"})
 	}
@@ -86,7 +95,7 @@ func (s *Service) flowStartStd(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, f)
 }
 
-// flowList GET /api/ai/flow/list — 当前用户可见的流程，创建时间倒序
+// flowList GET /api/ai/flow/list
 func (s *Service) flowList(w http.ResponseWriter, r *http.Request) {
 	u := s.auth.UserFrom(r)
 	if u == nil {
@@ -109,4 +118,57 @@ func (s *Service) flowList(w http.ResponseWriter, r *http.Request) {
 		out = []*Flow{}
 	}
 	writeJSON(w, 200, out)
+}
+
+// flowEditStep POST /api/ai/flow/edit-step {id, index, output}
+// OPT-012 独有①: 已完成步骤产出可编辑, 后续步骤经 flowCtx 消费新内容(human-in-the-loop)
+func (s *Service) flowEditStep(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		ID     string `json:"id"`
+		Index  int    `json:"index"`
+		Output string `json:"output"`
+	}
+	if json.NewDecoder(r.Body).Decode(&req) != nil || req.ID == "" {
+		fail(w, 400, "参数错误: 需要 id/index/output")
+		return
+	}
+	u := s.auth.UserFrom(r)
+	if u == nil {
+		fail(w, 401, "未登录")
+		return
+	}
+	st, err := s.loadFlows()
+	if err != nil {
+		fail(w, 500, "读取流程失败")
+		return
+	}
+	f, ok := st.Flows[req.ID]
+	if !ok || !canAccess(f, u) {
+		fail(w, 404, "流程不存在")
+		return
+	}
+	if req.Index < 0 || req.Index >= len(f.Steps) {
+		fail(w, 400, "步骤序号非法")
+		return
+	}
+	if f.Steps[req.Index].Status != "done" {
+		fail(w, 400, "仅已完成步骤可编辑")
+		return
+	}
+	f.Steps[req.Index].Output = strings.TrimSpace(req.Output)
+	if err := s.saveFlows(st); err != nil {
+		fail(w, 500, "保存流程失败")
+		return
+	}
+	writeJSON(w, 200, map[string]any{"ok": true, "flow": f})
+}
+
+// flowProfiles GET /api/ai/flow/profiles — 启用模型安全列表(仅 id/name/model)
+func (s *Service) flowProfiles(w http.ResponseWriter, r *http.Request) {
+	u := s.auth.UserFrom(r)
+	if u == nil {
+		fail(w, 401, "未登录")
+		return
+	}
+	writeJSON(w, 200, admin.ListEnabledProfiles(s.dir))
 }

@@ -39,3 +39,5 @@
 - [ ] ai-studio 双 UI 统一：styled hero 的「开始全流程」按钮/单选与页尾 nbsw 组件接线打通（当前 hero 半装饰）
 - [x] P2-1.C pipeline.html 跳转 ai-studio + feature 卡片改路由（OPT-010）
 - [x] AI Profile 配置：glm-4-flash 接入（OPT-011/glm）
+- [x] P2-2 aiworkflow 全量移植：edit-step/材料/按流程选模型 + 跳转化（OPT-012）
+- [ ] flowChat 模型 override（advanceOne 已支持, chat 端点待同款补丁）+ 材料入库存储

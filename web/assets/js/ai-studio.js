@@ -81,6 +81,8 @@
     window.nbswFlowId = f.id;
     var ex = document.getElementById('nbsw-export');
     if (ex) ex.style.display = 'inline-block';
+    window.nbswFlow = f;
+    if (typeof window.nbswFillEdit === 'function') window.nbswFillEdit();
   }
   async function createRun() {
     window.nbswRetry = createRun;
@@ -142,7 +144,7 @@
   // ===== OPT-009 (nt14): 标准七步 + 历史流程 =====
   async function runStd7(idea) {
     window.nbswRetry = runStd7;
-    var r = await api('POST', '/api/ai/flow/start7', { title: '', idea: idea });
+    var r = await api('POST', '/api/ai/flow/start7', { title: '', idea: idea, material: (window.nbswMaterial || ''), profile_id: ((document.getElementById('nbsw-prof') || {}).value || '') });
     if (!r.ok) { handleErr(r); return; }
     renderFlow(r.data);
     note('七步流程已创建, 服务端逐步生成中（7 步×真实 AI, 稍等）...');
@@ -220,7 +222,75 @@
     var hp = document.createElement('div');
     hp.id = 'nbsw-hist';
     hp.style.cssText = 'margin:10px 0 0';
-    w.appendChild(b7); w.appendChild(hb); w.appendChild(hp);
+    * OPT-012: 模型选择+材料+步骤编辑 *
+    var ps = document.createElement('select');
+    ps.id = 'nbsw-prof';
+    ps.style.cssText = 'margin:6px 6px 0 0;padding:8px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;vertical-align:top';
+    ps.innerHTML = '<option value="">模型: 默认</option>';
+    api('GET', '/api/ai/flow/profiles').then(function (r) {
+      if (!r.ok) return;
+      (r.data || []).forEach(function (p) {
+        var o = document.createElement('option');
+        o.value = p.id; o.textContent = '模型: ' + p.name + ' (' + p.model + ')';
+        ps.appendChild(o);
+      });
+    });
+    var mf = document.createElement('input');
+    mf.type = 'file'; mf.accept = '.txt,.md,.csv,.markdown';
+    mf.style.cssText = 'margin:6px 6px 0 0;font-size:13px;vertical-align:top';
+    mf.onchange = function () {
+      var file = mf.files && mf.files[0];
+      if (!file) return;
+      var rd = new FileReader();
+      rd.onload = function () {
+        window.nbswMaterial = String(rd.result || '');
+        note('已载入材料: ' + file.name + ' (' + window.nbswMaterial.length + ' 字, 随第一步下发)');
+      };
+      rd.readAsText(file);
+    };
+    var es = document.createElement('select');
+    es.id = 'nbsw-edit-step';
+    es.style.cssText = 'margin:6px 6px 0 0;padding:8px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px';
+    var et = document.createElement('textarea');
+    et.id = 'nbsw-edit-out';
+    et.placeholder = '选择已完成步骤后修改其产出, 后续步骤将基于修改后内容继续';
+    et.style.cssText = 'width:100%;min-height:90px;margin:6px 0;padding:8px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;font-family:inherit';
+    var eb = document.createElement('button');
+    eb.textContent = '��� 保存步骤产出';
+    eb.style.cssText = 'margin:6px 6px 0 0;padding:8px 14px;background:#0ea5e9;color:#fff;border:0;border-radius:8px;cursor:pointer;font-size:13px';
+    eb.onclick = async function () {
+      var f = window.nbswFlow;
+      if (!f) { note('先创建或载入流程'); return; }
+      var i = parseInt(es.value, 10);
+      if (isNaN(i)) { note('先选择要编辑的步骤'); return; }
+      var r = await api('POST', '/api/ai/flow/edit-step', { id: f.id, index: i, output: et.value });
+      if (!r.ok) { handleErr(r); return; }
+      renderFlow(r.data.flow);
+      note('步骤产出已更新, 「推进一步」将基于新内容继续');
+    };
+    window.nbswFillEdit = function () {
+      var f = window.nbswFlow;
+      var cur = es.value;
+      es.innerHTML = '';
+      var any = false;
+      ((f && f.steps) || []).forEach(function (s, i) {
+        if (s.status === 'done') {
+          any = true;
+          var o = document.createElement('option');
+          o.value = i; o.textContent = (i + 1) + '. ' + s.name;
+          es.appendChild(o);
+        }
+      });
+      if (!any) { es.innerHTML = '<option value="">（暂无已完成步骤）</option>'; et.value = ''; return; }
+      var has = Array.prototype.some.call(es.options, function (op) { return op.value === cur; });
+      if (has) es.value = cur;
+      et.value = (f.steps[parseInt(es.value, 10)] || {}).output || '';
+    };
+    w.appendChild(ps); w.appendChild(mf);
+    w.appendChild(b7); w.appendChild(hb);
+    w.appendChild(document.createElement('hr'));
+    w.appendChild(es); w.appendChild(eb); w.appendChild(et); w.appendChild(hp);
+    loadHist();
     loadHist();
   }
   if (document.readyState === 'loading') {

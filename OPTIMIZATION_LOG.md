@@ -278,3 +278,20 @@
 - 真实调用 glm-4-flash 验证通过（nt16d 清洗 key 后）
 ### 经验
 - 一切粘贴输入的 secret 必须在入口清洗空白字符；HTTP 头非法字符错误 = 数据脏不是网络断
+
+## [2026-11-06] OPT-012 aiworkflow 三独有全量移植进 flow 引擎（P2-2, option A）
+
+### 变更
+- admin/profile_lookup.go：ResolveProfileByID(锁模式同默认解析)+ProfileAvailable+ListEnabledProfiles(仅id/name/model)
+- flow.go：Flow.ProfileID 字段 + advanceOne override（flowRun/flowAdvance 共用咽喉, 已验证锚点）
+- preset.go：start7 增 material(第一步注入, 8000 rune 上限)/profile_id(创建时校验启用)；flowEditStep(done 步骤产出编辑, running 可编辑=人工把关核心)；flowProfiles
+- ai-studio.js：模型下拉+材料上传(.txt/.md/.csv)+步骤编辑面板(下拉选done步→textarea→保存→后续步骤吃新产出)
+- aiworkflow.html 跳转化 + feature 卡改路由；legacy /api/llm 保留(AI 对话页仍在用, P3 处理)
+
+### 取舍
+- override 只打 advanceOne 已验证锚点, flowChat 未动（聊天用默认模型, 记 TODO）
+- 材料仅注入第一步 prompt, 靠上下文链向后传递, 不落库
+- 编辑不设 running 拦截: 改完继续正是功能灵魂, 并发编辑竞态接受(单用户工具)
+
+### 缺点 / 已知限制
+- flowChat 模型 override 待补；材料>8000字截断；编辑面板用 textarea 无 markdown 预览
