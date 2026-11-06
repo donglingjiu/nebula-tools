@@ -349,6 +349,11 @@ func (s *Service) flowChat(w http.ResponseWriter, r *http.Request) {
 		writeGate(w, ge)
 		return
 	}
+	if f.ProfileID != "" {
+		if p2, k2, e2 := admin.ResolveProfileByID(s.dir, f.ProfileID); e2 == nil {
+			prof, key = p2, k2
+		}
+	}
 	msgs := []map[string]string{}
 	if ctx := flowCtx(f); ctx != "" {
 		msgs = append(msgs, map[string]string{

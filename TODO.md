@@ -40,5 +40,6 @@
 - [x] P2-1.C pipeline.html 跳转 ai-studio + feature 卡片改路由（OPT-010）
 - [x] AI Profile 配置：glm-4-flash 接入（OPT-011/glm）
 - [x] P2-2 aiworkflow 全量移植：edit-step/材料/按流程选模型 + 跳转化（OPT-012）
-- [ ] flowChat 模型 override（advanceOne 已支持, chat 端点待同款补丁）+ 材料入库存储
+- [x] flowChat 模型 override（同 advanceOne 补丁, mock 功能探针双校验, OPT-014）
+- [ ] 材料入库存储（现仅注入第一步 prompt, >8000 字截断）
 - [ ] P3 候选：flowChat 模型 override / 独立快聊页(relaySSE) / 材料入库存储 / hero 单选第二项语义 / 旧 /api/llm 下线盘点

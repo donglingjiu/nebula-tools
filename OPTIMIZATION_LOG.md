@@ -333,3 +333,17 @@
 - 终端粘贴链路：4 字节 emoji 禁入一切 heredoc（js/py/md/json 通杀）
 - py3.6：re.split 零宽 lookahead 不可用，分段用 finditer 手工切
 - bytes 字面量只能 ASCII；所有 mutation 带硬门（存在性 grep 不等于语法/内容校验）
+
+## [2026-11-06] OPT-014 flowChat 模型 override（补齐 TODO 尾巴）
+
+### 变更
+- flow.go flowChat：gateNow 块后插入同款 override（锚点: gateNow+writeGate 四行组合全文件唯一; f 在 gateNow 前已获取）
+- 与 advanceOne 共用 ResolveProfileByID; 失败静默回落默认（行为与 advanceOne 一致）
+### 验证
+- mock(:18787) 功能探针（curl 实请求看 [mock] 回显）+ 绑定流程 advance/chat 双路; chat 用 [mock]+NBX014 双校验防回落假阳性
+### 事故与规约（nt22/nt22b/nt22c 三幕）
+- 现象: mock 两次"启动失败"但 mock.log 全空; fuser 曾在 18787 杀出两个陈年 PID
+- 诊断: ss 检测不可靠（缺失/异常）-> 全部端口检查为假阴性, 而 mock 实际一直活着
+- 规约: 端口/服务活性一律用功能探针（对端口发真实请求验证响应内容）, ss/固定 sleep 均不可作为生死判据; 后台启动 poll 上限 10s
+### 已知限制
+- ResolveProfileByID 失败（profile 运行期被删/禁用）静默回落默认模型, 创建时已校验, 属边角
