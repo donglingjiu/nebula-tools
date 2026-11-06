@@ -347,3 +347,13 @@
 - 规约: 端口/服务活性一律用功能探针（对端口发真实请求验证响应内容）, ss/固定 sleep 均不可作为生死判据; 后台启动 poll 上限 10s
 ### 已知限制
 - ResolveProfileByID 失败（profile 运行期被删/禁用）静默回落默认模型, 创建时已校验, 属边角
+
+## [2026-11-06] OPT-015 独立快聊页 quickchat（relaySSE 首个前端消费者）
+
+### 变更
+- web/quickchat.html：自包含页（无 core.js 依赖），fetch 流式读 SSE + delta 累积渲染；token 多级 fallback；Enter 发送/Shift+Enter 换行；历史仅内存
+- feature.go：AI 快聊卡（从 ai-studio 卡 morph, build 失败回滚保护）
+### 侦察
+- Part A 先照亮盲点（chat handler 实现/token key/卡片结构）再动手; token key 注入 + 常见键兜底链
+### 已知限制
+- /api/ai/chat 用默认模型（不支持 per-session 换模型）; 历史不落库（快聊定位）; token 存储键以冒烟实测为准

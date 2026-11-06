@@ -50,6 +50,7 @@ func ntSeedFeatures() []*Feature {
 		mk("mind-ai-expand", "mindmap", "AI 思维扩散", "AI 补全与结构化脑图", "/mindmap.html", "beta", 30, true),
 		mk("wf-ai-chat", "workflow", "AI 对话", "多模型对话工作台", "/ai.html", "online", 100, true),
 		mk("wf-ai-workflow", "workflow", "AI 工作流", "可视化工作流编排", "/ai-studio.html", "online", 100, true),
+		mk("wf-ai-workflow", "workflow", "AI 工作流", "可视化工作流编排", "/quickchat.html", "online", 100, true),
 		mk("wf-flowchart", "workflow", "流程图", "流程图绘制", "/flowchart.html", "online", 100, false),
 		mk("wf-pipeline-7", "workflow", "全流程 7 步", "头脑风暴到测试落地", "/ai-studio.html", "online", 100, true),
 		mk("wf-metrics", "workflow", "监控看板", "QPS/延迟/错误率/LLM 调用", "/admin-metrics.html", "online", 100, false),

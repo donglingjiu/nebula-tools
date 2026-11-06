@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI 快聊 · Nova Tools</title>
+<style>
+  body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:#faf7f2;color:#334155}
+  .hd{display:flex;align-items:center;gap:14px;padding:14px 22px;background:#fff;border-bottom:1px solid #eee}
+  .hd a{color:#7c3aed;text-decoration:none;font-size:14px}
+  .hd h1{font-size:17px;margin:0;font-weight:700}
+  .hd span{font-size:12.5px;color:#94a3b8}
+  .wrap{max-width:760px;margin:24px auto;padding:0 16px}
+  #qc-log{display:flex;flex-direction:column;gap:10px;min-height:280px}
+  .msg{max-width:82%;padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+  .u{align-self:flex-end;background:#7c3aed;color:#fff;border-bottom-right-radius:4px}
+  .a{align-self:flex-start;background:#fff;border:1px solid #e7e2d9;border-bottom-left-radius:4px}
+  .s{align-self:center;background:#fef3c7;color:#92400e;font-size:12.5px;border-radius:8px;padding:6px 12px}
+  .in{display:flex;gap:10px;margin-top:16px}
+  textarea{flex:1;min-height:64px;padding:10px 12px;border:1px solid #d6d3cd;border-radius:10px;font-size:14px;font-family:inherit;resize:vertical}
+  button{padding:0 22px;background:#7c3aed;color:#fff;border:0;border-radius:10px;cursor:pointer;font-size:14px}
+  button:disabled{background:#c4b5fd;cursor:not-allowed}
+  .hint{font-size:12.5px;color:#94a3b8;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="hd"><a href="/ai-studio.html">← 返回工作台</a><h1>AI 快聊</h1><span>一句话直问，不建流程、不留痕</span></div>
+<div class="wrap">
+  <div id="qc-log"></div>
+  <div class="in">
+    <textarea id="qc-in" placeholder="输入问题，Enter 发送，Shift+Enter 换行"></textarea>
+    <button id="qc-go">发送</button>
+  </div>
+  <div class="hint">服务端走 /api/ai/chat（SSE 流式，默认模型）。历史仅保存在当前页面，刷新即清。</div>
+</div>
+<script>
+(function(){
+  var CAND = ['nb_token', 'nb_token', 'nova_token', 'nbs_token', 'token'];
+  var tok = '';
+  for (var k = 0; k < CAND.length; k++) {
+    try { var v = localStorage.getItem(CAND[k]); if (v) { tok = v; break; } } catch (e) {}
+  }
+  var log = document.getElementById('qc-log'), inp = document.getElementById('qc-in'), go = document.getElementById('qc-go');
+  var hist = [], busy = false;
+  function sys(t){ var d = document.createElement('div'); d.className = 'msg s'; d.textContent = t; log.appendChild(d); window.scrollTo(0, document.body.scrollHeight); }
+  function add(cls, t){ var d = document.createElement('div'); d.className = 'msg ' + cls; d.textContent = t; log.appendChild(d); window.scrollTo(0, document.body.scrollHeight); return d; }
+  if (!tok) { sys('未检测到登录态，请先到 AI 工作台登录后再来快聊'); go.disabled = true; return; }
+  function send(){
+    if (busy) return;
+    var t = (inp.value || '').trim(); if (!t) return;
+    inp.value = ''; add('u', t); hist.push({role: 'user', content: t});
+    var ad = add('a', '…'); busy = true; go.disabled = true;
+    fetch('/api/ai/chat', {method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok}, body: JSON.stringify({messages: hist})})
+    .then(function(res){
+      if (!res.ok) { return res.text().then(function(tx){ throw new Error('HTTP ' + res.status + ' ' + tx.slice(0, 160)); }); }
+      var rd = res.body.getReader(), dec = new TextDecoder(), buf = '', full = '';
+      function pump(){
+        return rd.read().then(function(r){
+          if (r.done) {
+            if (!full) ad.textContent = '（空响应）';
+            else { ad.textContent = full; hist.push({role: 'assistant', content: full}); }
+            busy = false; go.disabled = false; return;
+          }
+          buf += dec.decode(r.value, {stream: true});
+          var ls = buf.split('\n'); buf = ls.pop();
+          for (var i = 0; i < ls.length; i++) {
+            var ln = ls[i];
+            if (ln.slice(0, 5) === 'data:') {
+              var pl = ln.slice(5).trim();
+              if (pl === '[DONE]') continue;
+              try { var j = JSON.parse(pl); var ch = (j.choices || [])[0] || {}; var c = (ch.delta && ch.delta.content) || ''; if (c) { full += c; ad.textContent = full + ' ▌'; } } catch (e) {}
+            }
+          }
+          if (full) ad.textContent = full;
+          return pump();
+        });
+      }
+      return pump();
+    })
+    .catch(function(e){ ad.textContent = '[出错] ' + e.message; busy = false; go.disabled = false; });
+  }
+  go.onclick = send;
+  inp.addEventListener('keydown', function(e){ if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
+})();
+</script>
+</body>
+</html>
