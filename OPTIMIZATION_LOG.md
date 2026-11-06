@@ -381,3 +381,16 @@
 - Quick Switch 源文件 morph 插入 AI 快聊项（守卫式, 源由 A1 侦察定位）+ vhash bump
 ### 已知限制
 - 若 tools 端点为白名单类别且无 ai 类, 需按 A2/A3 输出下轮调整
+
+## [2026-11-06] OPT-015d 快聊入口合围（ToolRegistry + app.js routes）
+
+### 侦察裁决（nt24/25 遗案全解）
+- /api/tools = ToolRegistry 独立注册表（与 feature pool 并行); 条目含 on 开关, 非管理员仅见 on=true
+- 顶部导航 + Quick Switch 同源 = app.js routes 数组; 「AI 对话」href=chat.html（nt25 锚点落空根因）
+- 路由注册为 Go1.22 方法前缀「GET /api/tools」（此前引号锚定 grep 漏检）
+- tools 筛选 chips（AI 助手/文档处理/数据分析/开发工具）对应 ToolRegistry.cat 值域
+### 变更
+- ToolRegistry 注册 ai-quickchat（克隆现有条目样式, cat/icon/kind 取自 AI 族条目实测值）
+- app.js routes 插入 quickchat 项（顶部导航位 + QS 自动命中）+ tools.html/app.js href 映射补行（若形态可克隆）
+### 验证
+- 匿名 /api/tools 可见 = 默认开启实锤; admin cookie 探针区分注册/开启两态
