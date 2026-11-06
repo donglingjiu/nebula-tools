@@ -47,7 +47,7 @@
 .out-item .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); flex: none; }
 .hint-ai { font: 500 12px/1.5 var(--font-sans); color: var(--text-sub); }
 </style>
-<style>/* OPT-013: hide unwired legacy shells (nbsw workbench fully replaces) */#workCard, #outSidebar, #chatZone, #chatInput, #chatLog, #btnChat, #stepper, #stageTitle, #stageContent, #btnEdit, #btnRegen, #btnNext, #btnCancel, #editArea, #editActions, #btnSave, #stMeter, #stModel, #stStage, #stTime, #stTokens, #phaseIdea, #phaseStage, #nbst-in, #nbst-f1, #nbst-f2, #nbst-fr, #nbst-ft, #nbst-go, #nbst-out, #btnExportZip, #btnExportMd, #btnNewFlow{display:none!important}</style></head>
+<style>/* OPT-013: hide unwired legacy shells (nbsw workbench fully replaces) */#workCard, #outSidebar, #chatZone, #chatInput, #chatLog, #btnChat, #stepper, #stageTitle, #stageContent, #btnEdit, #btnRegen, #btnNext, #btnCancel, #editArea, #editActions, #btnSave, #stMeter, #stModel, #stStage, #stTime, #stTokens, #phaseIdea, #phaseStage, #nbst-in, #nbst-f1, #nbst-f2, #nbst-fr, #nbst-ft, #nbst-go, #nbst-out, #btnExportZip, #btnExportMd, #btnNewFlow{display:none!important}</style><style>/* OPT-013b: hide leftover shell containers (marker walk-back) */#nbst-ft,#stepper,#stModel,#nbx-dead-4{display:none!important}</style></head>
 <body class="nb-skin">
 
 <header class="nb-header">
@@ -74,7 +74,7 @@
         <div class="stage-head"><h2>用一句话描述你的想法 ✨</h2></div>
         <label class="hint-ai" for="ideaInput">例如：做一个记录我家猫体重的提醒小工具</label>
         <textarea class="nb-textarea" id="ideaInput" rows="4" placeholder="用一句话描述你的想法…"></textarea>
-        <div style="display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;align-items:center">
+        <div id="nbx-dead-4" style="display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;align-items:center">
           <label style="font:500 13px/1 var(--font-sans);color:var(--text-sub)">
             <input type="radio" name="mode" value="full" checked> 全流程一键跑
           </label>
@@ -137,7 +137,7 @@
 </div>
 
 <script src="/assets/js/core.js?v=088441b8"></script>
-<script src="/assets/js/ai-studio.js?v=1793972312"></script>
+<script src="/assets/js/ai-studio.js?v=1793973664"></script>
 <script>
 (function(){
   function tok(){
