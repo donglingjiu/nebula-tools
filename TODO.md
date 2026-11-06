@@ -34,3 +34,4 @@
 - [ ] 登录页 GitHub/Google/微信 按钮为装饰未接后端（2026-11-05 截图），接 OAuth 或移除
 - [ ] P2-1 双工作台合并（侦察已完成，方案定稿待拍板）：以 ai-studio 为基座（JWT/付费墙 402·410/追问 flow/chat/流式/导出 zip+md 齐备，首页+导航正式入口），移植 pipeline 独有三件套：①7 步精选提示词模板（pipeline.go pipePrompt）②历史列表 ③data/pipelines 持久化。三步走：A) internal/ai/flow.go 加 standard7 模板 + flow/list 端点 B) ai-studio.js/html 加"标准 7 步"入口 C) pipeline.html 变跳转页、feature.go 卡片改路由、旧 API 留一版本后清理。动手前先读 flow.go 全文（9.8KB，含 flow_test.go 7KB）
 - [ ] P2-2 第三工作台盘点：web/aiworkflow.html（17.6KB）与 ai-studio 重叠度未知，随 P2-1 一并裁决去留
+- [x] P2-1.A 后端标准7步：start7/list 端点 + truncRunes 护栏（OPT-008）

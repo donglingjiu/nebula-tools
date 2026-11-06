@@ -136,7 +136,7 @@ func flowCtx(f *Flow) string {
 	var sb strings.Builder
 	for _, st := range f.Steps {
 		if st.Status == "done" && st.Output != "" {
-			sb.WriteString("[" + st.Name + "] " + st.Output + "\n")
+			sb.WriteString("[" + st.Name + "] " + truncRunes(st.Output, 4000) + "\n")
 		}
 	}
 	return strings.TrimSpace(sb.String())

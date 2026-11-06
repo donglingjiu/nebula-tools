@@ -203,3 +203,19 @@
 ### 缺点 / 已知限制
 - pwreset 无鉴权（本机执行），生产环境应限制数据目录的主机访问权限
 - 管理操作后建议重启服务，避免与服务端内存副本的并发写窗口
+
+## [2026-11-06] OPT-008 标准7步模板并入 flow 引擎（P2-1 步骤 A）
+
+### 变更
+- internal/ai/preset.go：std7 模板表（移植 NT-3 pipePrompt，角色+输出结构逐字保留）+ flowStartStd + flowList + truncRunes
+- flow.go flowCtx：每步输出 4000 rune 截断护栏（7 步长链防 token 膨胀）
+- 路由：POST /api/ai/flow/start7、GET /api/ai/flow/list（锚点镜像插入）
+- flow_test.go：TestTruncRunes
+
+### 取舍
+- 上一步结论走 advanceOne 已有的 system 消息（前序步骤输出），模板零插值 → advanceOne 零改动
+- pipeline 两阶段（前端直发 AI）无门禁无计费，不配当基座；其模板+历史列表语义已全部后移
+
+### 缺点 / 已知限制
+- flowCtx 汇总全部已完成步骤（非仅上一步），长流程上下文更丰富但 token 更多，护栏 4000/步
+- 旧 /api/pipeline* 端点暂留，C 步（前端切换 + 过渡期后清理）另行提交

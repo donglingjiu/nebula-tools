@@ -204,3 +204,15 @@ func TestFlowIsolation(t *testing.T) {
 		t.Fatalf("历史数据super应200: %d", c)
 	}
 }
+
+// OPT-008: truncRunes 防膨胀护栏
+func TestTruncRunes(t *testing.T) {
+	if got := truncRunes("hello", 10); got != "hello" {
+		t.Fatalf("short string should pass through: %q", got)
+	}
+	long := strings.Repeat("中", 5000)
+	got := truncRunes(long, 4000)
+	if len([]rune(got)) != 4005 || !strings.HasSuffix(got, "…(截断)") {
+		t.Fatalf("cap failed: rune=%d", len([]rune(got)))
+	}
+}
