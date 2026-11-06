@@ -234,7 +234,7 @@
 
 ### 变更
 - web/assets/js/ai-studio.js（纯增量，闭包内）：runStd7（start7→flow/run 一键，失败提示逐步兜底）+ loadHist（flow/list 前10条，点击载入 renderFlow 并设 nbswFlowId，追问/导出/推进一步全复用）
-- ui() 尾部注入「��� 标准七步」「↻ 历史流程」两按钮 + nbsw-hist 容器
+- ui() 尾部注入「 标准七步」「↻ 历史流程」两按钮 + nbsw-hist 容器
 - vhash bump 防 JS 缓存
 
 ### 取舍
@@ -251,7 +251,7 @@
 ### 变更
 - pipeline.html → 自动跳转页（meta refresh + location.replace → /ai-studio.html），文案说明承接关系
 - feature 卡片 /pipeline.html → /ai-studio.html（Go 源锚点验证）
-- ai-studio.js：���→▶ 字体兼容；flow/run state=error 时提示「上游 AI 未配置」替代误导性「生成中」
+- ai-studio.js：→▶ 字体兼容；flow/run state=error 时提示「上游 AI 未配置」替代误导性「生成中」
 - sweep 加 -L 修正 301 误报
 
 ### 验收（浏览器实测）
@@ -300,7 +300,7 @@
 
 ### 事故（双层）
 1. nt17 marker sed 坏分支产生裸星号行（L225）-> IIFE 语法爆炸
-2. 终端粘贴通道把 4 字节 emoji（���/��� 非 BMP）搅成非法 UTF-8（0xED CESU 痕迹）-> 文件本身非法，Python 严格解码的修复工具自己也跑不了；grep/sed 字节级操作全程无感
+2. 终端粘贴通道把 4 字节 emoji（/ 非 BMP）搅成非法 UTF-8（0xED CESU 痕迹）-> 文件本身非法，Python 严格解码的修复工具自己也跑不了；grep/sed 字节级操作全程无感
 ### 修复
 - 字节模式：marker 正则修复 + surrogateescape 剥离全部非法字节 + 严格解码复验 + 侍服内容复验
 ### 规约（即刻生效）
