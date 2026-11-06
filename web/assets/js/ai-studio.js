@@ -222,7 +222,7 @@
     var hp = document.createElement('div');
     hp.id = 'nbsw-hist';
     hp.style.cssText = 'margin:10px 0 0';
-    * OPT-012: 模型选择+材料+步骤编辑 *
+    // OPT-012: model select + material upload + step edit
     var ps = document.createElement('select');
     ps.id = 'nbsw-prof';
     ps.style.cssText = 'margin:6px 6px 0 0;padding:8px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;vertical-align:top';
@@ -256,7 +256,7 @@
     et.placeholder = '选择已完成步骤后修改其产出, 后续步骤将基于修改后内容继续';
     et.style.cssText = 'width:100%;min-height:90px;margin:6px 0;padding:8px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;font-family:inherit';
     var eb = document.createElement('button');
-    eb.textContent = '��� 保存步骤产出';
+    eb.textContent = '保存步骤产出';
     eb.style.cssText = 'margin:6px 6px 0 0;padding:8px 14px;background:#0ea5e9;color:#fff;border:0;border-radius:8px;cursor:pointer;font-size:13px';
     eb.onclick = async function () {
       var f = window.nbswFlow;
