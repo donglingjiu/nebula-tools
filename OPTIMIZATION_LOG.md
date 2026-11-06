@@ -357,3 +357,15 @@
 - Part A 先照亮盲点（chat handler 实现/token key/卡片结构）再动手; token key 注入 + 常见键兜底链
 ### 已知限制
 - /api/ai/chat 用默认模型（不支持 per-session 换模型）; 历史不落库（快聊定位）; token 存储键以冒烟实测为准
+
+## [2026-11-06] OPT-015b 快聊可发现性（工具注册表 + 导航）
+
+### 背景
+- OPT-015 页面本体 E2E 通过（用户实测真 GLM 流式回复, 控制台干净）
+- 但入口缺失: tools.html 搜索 0 结果 / Quick Switch 无项 / hero 搜索无果
+### 变更
+- 工具注册表 morph 插入 AI 快聊行（build 硬门+回滚）
+- core.js 导航 morph 插入 AI 快聊项 + 全站 core.js vhash bump（缓存穿透）
+- /api/features 实测裁决 features.html refs=0 之谜（SPA 静态 grep 假阴性）
+### 已知限制
+- Quick Switch 若有独立索引, 视侦察结果下轮补
