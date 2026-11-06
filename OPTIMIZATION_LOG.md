@@ -369,3 +369,15 @@
 - /api/features 实测裁决 features.html refs=0 之谜（SPA 静态 grep 假阴性）
 ### 已知限制
 - Quick Switch 若有独立索引, 视侦察结果下轮补
+
+## [2026-11-06] OPT-015c 快聊入口修复（tools 类别正名 + ID 去撞 + QS 源定位）
+
+### 诊断（nt24 侦察裁决）
+- /api/tools refs=0 根因: nt23 morph 保留模板行 category=workflow, 而 tools 端点不收录 workflow 类
+- 隐患: morph 行沿用 id wf-ai-workflow, 与真工作台行撞车
+- features.html refs=0 之谜裁决: /api/features 实测含 quickchat=SPA 静态 grep 假阴性
+### 变更
+- feature.go: quickchat 行正名 id=ai-quickchat, category 归入 AI 助手类, weight 95
+- Quick Switch 源文件 morph 插入 AI 快聊项（守卫式, 源由 A1 侦察定位）+ vhash bump
+### 已知限制
+- 若 tools 端点为白名单类别且无 ai 类, 需按 A2/A3 输出下轮调整
