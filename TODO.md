@@ -36,7 +36,7 @@
 - [ ] P2-2 第三工作台盘点：web/aiworkflow.html（17.6KB）与 ai-studio 重叠度未知，随 P2-1 一并裁决去留
 - [x] P2-1.A 后端标准7步：start7/list 端点 + truncRunes 护栏（OPT-008）
 - [x] P2-1.B 前端标准七步：ai-studio 注入入口+历史列表（OPT-009）
-- [x] ai-studio 双 UI 统一：死壳 CSS 隐藏（护栏豁免）+ hero 容器整体隐藏（接线方案因 bytes 字面量事故作废, OPT-013b 定稿）
+- [x] ai-studio 双 UI 统一：静态死壳+hero容器+内联死卡全灭（hero 接线方案作废: 控件本就未渲染, OPT-013a-d）
 - [x] P2-1.C pipeline.html 跳转 ai-studio + feature 卡片改路由（OPT-010）
 - [x] AI Profile 配置：glm-4-flash 接入（OPT-011/glm）
 - [x] P2-2 aiworkflow 全量移植：edit-step/材料/按流程选模型 + 跳转化（OPT-012）

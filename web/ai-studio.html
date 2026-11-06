@@ -137,7 +137,7 @@
 </div>
 
 <script src="/assets/js/core.js?v=088441b8"></script>
-<script src="/assets/js/ai-studio.js?v=1793974685"></script>
+<script src="/assets/js/ai-studio.js?v=1793975219"></script>
 <script>
 (function(){
   function tok(){
@@ -236,7 +236,7 @@
     if(document.getElementById('nbst-out'))return;
     var w=document.createElement('div');
     w.style.cssText='max-width:860px;margin:16px auto;padding:16px;background:#fff;border:1px solid #eee;border-radius:12px';
-    w.innerHTML='<h3 style="margin:0 0 8px">AI 工作台</h3>'
+    w.style.display='none';w.innerHTML='<h3 style="margin:0 0 8px">AI 工作台</h3>'
       +'<textarea id="nbst-in" rows="2" placeholder="问点什么..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px"></textarea>'
       +'<button id="nbst-go" style="margin:8px 0;padding:8px 18px;background:#7c3aed;color:#fff;border:0;border-radius:8px;cursor:pointer">发送(流式)</button>'
       +'<div style="margin:14px 0 6px;font-weight:600">流程模式(两步串行)</div>'

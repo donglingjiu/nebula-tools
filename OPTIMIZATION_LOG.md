@@ -321,17 +321,15 @@
 ### 缺点 / 已知限制
 - hero 单选「单阶段逐步跑」成装饰（点击一律 std7）；隐藏后若留空壳容器再微调
 
-## [2026-11-06] OPT-013 死壳清扫 + hero 接线（P2 收尾）
 
-### 侦破
-- ai-studio.html 静态壳 = G5 时代多层克隆（hero/状态条/nbst 两步卡/阶段面板/产出汇总栏），全部无接线
-- 活工作台为 ai-studio.js 纯 JS 构建（静态 html 无任何 nbsw-* id），与死壳三层叠放造成混淆
-- ai-chat.html 零 API 引用 + 「阶段5接入」陈年占位 = 纯死壳
+## [2026-11-06] OPT-013d 死壳终局 + 工具链复盘（合并勘误 013b/c）
 
-### 变更
-- hero btnStart -> runStd7（死按钮变标准七步真入口）
-- 死壳 CSS 隐藏，带护栏：候选 id 凡被 live js getElementById 引用一律豁免（防误杀活容器）
-- ai-chat.html 跳转化 -> ai-studio
-
-### 缺点 / 已知限制
-- hero 单选「单阶段逐步跑」成装饰（点击一律 std7）；隐藏后若留空壳容器再微调
+### 死壳歼灭战全程
+- OPT-013（dd755aa/dfeb450）：getElementById 护栏隐藏静态死壳 + ai-chat 跳转；hero 接线补丁因 bytes 字面量含中文未落地（事故1）
+- OPT-013b（7513459）：marker 回溯隐藏 hero 容器；但取 id 窗口 300 字符抓到子元素 id，三处空放（事故2）；日志勘误因文件非法 UTF-8 未写成（事故3）
+- OPT-013c（e067930）：日志修复 12 非法字节 + 精确选择器点射（aside[流程阶段]/.meter-wrap/#ideaInput/#btnStart）生效；去重再翻车于 py3.6 零宽 split（事故4）；底部死卡确认为内联脚本构建，整块摘除被 auth 护栏正确拒绝
+- OPT-013d（本次）：w.innerHTML 前缀注入 display:none 击杀死卡（auth 零接触）；手工分段去重；TODO 失实行纠正
+### 工具链规约（累计）
+- 终端粘贴链路：4 字节 emoji 禁入一切 heredoc（js/py/md/json 通杀）
+- py3.6：re.split 零宽 lookahead 不可用，分段用 finditer 手工切
+- bytes 字面量只能 ASCII；所有 mutation 带硬门（存在性 grep 不等于语法/内容校验）
