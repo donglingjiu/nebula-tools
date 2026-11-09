@@ -394,3 +394,12 @@
 - app.js routes 插入 quickchat 项（顶部导航位 + QS 自动命中）+ tools.html/app.js href 映射补行（若形态可克隆）
 ### 验证
 - 匿名 /api/tools 可见 = 默认开启实锤; admin cookie 探针区分注册/开启两态
+
+## [2026-11-06] OPT-015e 快聊进入 tools.html 40 格清单
+
+### 架构裁决（nt26 收尾）
+- ToolRegistry(/api/tools) = 程序化文本工具注册表（23 个, cats data/dev/gen, kind:text, 条目如 data.csv2json）——快聊是页面工具, 语义不符, 有意不注册
+- tools.html 40 格网格 + 4 chips（AI 助手/文档处理/数据分析/开发工具）来自独立静态清单（40 != 23, chips 文案两表皆无）
+- 已实锤生效: app.js routes 注入 -> 顶部导航第 3 位 + Quick Switch 默认列表（用户截图验证）
+### 变更
+- 40 格清单克隆式插入 ai-quickchat（AI 需求分析卡为模板, 规划中->可用）+ cache-bust + go:embed 重建
