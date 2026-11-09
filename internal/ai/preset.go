@@ -41,10 +41,11 @@ func truncRunes(s string, n int) string {
 // flowStartStd POST /api/ai/flow/start7 {title, idea, material?, profile_id?}
 func (s *Service) flowStartStd(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		Title     string `json:"title"`
-		Idea      string `json:"idea"`
-		Material  string `json:"material,omitempty"`
-		ProfileID string `json:"profile_id,omitempty"`
+		Title       string   `json:"title"`
+		Idea        string   `json:"idea"`
+		Material    string   `json:"material,omitempty"`
+		MaterialIDs []string `json:"material_ids,omitempty"`
+		ProfileID   string   `json:"profile_id,omitempty"`
 	}
 	if json.NewDecoder(r.Body).Decode(&req) != nil ||
 		strings.TrimSpace(req.Idea) == "" {
@@ -83,6 +84,20 @@ func (s *Service) flowStartStd(w http.ResponseWriter, r *http.Request) {
 			p = strings.Replace(p, "{{IDEA}}", strings.TrimSpace(req.Idea), 1)
 			if m := strings.TrimSpace(req.Material); m != "" {
 				p += "\n\n【参考资料】\n" + truncRunes(m, 8000)
+			}
+			used := 0
+			for _, mid := range req.MaterialIDs {
+				mat, merr := s.GetMaterial(mid)
+				if merr != nil || mat == nil {
+					continue
+				}
+				if used >= 30000 {
+					p += "\n\n(库材料已达注入上限, 其余未附)"
+					break
+				}
+				body := truncRunes(mat.Content, 12000)
+				p += "\n\n【库材料·" + mat.Title + "】\n" + body
+				used += len([]rune(body))
 			}
 		}
 		f.Steps = append(f.Steps, FlowStep{Name: sd.Title, Prompt: p, Status: "pending"})

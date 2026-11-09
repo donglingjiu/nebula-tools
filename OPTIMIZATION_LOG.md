@@ -423,3 +423,17 @@
 - 零接触既有文件; build/vet/utf-8 三门, 失败即删回滚; 本轮 inert（无路由引用）
 ### staging
 - OPT-016b: 路由接线（materials CRUD 四端点）+ start7/advance 注入改造（材料库引用替换内联截断）+ ai-studio 前端（保存到库/从库引入）+ toolCard 徽标清理（若 A6 证实多余规划中）+ E2E
+
+## [2026-11-06] OPT-016b 材料库后端接通（CRUD 路由 + start7 注入）
+
+### 变更
+- materials.go: +net/http, +matList/matCreate/matGet/matDelete 四 handler（writeJSON/fail 助手, 与 preset.go 风格一致）
+- api.go Mount: flow/export 行后插 4 条路由（RequireRole user, 克隆现有样式）
+- preset.go flowStartStd: req +MaterialIDs []; 内联 material 行为原样保留; 其后新增库材料注入（GetMaterial 回显, 单条 12000 rune, 累计 30000 上限, 缺失 id 静默跳过）
+- 注入语义 = 创建时快照: 删材料不影响已建流程
+### 验证
+- mock 全链 E2E: create/list/get → start7(material_ids) → advance step0 回显含 [mock]+NBX016 → chat 回归 → delete/get 404
+- 锚点全部 strip-matched（tab 无关）+ 计数断言 + build/vet/test 三门 + 全量备份回滚
+### 已知限制
+- 材料为共享池（无 per-user 归属）; flowChat 未注入材料（待 OPT-016d, 需 Flow 持久化 MaterialIDs）
+- tools.html 快聊卡「可用+规划中」双徽标来自 app.js 后处理（R1 已定位行号, nt31 处理）

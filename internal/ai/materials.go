@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
@@ -128,4 +129,60 @@ func (s *Service) DeleteMaterial(id string) error {
 		return err
 	}
 	return nil
+}
+
+// ---- OPT-016b: HTTP handlers（路由注册于 api.go Mount, RequireRole user）----
+
+// matList GET /api/ai/materials
+func (s *Service) matList(w http.ResponseWriter, r *http.Request) {
+	ms, err := s.ListMaterials()
+	if err != nil {
+		fail(w, 500, err.Error())
+		return
+	}
+	writeJSON(w, 200, ms)
+}
+
+// matCreate POST /api/ai/materials {title, content}
+func (s *Service) matCreate(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Title   string `json:"title"`
+		Content string `json:"content"`
+	}
+	if json.NewDecoder(r.Body).Decode(&req) != nil {
+		fail(w, 400, "参数错误: 需要 title/content")
+		return
+	}
+	m, err := s.SaveMaterial(req.Title, req.Content)
+	if err != nil {
+		fail(w, 400, err.Error())
+		return
+	}
+	writeJSON(w, 200, m)
+}
+
+// matGet GET /api/ai/materials/get?id=xxx
+func (s *Service) matGet(w http.ResponseWriter, r *http.Request) {
+	m, err := s.GetMaterial(r.URL.Query().Get("id"))
+	if err != nil {
+		fail(w, 404, err.Error())
+		return
+	}
+	writeJSON(w, 200, m)
+}
+
+// matDelete POST /api/ai/materials/delete {id}
+func (s *Service) matDelete(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		ID string `json:"id"`
+	}
+	if json.NewDecoder(r.Body).Decode(&req) != nil || req.ID == "" {
+		fail(w, 400, "参数错误: 需要 id")
+		return
+	}
+	if err := s.DeleteMaterial(req.ID); err != nil {
+		fail(w, 404, err.Error())
+		return
+	}
+	writeJSON(w, 200, map[string]any{"ok": true})
 }
