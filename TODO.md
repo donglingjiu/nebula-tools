@@ -41,5 +41,5 @@
 - [x] AI Profile 配置：glm-4-flash 接入（OPT-011/glm）
 - [x] P2-2 aiworkflow 全量移植：edit-step/材料/按流程选模型 + 跳转化（OPT-012）
 - [x] flowChat 模型 override（同 advanceOne 补丁, mock 功能探针双校验, OPT-014）
-- [ ] 材料入库存储（现仅注入第一步 prompt, >8000 字截断）
+- [ ] 材料入库存储（OPT-016a 存储层落地; 路由/注入/前端接线待 OPT-016b）
 - [ ] P3 候选：flowChat 模型 override / 独立快聊页(relaySSE) / 材料入库存储 / hero 单选第二项语义 / 旧 /api/llm 下线盘点

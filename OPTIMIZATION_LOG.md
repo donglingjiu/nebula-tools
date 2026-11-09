@@ -413,3 +413,13 @@
 ### 变更
 - toolsData 头部插入 ["AI 快聊","不建流程直问 · SSE 流式回复","zap","violet","可用","quickchat","ai"]（首个 map 的 href 规则自动成链 -> AI 助手类唯一"可用+可点击"卡）
 - 全部工具徽标与 toolsCount 40 -> 41; app.js cache-bust + go:embed 重建
+
+## [2026-11-06] OPT-016a 材料库：六路侦察 + 存储层脚手架
+
+### 侦察（输出即档案）
+- 材料注入链 / 8000 截断点 / Flow struct 落盘格式 / start7 请求体 / api.go 路由注册块 / toolCard 徽标逻辑 / /api/llm 预扫——A1~A7 全量留痕, OPT-016b 按此定锚
+### 变更
+- 新增 internal/ai/materials.go（Material CRUD, 一材料一 JSON 落 s.dir/materials/, 单条 2MB 上限, 全量不截断）
+- 零接触既有文件; build/vet/utf-8 三门, 失败即删回滚; 本轮 inert（无路由引用）
+### staging
+- OPT-016b: 路由接线（materials CRUD 四端点）+ start7/advance 注入改造（材料库引用替换内联截断）+ ai-studio 前端（保存到库/从库引入）+ toolCard 徽标清理（若 A6 证实多余规划中）+ E2E
