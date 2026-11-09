@@ -152,37 +152,11 @@ func registerLLMRoutes(mux *http.ServeMux, s *srv) {
 	client := &http.Client{Timeout: 90 * time.Second}
 
 	mux.HandleFunc("GET /api/llm/profiles", func(w http.ResponseWriter, r *http.Request) {
-		ps := st.list()
-		arr := make([]map[string]interface{}, 0, len(ps))
-		for _, p := range ps {
-			arr = append(arr, llmMask(p))
-		}
-		llmWriteJSON(w, map[string]interface{}{"ok": true, "profiles": arr})
+		http.Error(w, "gone: retired by OPT-017 (profile management lives in admin console)", http.StatusGone)
 	})
 
 	mux.HandleFunc("POST /api/llm/profiles", func(w http.ResponseWriter, r *http.Request) {
-		var in LLMProfile
-		if err := llmReadJSON(r, &in); err != nil {
-			llmWriteJSON(w, map[string]interface{}{"ok": false, "error": "请求体无效"})
-			return
-		}
-		in.Name = strings.TrimSpace(in.Name)
-		if in.Name == "" {
-			llmWriteJSON(w, map[string]interface{}{"ok": false, "error": "名称必填"})
-			return
-		}
-		if _, err := llmNormalizeBase(in.BaseURL); err != nil {
-			llmWriteJSON(w, map[string]interface{}{"ok": false, "error": err.Error()})
-			return
-		}
-		in.BaseURL = strings.TrimRight(strings.TrimSpace(in.BaseURL), "/")
-		in.Model = strings.TrimSpace(in.Model)
-		if in.Model == "" {
-			llmWriteJSON(w, map[string]interface{}{"ok": false, "error": "model 必填(如 glm-4-flash)"})
-			return
-		}
-		p := st.upsert(in)
-		llmWriteJSON(w, map[string]interface{}{"ok": true, "profile": llmMask(p)})
+		http.Error(w, "gone: retired by OPT-017 (profile management lives in admin console)", http.StatusGone)
 	})
 
 	mux.HandleFunc("POST /api/llm/profiles/delete", func(w http.ResponseWriter, r *http.Request) {
@@ -213,10 +187,14 @@ func registerLLMRoutes(mux *http.ServeMux, s *srv) {
 			}
 			in.Messages[i]["content"] = llmTrunc(in.Messages[i]["content"], 16000)
 		}
-		var chatUser string
-		if u := s.user(r); u != nil {
-			chatUser = u.Username
+		u := s.user(r)
+		if u == nil {
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusUnauthorized)
+			_ = json.NewEncoder(w).Encode(map[string]interface{}{"ok": false, "error": "请先登录后再使用 AI 功能"})
+			return
 		}
+		chatUser := u.Username
 		var cands []LLMProfile
 		if in.ProfileID != "" {
 			if p, ok := st.get(in.ProfileID); ok {

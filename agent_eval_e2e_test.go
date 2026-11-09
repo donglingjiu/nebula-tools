@@ -46,9 +46,7 @@ func TestAgentEvalE2E(t *testing.T) {
 	defer mock.Close()
 
 	tc.ok("POST", "/api/auth/register", map[string]string{"username": "admin", "password": "admin123"})
-	tc.ok("POST", "/api/llm/profiles", map[string]any{
-		"name": "mock", "baseUrl": mock.URL, "apiKey": "k", "model": "mock", "enabled": true,
-	})
+	dbProfilesUpsert(LLMProfile{Name: "mock", BaseURL: mock.URL, APIKey: "k", Model: "mock", Enabled: true})
 
 	code, m := tc.do("POST", "/api/agent/eval", map[string]any{})
 	if code != 200 {

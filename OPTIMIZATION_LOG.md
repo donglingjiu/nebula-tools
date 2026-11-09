@@ -488,3 +488,23 @@
 - pipeline.go: 移除过时 /api/llm/chat 注释(NT-3 两阶段管道已被 start7 体系取代, 只删旧不捏造新)
 ### 验证
 - POST 两端点 -> 410; GET profiles 仍 200; chat 空报文 -> messages 必填(路由存活, 零上游消耗)
+
+## [2026-11-06] OPT-017c /api/llm 收官：登录门 + profiles 410 + llm.html 移除 + 测试解耦
+
+### C 轮定案（nt36 输出）
+- 双池实锤: llmproxy 走 novaDB profiles 表(dbProfiles*); internal/ai 走 admin JSON store(OpenStore+mutex)——互不相通, /api/llm 岛屿下线不伤工作台
+- admin 自有完整管理面: /api/admin/llm/profiles CRUD(RequireRole admin)
+- s.user(main.go): cookie nova_tok 与 Bearer 双通道; A1 实测 login 无 Set-Cookie, Bearer 为承重通道
+- llm.html 166 行孤儿页(feature.go/app.js 零导航引用), 是 /api/llm/profiles 唯一前端消费者; DB 池仅一条档案(智谱 GLM)
+### nt37 停摆复盘（测试门拦截, 生产零影响）
+- 报错 e2e_test.go:128 为助手 Fatalf 行号假象; 真凶 agent_e2e_test.go:27 与 agent_eval_e2e_test.go:49 以 POST /api/llm/profiles 播种测试档案
+- 教训入库: nt34 A9 只 grep 了单文件 e2e_test.go 得假阴性; 覆盖普查必须 grep 裸词全量(nt38 T2 即如此, 一发命中)
+- 测试从不调 /api/llm/chat, 唯一依赖 = 播种动作
+### 变更（nt37 + nt40 合并落地）
+- llmproxy.go: chat 匿名 401(JSON, 门在候选解析前, 零上游消耗); GET/POST profiles 410(池冻结, chat 回退读池不受影响)
+- agent_e2e/agent_eval_e2e: 播种改同包直调 dbProfilesUpsert(U3 纯委托实锤等价; U4 测试夹具 novaDB 就绪; 返回值原本未消费)——测试永久脱钩已下线端点
+- web/llm.html 删除; usage/chat/workflows 三页导航「模型设置」链接同步清除; workflows.html 两处 chat fetch 加 Bearer(nb_token)
+- secmw 限流分支与 metrics llm 统计保留(chat 存活, 继续有效); pipeline.go 过时注释已于 nt36 更正
+### /api/llm 终态
+- 仅剩 POST /api/llm/chat(需登录); test/delete/profiles(GET,POST) 全 410; 管理面归零(admin 控制台接管)
+- 可选后续: workflows.html AI 规划迁移 /api/ai/chat(SSE + feature_key), 归入工作台门禁/配额体系

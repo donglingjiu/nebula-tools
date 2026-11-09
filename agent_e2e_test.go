@@ -24,9 +24,7 @@ func TestAgentRunE2E(t *testing.T) {
 	defer mock.Close()
 
 	tc.ok("POST", "/api/auth/register", map[string]string{"username": "agent1", "password": "Ag123456"})
-	tc.ok("POST", "/api/llm/profiles", map[string]any{
-		"name": "mock", "baseUrl": mock.URL, "apiKey": "k", "model": "mock", "enabled": true,
-	})
+	dbProfilesUpsert(LLMProfile{Name: "mock", BaseURL: mock.URL, APIKey: "k", Model: "mock", Enabled: true})
 
 	code, m := tc.do("POST", "/api/agent/run", map[string]any{"input": "帮我格式化 JSON", "maxRounds": 3})
 	if code != 200 {
