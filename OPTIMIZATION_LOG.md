@@ -403,3 +403,13 @@
 - 已实锤生效: app.js routes 注入 -> 顶部导航第 3 位 + Quick Switch 默认列表（用户截图验证）
 ### 变更
 - 40 格清单克隆式插入 ai-quickchat（AI 需求分析卡为模板, 规划中->可用）+ cache-bust + go:embed 重建
+
+## [2026-11-06] OPT-015f 快聊进入 tools.html 精选工具网格
+
+### nt27 复盘（双事故）
+- 清单真身: app.js toolsPage() 内 toolsData（5 张 AI 规划卡, href 空 -> 全部"规划中"）+ word2pdf 族 + mini 工具族, 三段拼 40 格
+- 事故1: grep|head -1 误选 requirements.html（同名展示页）-> 文件定位必须用最强锚（chip 文案与 word2pdf 同文件者才是真身）
+- 事故2: 裸 raise SystemExit 退出码 0, FAIL 门被绕过 -> Python 失败路径必须显式非零退出
+### 变更
+- toolsData 头部插入 ["AI 快聊","不建流程直问 · SSE 流式回复","zap","violet","可用","quickchat","ai"]（首个 map 的 href 规则自动成链 -> AI 助手类唯一"可用+可点击"卡）
+- 全部工具徽标与 toolsCount 40 -> 41; app.js cache-bust + go:embed 重建
