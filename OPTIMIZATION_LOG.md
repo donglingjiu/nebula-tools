@@ -508,3 +508,17 @@
 ### /api/llm 终态
 - 仅剩 POST /api/llm/chat(需登录); test/delete/profiles(GET,POST) 全 410; 管理面归零(admin 控制台接管)
 - 可选后续: workflows.html AI 规划迁移 /api/ai/chat(SSE + feature_key), 归入工作台门禁/配额体系
+
+## [2026-11-06] OPT-018 workflows 迁移 /api/ai/chat（SSE）
+
+### 依据（nt41 侦察）
+- /api/ai/chat: {feature_key?, messages} -> gateCheck(登录+功能门+402 已购放行) -> 默认档案 -> relaySSE 透传 OpenAI 兼容 data: 行
+- feature_key 空则 defaultFeatureKey(ai_chat), 种子无此键回落第一个启用功能——前端省略 feature_key 最稳
+- 原调用吃同步 JSON content 字段; maxTokens /api/ai/chat 不支持——意图门靠 prompt 约束, indexOf 判定兼容
+### 变更
+- workflows.html: 新增 aiChatSSE 助手(Bearer + 流读取 + delta.content 累积 + [DONE] 跳过; 非 200 解析 {message} 报错, 兼容 401/402 门)
+- aiIntentGate 两次调用改走助手; plan 解析/AIT 过滤/渲染/persist 逐字保留; 页面 /api/llm/chat 引用归零
+### 意义
+- /api/llm 最后的前端消费者迁走——nt43 可对 chat 落 410, 全家族退役
+### 验证
+- served 探针: aiChatSSE=3, llm/chat=0, /api/ai/chat=1; 匿名 401; 带 token SSE data: 行正常
