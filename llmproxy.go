@@ -186,36 +186,11 @@ func registerLLMRoutes(mux *http.ServeMux, s *srv) {
 	})
 
 	mux.HandleFunc("POST /api/llm/profiles/delete", func(w http.ResponseWriter, r *http.Request) {
-		var in struct {
-			ID string `json:"id"`
-		}
-		if err := llmReadJSON(r, &in); err != nil || in.ID == "" {
-			llmWriteJSON(w, map[string]interface{}{"ok": false, "error": "缺少 id"})
-			return
-		}
-		llmWriteJSON(w, map[string]interface{}{"ok": st.del(in.ID)})
+		http.Error(w, "gone: retired by OPT-017 (zero frontend callers); use /api/ai/*", http.StatusGone)
 	})
 
 	mux.HandleFunc("POST /api/llm/test", func(w http.ResponseWriter, r *http.Request) {
-		var in struct {
-			ID string `json:"id"`
-		}
-		if err := llmReadJSON(r, &in); err != nil {
-			llmWriteJSON(w, map[string]interface{}{"ok": false, "error": "请求体无效"})
-			return
-		}
-		p, found := st.get(in.ID)
-		if !found {
-			llmWriteJSON(w, map[string]interface{}{"ok": false, "error": "档案不存在"})
-			return
-		}
-		msgs := []map[string]string{{"role": "user", "content": "请只回复两个字:正常"}}
-		content, ms, err := llmCall(client, p, msgs, 16)
-		if err != nil {
-			llmWriteJSON(w, map[string]interface{}{"ok": false, "error": llmTrunc(err.Error(), 200), "ms": ms})
-			return
-		}
-		llmWriteJSON(w, map[string]interface{}{"ok": true, "ms": ms, "content": llmTrunc(content, 60)})
+		http.Error(w, "gone: retired by OPT-017 (zero frontend callers); use /api/ai/*", http.StatusGone)
 	})
 
 	mux.HandleFunc("POST /api/llm/chat", func(w http.ResponseWriter, r *http.Request) {

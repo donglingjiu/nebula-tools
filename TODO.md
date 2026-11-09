@@ -12,7 +12,7 @@
 ## NT 迭代
 - [x] NT-1 功能池 Feature Flag + SSE 实时上下线（代码落地，CI 验证中）
 - [x] NT-2 六家模型 API Key 配置（后端 llmproxy+dbprofiles 既有；llm.html 增 6 家预设一键填充）
-- [x] NT-3 全流程 7 步（pipeline.go 状态机+落盘 + pipeline.html + AI 两段式消费 /api/llm/chat）
+- [x] NT-3 全流程 7 步（pipeline.go 状态机+落盘 + pipeline.html + AI 两段式消费 /api/llm/chat）（OPT-017b: test/profiles-delete 已 410; chat/profiles 去留待 nt37 定案）
 - [x] NT-4 监控看板（metrics.go+MetricsWrap 最外层接线+admin-metrics.html 5s 轮询，对齐 llmops-metrics.md）
 - [ ] 功能池持久化（内存 -> store.go/PostgreSQL，重启不丢状态）
 - [ ] 功能池 21 -> 60+（PPT 模块补齐、更多文档/表格 AI 增强）

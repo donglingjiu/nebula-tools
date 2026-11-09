@@ -474,3 +474,17 @@
 - 语义分工: 想法=命题（标题反填, 可改）; 材料=资料（内容经 material_ids 注入第一步, nt30 mock E2E 已验）
 ### 验证
 - served 资产探针 + node --check（若有）; 浏览器: 材料库->带此材料开流程->idea 框已填标题
+
+## [2026-11-06] OPT-017b /api/llm 下线第一梯队
+
+### 裁决（nt34/35 侦察）
+- internal/ai 直连上游(prof.BaseURL/chat/completions), 与 /api/llm 零耦合——下线不伤工作台
+- 零前端调用端点: test / profiles/delete -> 本轮 410
+- 活调用方: workflows.html(chat x2, 匿名) + llm.html(孤儿页, 零导航引用)
+- 档案池: llmproxy 走 novaDB profiles 表(迁库后原 JSON 改名 .imported-bak); admin 同源性待 C 轮定案
+- 安全备注: /api/llm/chat 匿名可调 = 烧默认档案 token 的口子, auth 包裹方案待 C4(s.user 实现)定案
+### 变更
+- llmproxy.go: test + profiles/delete 两 handler 替换为 410 门(http.StatusGone)
+- pipeline.go: 移除过时 /api/llm/chat 注释(NT-3 两阶段管道已被 start7 体系取代, 只删旧不捏造新)
+### 验证
+- POST 两端点 -> 410; GET profiles 仍 200; chat 空报文 -> messages 必填(路由存活, 零上游消耗)

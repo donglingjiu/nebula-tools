@@ -1,8 +1,7 @@
 package main
 
 // NT-3: full-flow 7-step pipeline. Self-contained: JSON storage under
-// data/pipelines/, two-phase AI (backend assembles chat body, frontend posts
-// it to /api/llm/chat). Zero touch to novaDB / router internals.
+// data/pipelines/. Zero touch to novaDB / router internals.
 
 import (
 	"encoding/json"
@@ -231,7 +230,9 @@ func pipeHDelete(w http.ResponseWriter, r *http.Request) {
 		ntWriteJSON(w, 405, map[string]string{"error": "POST required"})
 		return
 	}
-	var req struct{ ID string `json:"id"` }
+	var req struct {
+		ID string `json:"id"`
+	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.ID == "" {
 		ntWriteJSON(w, 400, map[string]string{"error": "bad request"})
 		return
