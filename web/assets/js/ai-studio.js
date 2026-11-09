@@ -297,3 +297,26 @@
     document.addEventListener('DOMContentLoaded', ui);
   } else { ui(); }
 })();
+
+
+// OPT-016c+: material_id 反填 —— idea 预填材料标题（材料内容仍经 material_ids 注入第一步）
+(function () {
+  function prefillMat() {
+    var v = new URLSearchParams(location.search).get('material_id');
+    if (!v) return;
+    var tok = localStorage.getItem('nb_token') || localStorage.getItem('token') || '';
+    fetch('/api/ai/materials/get?id=' + encodeURIComponent(v), { headers: { 'Authorization': 'Bearer ' + tok } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (m) {
+        if (!m || !m.title) return;
+        var el = document.getElementById('nbsw-idea');
+        if (el && !el.value) {
+          el.value = m.title;
+          try { el.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
+        }
+        try { console.log('[materials] 已引入材料《' + m.title + '》：内容将随 material_ids 注入第一步，想法框已反填标题'); } catch (e) {}
+      })
+      .catch(function () {});
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', prefillMat); } else { prefillMat(); }
+})();

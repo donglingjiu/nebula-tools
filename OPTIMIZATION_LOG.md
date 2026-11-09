@@ -464,3 +464,13 @@
 - tools.html 快聊卡点击直达（不再弹规划中）; 材料库→带此材料开流程→标准七步→第一步产出引用材料
 ### 遗留（可选）
 - OPT-016d: flowChat 追问注入材料（需 Flow 持久化 MaterialIDs）
+
+## [2026-11-06] OPT-016c+ material_id 反填：idea 预填材料标题
+
+### 背景（用户验收反馈）
+- 带此材料开流程后仍需手输想法 -> 体验断点
+### 变更
+- ai-studio.js 追加 prefill IIFE（append-only 零接触）: 载入时读 ?material_id= -> GET /api/ai/materials/get -> idea 框反填材料标题（仅空框才填 + 派发 input 事件兼容监听型页面）, DOMContentLoaded 兜底
+- 语义分工: 想法=命题（标题反填, 可改）; 材料=资料（内容经 material_ids 注入第一步, nt30 mock E2E 已验）
+### 验证
+- served 资产探针 + node --check（若有）; 浏览器: 材料库->带此材料开流程->idea 框已填标题
