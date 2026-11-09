@@ -437,3 +437,14 @@
 ### 已知限制
 - 材料为共享池（无 per-user 归属）; flowChat 未注入材料（待 OPT-016d, 需 Flow 持久化 MaterialIDs）
 - tools.html 快聊卡「可用+规划中」双徽标来自 app.js 后处理（R1 已定位行号, nt31 处理）
+
+## [2026-11-06] OPT-016c 材料库前端（独立页 + 导航 + ai-studio 接线）
+
+### 变更
+- web/materials.html：自包含材料库页（建/列/看全文/复制ID/删除/带此材料开流程），nb_token，风格沿用 quickchat
+- feature.go: ai-materials 卡（克隆 ai-quickchat 行）; app.js routes: 材料库导航项（克隆 quickchat 行, icon fileText）+ cache-bust
+- ai-studio.js（守卫式）: start7 body 注入 material_ids（来源 ?material_id=，用后 replaceState 清参）——锚点 JSON.stringify+idea 唯一方接线，否则跳过留 nt32
+### 验收
+- materials.html CRUD 手测; 顶部导航出现「材料库」; ai-studio.html?material_id=xxx 建流程后第一步产出应引用材料内容
+### 遗留
+- app.js L611 上下文（A2）裁决双徽标成因 -> nt32 处理; flowChat 材料注入（OPT-016d, 可选）

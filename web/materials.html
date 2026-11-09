@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>材料库 · Nova Tools</title>
+<style>
+  body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:#faf7f2;color:#334155}
+  .hd{display:flex;align-items:center;gap:14px;padding:14px 22px;background:#fff;border-bottom:1px solid #eee;flex-wrap:wrap}
+  .hd a{color:#7c3aed;text-decoration:none;font-size:14px}
+  .hd h1{font-size:17px;margin:0;font-weight:700}
+  .hd span{font-size:12.5px;color:#94a3b8}
+  .wrap{max-width:820px;margin:24px auto;padding:0 16px}
+  .card{background:#fff;border:1px solid #e7e2d9;border-radius:14px;padding:18px;margin-bottom:18px}
+  label{font-size:13px;color:#64748b;display:block;margin-bottom:6px}
+  input,textarea{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #d6d3cd;border-radius:10px;font-size:14px;font-family:inherit;resize:vertical}
+  textarea{min-height:120px}
+  .btn{padding:9px 20px;background:#7c3aed;color:#fff;border:0;border-radius:10px;cursor:pointer;font-size:14px;margin-top:12px}
+  .btn.gray{background:#e2e8f0;color:#334155}
+  .m{border:1px solid #e7e2d9;border-radius:12px;padding:14px 16px;margin-bottom:12px;background:#fff}
+  .m .t{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .m .t b{font-size:15px}
+  .m .meta{font-size:12px;color:#94a3b8}
+  .m .ops{margin-left:auto;display:flex;gap:8px}
+  .m .ops button{padding:5px 10px;font-size:12.5px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;cursor:pointer}
+  .m .ops button.d{color:#dc2626;border-color:#fecaca}
+  details pre{white-space:pre-wrap;word-break:break-word;background:#f8fafc;border-radius:8px;padding:10px;font-size:13px;margin-top:10px;max-height:300px;overflow:auto}
+  .empty{color:#94a3b8;font-size:14px;text-align:center;padding:30px 0}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#334155;color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;opacity:0;transition:.25s}
+  .toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="hd"><a href="/ai-studio.html">← 返回工作台</a><h1>材料库</h1><span>跨流程复用的参考资料 · 建流程时可从库引入，注入第一步，单条上限 12000 字</span></div>
+<div class="wrap">
+  <div class="card">
+    <label>材料标题</label>
+    <input id="mt" placeholder="如：用户调研要点 / 竞品分析结论">
+    <label style="margin-top:12px">材料内容（全量保存，注入时截断）</label>
+    <textarea id="mc" placeholder="粘贴参考资料全文……"></textarea>
+    <button class="btn" id="msave">保存到材料库</button>
+  </div>
+  <div id="mlist"></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(function(){
+  var tok = localStorage.getItem('nb_token') || localStorage.getItem('token') || '';
+  var AH = {'Content-Type':'application/json','Authorization':'Bearer '+tok};
+  var list = document.getElementById('mlist'), toast = document.getElementById('toast');
+  function say(t){ toast.textContent = t; toast.classList.add('on'); setTimeout(function(){ toast.classList.remove('on'); }, 1600); }
+  function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function fmt(d){ try { return new Date(d).toLocaleString('zh-CN',{hour12:false}); } catch(e){ return d; } }
+  function load(){
+    fetch('/api/ai/materials', {headers: AH}).then(function(r){ return r.json(); }).then(function(ms){
+      if (!ms.length) { list.innerHTML = '<div class="empty">还没有材料，先在上面保存一条。</div>'; return; }
+      list.innerHTML = ms.map(function(m){
+        return '<div class="m" data-id="'+m.id+'"><div class="t"><b>'+esc(m.title)+'</b>'
+          +'<span class="meta">'+fmt(m.updated_at)+' · '+m.content.length+' 字</span>'
+          +'<span class="ops"><button data-copy>复制ID</button><button data-goto>带此材料开流程</button><button class="d" data-del>删除</button></span></div>'
+          +'<details><summary class="meta" style="cursor:pointer;margin-top:8px">展开全文</summary><pre>'+esc(m.content)+'</pre></details></div>';
+      }).join('');
+      Array.prototype.forEach.call(list.querySelectorAll('.m'), function(row){
+        var id = row.getAttribute('data-id');
+        row.querySelector('[data-copy]').onclick = function(){ navigator.clipboard.writeText(id).then(function(){ say('ID 已复制: '+id); }); };
+        row.querySelector('[data-goto]').onclick = function(){ location.href = '/ai-studio.html?material_id='+id; };
+        row.querySelector('[data-del]').onclick = function(){
+          if (!confirm('删除这条材料？已建流程不受影响（创建时已快照）。')) return;
+          fetch('/api/ai/materials/delete', {method:'POST', headers: AH, body: JSON.stringify({id:id})}).then(load);
+        };
+      });
+    }).catch(function(){ list.innerHTML = '<div class="empty">加载失败，请确认已登录工作台。</div>'; });
+  }
+  document.getElementById('msave').onclick = function(){
+    var t = document.getElementById('mt').value.trim(), c = document.getElementById('mc').value.trim();
+    if (!t || !c) { say('标题和内容都要填'); return; }
+    fetch('/api/ai/materials', {method:'POST', headers: AH, body: JSON.stringify({title:t, content:c})})
+      .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(){ document.getElementById('mt').value=''; document.getElementById('mc').value=''; say('已保存'); load(); })
+      .catch(function(){ say('保存失败'); });
+  };
+  load();
+})();
+</script>
+</body>
+</html>

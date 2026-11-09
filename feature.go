@@ -51,6 +51,7 @@ func ntSeedFeatures() []*Feature {
 		mk("wf-ai-chat", "workflow", "AI 对话", "多模型对话工作台", "/ai.html", "online", 100, true),
 		mk("wf-ai-workflow", "workflow", "AI 工作流", "可视化工作流编排", "/ai-studio.html", "online", 100, true),
 		mk("ai-quickchat", "ai", "AI 快聊", "不建流程直问, SSE 流式", "/quickchat.html", "online", 95, true),
+		mk("ai-materials", "ai", "材料库", "跨流程复用的参考资料", "/materials.html", "online", 95, true),
 		mk("wf-flowchart", "workflow", "流程图", "流程图绘制", "/flowchart.html", "online", 100, false),
 		mk("wf-pipeline-7", "workflow", "全流程 7 步", "头脑风暴到测试落地", "/ai-studio.html", "online", 100, true),
 		mk("wf-metrics", "workflow", "监控看板", "QPS/延迟/错误率/LLM 调用", "/admin-metrics.html", "online", 100, false),

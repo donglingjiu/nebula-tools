@@ -86,6 +86,7 @@ const routes=[
 {id:'usage',label:'用量看板',desc:'30 天 token 趋势',icon:'chart',href:'usage.html'},
 {id:'chat',label:'AI 对话',desc:'持久化会话 · token 用量',icon:'message',href:'chat.html'},
  {id:'quickchat',label:'AI 快聊',desc:'不建流程直问 · SSE 流式',icon:'zap',href:'quickchat.html'},
+ {id:'materials',label:'材料库',desc:'跨流程复用的参考资料',icon:'fileText',href:'materials.html'},
  {id:'home',label:'首页',href:'index.html',icon:'home',desc:'AI 工作空间总览'},
  {id:'tools',label:'工具大全',href:'tools.html',icon:'grid',desc:'探索 100+ 实用工具'},
  {id:'ai',label:'智能工作台',href:'ai.html',icon:'sparkles',desc:'从想法到可执行方案'},
