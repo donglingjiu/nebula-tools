@@ -448,3 +448,19 @@
 - materials.html CRUD 手测; 顶部导航出现「材料库」; ai-studio.html?material_id=xxx 建流程后第一步产出应引用材料内容
 ### 遗留
 - app.js L611 上下文（A2）裁决双徽标成因 -> nt32 处理; flowChat 材料注入（OPT-016d, 可选）
+
+## [2026-11-06] OPT-016 收官：start7 接线 + badges() 拦截修复 + 材料库卡入列
+
+### nt31 复盘（侦察裁决）
+- A1: ai-studio.js L147 start7 为 api() 对象字面量（非 JSON.stringify）——nt31 守卫按设计跳过; 本轮以精确锚 material: (window.nbswMaterial || '') 接线
+- A2: badges() 后处理系统全貌——MAP 已知工具追加状态徽标+href; MAP 外一律追加"规划中"+ preventDefault 点击拦截; 双徽标本是设计常态, 真隐患是快聊卡被拦截不可点
+### 变更
+- ai-studio.js: start7 body +material_ids（?material_id= 一次性消费, replaceState 清参）
+- app.js badges(): else 分支加"数据徽标已标可用则信任之"短路——快聊/材料库卡保住 href 与可点性, 规划中卡行为不变
+- app.js toolsData: 材料库卡入列（AI 助手类第二张可用卡）+ 计数 41→42
+### 验证
+- served 资产探针: badge-fix 标记 / toolsData 条目 / material_ids 各就位; node --check（若有）; go:embed 重建
+### 浏览器验收项
+- tools.html 快聊卡点击直达（不再弹规划中）; 材料库→带此材料开流程→标准七步→第一步产出引用材料
+### 遗留（可选）
+- OPT-016d: flowChat 追问注入材料（需 Flow 持久化 MaterialIDs）

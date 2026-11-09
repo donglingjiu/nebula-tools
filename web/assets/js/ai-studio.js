@@ -144,7 +144,7 @@
   // ===== OPT-009 (nt14): 标准七步 + 历史流程 =====
   async function runStd7(idea) {
     window.nbswRetry = runStd7;
-    var r = await api('POST', '/api/ai/flow/start7', { title: '', idea: idea, material: (window.nbswMaterial || ''), profile_id: ((document.getElementById('nbsw-prof') || {}).value || '') });
+    var r = await api('POST', '/api/ai/flow/start7', { title: '', idea: idea, material: (window.nbswMaterial || ''), material_ids: (function(){var v=new URLSearchParams(location.search).get('material_id');if(v){try{history.replaceState({},'',location.pathname)}catch(e){}return [v];}return [];})(), profile_id: ((document.getElementById('nbsw-prof') || {}).value || '') });
     if (!r.ok) { handleErr(r); return; }
     renderFlow(r.data);
     note('七步流程已创建, 服务端逐步生成中（7 步×真实 AI, 稍等）...');
