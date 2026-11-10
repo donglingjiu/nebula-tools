@@ -12,16 +12,6 @@ import (
 	"time"
 )
 
-type LLMProfile struct {
-	ID        string `json:"id"`
-	Name      string `json:"name"`
-	BaseURL   string `json:"baseUrl"`
-	APIKey    string `json:"apiKey"`
-	Model     string `json:"model"`
-	Enabled   bool   `json:"enabled"`
-	CreatedAt int64  `json:"createdAt"`
-}
-
 func llmWriteJSON(w http.ResponseWriter, v interface{}) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	_ = json.NewEncoder(w).Encode(v)
@@ -148,93 +138,25 @@ func llmCallU(client *http.Client, p LLMProfile, msgs []map[string]string, maxTo
 }
 
 func registerLLMRoutes(mux *http.ServeMux, s *srv) {
-	st := newLLMStore()
-	client := &http.Client{Timeout: 90 * time.Second}
 
 	mux.HandleFunc("GET /api/llm/profiles", func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "gone: retired by OPT-017 (profile management lives in admin console)", http.StatusGone)
+		http.Error(w, "gone: /api/llm retired by OPT-017/018; use /api/ai/*", http.StatusGone)
 	})
 
 	mux.HandleFunc("POST /api/llm/profiles", func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "gone: retired by OPT-017 (profile management lives in admin console)", http.StatusGone)
+		http.Error(w, "gone: /api/llm retired by OPT-017/018; use /api/ai/*", http.StatusGone)
 	})
 
 	mux.HandleFunc("POST /api/llm/profiles/delete", func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "gone: retired by OPT-017 (zero frontend callers); use /api/ai/*", http.StatusGone)
+		http.Error(w, "gone: /api/llm retired by OPT-017/018; use /api/ai/*", http.StatusGone)
 	})
 
 	mux.HandleFunc("POST /api/llm/test", func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "gone: retired by OPT-017 (zero frontend callers); use /api/ai/*", http.StatusGone)
+		http.Error(w, "gone: /api/llm retired by OPT-017/018; use /api/ai/*", http.StatusGone)
 	})
 
 	mux.HandleFunc("POST /api/llm/chat", func(w http.ResponseWriter, r *http.Request) {
-		var in struct {
-			ProfileID      string              `json:"profileId"`
-			Messages       []map[string]string `json:"messages"`
-			MaxTokens      int                 `json:"maxTokens"`
-			ConversationID int64               `json:"conversationId"`
-		}
-		if err := llmReadJSON(r, &in); err != nil || len(in.Messages) == 0 {
-			llmWriteJSON(w, map[string]interface{}{"ok": false, "error": "messages 必填"})
-			return
-		}
-		if len(in.Messages) > 40 {
-			in.Messages = in.Messages[len(in.Messages)-40:]
-		}
-		for i := range in.Messages {
-			if in.Messages[i]["role"] == "" {
-				in.Messages[i]["role"] = "user"
-			}
-			in.Messages[i]["content"] = llmTrunc(in.Messages[i]["content"], 16000)
-		}
-		u := s.user(r)
-		if u == nil {
-			w.Header().Set("Content-Type", "application/json; charset=utf-8")
-			w.WriteHeader(http.StatusUnauthorized)
-			_ = json.NewEncoder(w).Encode(map[string]interface{}{"ok": false, "error": "请先登录后再使用 AI 功能"})
-			return
-		}
-		chatUser := u.Username
-		var cands []LLMProfile
-		if in.ProfileID != "" {
-			if p, ok := st.get(in.ProfileID); ok {
-				cands = append(cands, p)
-			}
-		}
-		for _, p := range st.listChat() {
-			if p.Enabled && p.ID != in.ProfileID {
-				cands = append(cands, p)
-			}
-		}
-		if in.ConversationID > 0 {
-			u := s.user(r)
-			if u == nil || !dbConvOwn(in.ConversationID, u.Username) {
-				llmWriteJSON(w, map[string]interface{}{"ok": false, "error": "conversation not found or login required"})
-				return
-			}
-		}
-		if len(cands) == 0 {
-			llmWriteJSON(w, map[string]interface{}{"ok": false, "error": "没有可用档案,请先在模型设置中添加并启用"})
-			return
-		}
-		var errs []string
-		for _, p := range cands {
-			content, tok, ms, err := llmCallU(client, p, in.Messages, in.MaxTokens)
-			if err == nil {
-				if in.ConversationID > 0 {
-					if lu := llmLastUser(in.Messages); lu != "" {
-						_, _ = dbMsgAppend(in.ConversationID, "user", lu)
-						_, _ = dbMsgAppendP(in.ConversationID, "assistant", content, p.Name, tok)
-					}
-				}
-				db.AddAICall(chatUser, "chat", p.Name, tok, int64(ms), true)
-				llmWriteJSON(w, map[string]interface{}{"ok": true, "content": content, "profile": p.Name, "ms": ms, "tokens": tok})
-				return
-			}
-			errs = append(errs, p.Name+": "+llmTrunc(err.Error(), 120))
-		}
-		db.AddAICall(chatUser, "chat", "—", 0, 0, false)
-		llmWriteJSON(w, map[string]interface{}{"ok": false, "error": strings.Join(errs, " | ")})
+		http.Error(w, "gone: /api/llm retired by OPT-017/018; use /api/ai/*", http.StatusGone)
 	})
 }
 

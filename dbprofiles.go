@@ -11,6 +11,16 @@ import (
 	"time"
 )
 
+type LLMProfile struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	BaseURL   string `json:"baseUrl"`
+	APIKey    string `json:"apiKey"`
+	Model     string `json:"model"`
+	Enabled   bool   `json:"enabled"`
+	CreatedAt int64  `json:"createdAt"`
+}
+
 type llmStore struct{}
 
 func newLLMStore() *llmStore {

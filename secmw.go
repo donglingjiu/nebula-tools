@@ -61,7 +61,6 @@ func clientIP(r *http.Request) string {
 }
 
 func secMiddleware(next http.Handler) http.Handler {
-	apiRL := newRateLimiter(20, 30)
 	genRL := newRateLimiter(120, 600)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		p := r.URL.Path
@@ -77,9 +76,6 @@ func secMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		rl := genRL
-		if strings.HasPrefix(p, "/api/llm/") {
-			rl = apiRL
-		}
 		if !rl.allow(clientIP(r)) {
 			w.Header().Set("Retry-After", "30")
 			http.Error(w, "too many requests", http.StatusTooManyRequests)

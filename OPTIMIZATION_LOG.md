@@ -522,3 +522,19 @@
 - /api/llm 最后的前端消费者迁走——nt43 可对 chat 落 410, 全家族退役
 ### 验证
 - served 探针: aiChatSSE=3, llm/chat=0, /api/ai/chat=1; 匿名 401; 带 token SSE data: 行正常
+
+## [2026-11-06] OPT-017 终态：/api/llm 全家族退役（五路由 410, 手术式）
+
+### nt43/nt44 失败复盘（构建门两次拦截, 回滚均完整, 生产零影响）
+- nt43: 普查已打印共享助手的外部消费者, 但整文件重写未消费普查结果, 误删 llmTrunc/llmCallU/llmWriteJSON——教训: 普查必须作为突变守门人
+- nt44: 结构体迁移写成复制而非移动, LLMProfile 同包重声明——教训: move = copy + remove, 缺一半即废
+### 变更（手术式, 全部助手保留）
+- llmproxy.go: 五 handler 主体替换为 410 门(registerLLMRoutes 签名不变); st/client 两行移除; LLMProfile 结构体真迁移(dbprofiles.go 获得声明, llmproxy.go 移除, 单声明断言入库)
+- 共享助手全数保留: agent/eval/dbconversations 仍消费 llmTrunc/llmCallU/llmWriteJSON/llmCall 等
+- secmw.go: /api/llm/ apiRL 专项限流分支移除; metrics llm 统计保留(死分支无害)
+- 后续可选: 孤儿助手(llmMask/llmKeyHint/llmNormalizeBase/llmReadJSON/llmLastUser)动态普查驱动清创
+### /api/llm 终态
+- GET/POST profiles、profiles/delete、test、chat 五路由全 410(含带凭证请求)
+- 唯一在册 AI 通道: /api/ai/chat(登录 + 功能门 + SSE); workflows 已迁(OPT-018)
+### 验证
+- 五端点 410; /api/ai/chat 匿名 401 / Bearer SSE data 行正常; 五页面 200; 三门全绿
