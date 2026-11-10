@@ -17,43 +17,12 @@ func llmWriteJSON(w http.ResponseWriter, v interface{}) {
 	_ = json.NewEncoder(w).Encode(v)
 }
 
-func llmReadJSON(r *http.Request, v interface{}) error {
-	b, err := io.ReadAll(io.LimitReader(r.Body, 1<<20))
-	if err != nil {
-		return err
-	}
-	return json.Unmarshal(b, v)
-}
-
 func llmTrunc(s string, n int) string {
 	r := []rune(s)
 	if len(r) > n {
 		return string(r[:n]) + "..."
 	}
 	return s
-}
-
-func llmKeyHint(k string) string {
-	k = strings.TrimSpace(k)
-	if k == "" {
-		return "(未设置)"
-	}
-	if len(k) <= 8 {
-		return "****"
-	}
-	return k[:4] + "****" + k[len(k)-4:]
-}
-
-func llmMask(p LLMProfile) map[string]interface{} {
-	host := ""
-	if u, err := url.Parse(strings.TrimSpace(p.BaseURL)); err == nil {
-		host = u.Host
-	}
-	return map[string]interface{}{
-		"id": p.ID, "name": p.Name, "baseUrl": p.BaseURL, "model": p.Model,
-		"enabled": p.Enabled, "createdAt": p.CreatedAt,
-		"keyHint": llmKeyHint(p.APIKey), "host": host,
-	}
 }
 
 func llmNormalizeBase(b string) (string, error) {
@@ -158,18 +127,4 @@ func registerLLMRoutes(mux *http.ServeMux, s *srv) {
 	mux.HandleFunc("POST /api/llm/chat", func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "gone: /api/llm retired by OPT-017/018; use /api/ai/*", http.StatusGone)
 	})
-}
-
-func llmCall(client *http.Client, p LLMProfile, msgs []map[string]string, maxTokens int) (string, int, error) {
-	c, _, ms, err := llmCallU(client, p, msgs, maxTokens)
-	return c, ms, err
-}
-
-func llmLastUser(msgs []map[string]string) string {
-	for i := len(msgs) - 1; i >= 0; i-- {
-		if msgs[i]["role"] == "user" {
-			return msgs[i]["content"]
-		}
-	}
-	return ""
 }

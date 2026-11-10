@@ -555,3 +555,14 @@
 - 多轮追问 = 材料全文 + Chats 历史累积注入, token 随轮次增长(预算上限兜底; 对话压缩为独立后续 OPT)
 ### 验证
 - 三门绿; start7 带 material_ids 零上游; flowList 确认持久化; flowChat 材料专属问题一次小调用注入生效; 无材料流程追问零回归
+
+## [2026-11-06] OPT-017 后传①：llmproxy 孤儿清创落账（metrics 拆至下轮）
+
+### nt51 复盘（gofmt 门拦截, 回滚完整, 零生产影响）
+- llmproxy 侧成功: 动态普查正确识别 5 真孤儿(llmCall/llmLastUser/llmMask/llmKeyHint/llmReadJSON), 保留 4 活符号(llmWriteJSON/llmTrunc/llmCallU 外部消费者; llmNormalizeBase 内部消费者 llmCallU)
+- metrics 侧失败: 逐行删除不感知括号配对——`if len(s.llmMs) > 500 {` 被删而其闭括号行保留成孤儿括号; llmAvg/llmP95 声明行不含 PAT 成悬空变量; gofmt 解析失败拦截
+- 教训入库: 块删除必须括号感知; 标识符模式要覆盖派生变量名; 结构未过目的文件不做逐行手术
+### 本轮变更
+- llmproxy.go: 5 孤儿函数删除(fixpoint 普查驱动, 双零才删); registerLLMRoutes 门文件与 4 个共享助手原样
+### 拆分决策
+- metrics llm 移除独立成轮(nt53): 先 sed 全形侦察自增区/统计区两区块, 再块感知切除
