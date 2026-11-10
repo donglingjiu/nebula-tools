@@ -36,9 +36,6 @@ type mStore struct {
 	paths    map[string]*mPathStat
 	recent   []mRecent
 	win      []int64 // unix-ms of requests, sliding 60s for rps
-	llmCalls int
-	llmErrs  int
-	llmMs    []int64 // cap 500 for p95
 }
 
 var met = newMStore()
@@ -71,18 +68,6 @@ func (s *mStore) record(path string, status int, ms int64) {
 	s.win = append(s.win, now.UnixNano()/int64(time.Millisecond))
 	if len(s.win) > 2000 {
 		s.win = s.win[len(s.win)-2000:]
-	}
-	if path == "/api/llm/chat" {
-		s.llmCalls++
-		if status >= 400 {
-			s.llmErrs++
-		}
-		if !sse {
-			s.llmMs = append(s.llmMs, ms)
-			if len(s.llmMs) > 500 {
-				s.llmMs = s.llmMs[len(s.llmMs)-500:]
-			}
-		}
 	}
 	s.recent = append(s.recent, mRecent{Path: path, Status: status, Ms: ms, TS: now.Format("15:04:05")})
 	if len(s.recent) > 60 {
@@ -123,17 +108,6 @@ func (s *mStore) snapshot() map[string]interface{} {
 	if len(tops) > 8 {
 		tops = tops[:8]
 	}
-	llmAvg, llmP95 := 0.0, int64(0)
-	if n := len(s.llmMs); n > 0 {
-		var sum int64
-		for _, v := range s.llmMs {
-			sum += v
-		}
-		llmAvg = float64(sum) / float64(n)
-		sorted := append([]int64(nil), s.llmMs...)
-		sort.Slice(sorted, func(i, j int) bool { return sorted[i] < sorted[j] })
-		llmP95 = sorted[n*95/100]
-	}
 	recent := append([]mRecent(nil), s.recent...)
 	for i, j := 0, len(recent)-1; i < j; i, j = i+1, j-1 {
 		recent[i], recent[j] = recent[j], recent[i]
@@ -142,7 +116,6 @@ func (s *mStore) snapshot() map[string]interface{} {
 		"ok": true, "uptime_sec": int(time.Since(s.start).Seconds()),
 		"req_total": s.reqTotal, "req_errors": s.reqErrs,
 		"error_rate": errRate, "rpm": rpm,
-		"llm": map[string]interface{}{"calls": s.llmCalls, "errors": s.llmErrs, "avg_ms": llmAvg, "p95_ms": llmP95},
 		"top": tops, "recent": recent,
 	}
 }

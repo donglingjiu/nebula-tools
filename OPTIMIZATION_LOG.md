@@ -566,3 +566,19 @@
 - llmproxy.go: 5 孤儿函数删除(fixpoint 普查驱动, 双零才删); registerLLMRoutes 门文件与 4 个共享助手原样
 ### 拆分决策
 - metrics llm 移除独立成轮(nt53): 先 sed 全形侦察自增区/统计区两区块, 再块感知切除
+
+## [2026-11-06] OPT-017 后传②：metrics llm 死分支双侧移除
+
+### nt51→nt52 关键更正（M6 侦察发现）
+- nt51 P3 「web 零消费」为误判: admin-metrics.html 有 4 张 LLM 卡片消费 d.llm.calls/errors/avg_ms/p95_ms
+- 误判根因: P3 模式清单是 Go 标识符+扁平 snake 键(llm_ms/llm_p95), 实际 JSON 为嵌套 "llm":{avg_ms,p95_ms}, 前端访问形态 d.llm.* 天然漏网
+- 教训入库: web 消费普查必须覆盖对象访问形态(d.KEY/.KEY), 不能只查扁平键名
+### 移除依据（语义腐坏, 非仅死码）
+- 自增分支 if path=="/api/llm/chat" 家族退役后只统计 410 门命中(把门击记成「LLM 错误」), 真实 AI 流量走 /api/ai/chat 不经此分支——保留=永久假数据
+- 前端 (d.llm&&d.llm.calls)||0 优雅降级: 只删后端页面不炸但四卡冻结在误导性 0——双侧一致移除才是诚实收官
+### 变更（括号感知, 锚点全部 nt52 M 组侦察验证唯一）
+- metrics.go 四处: mStore 三字段(llmCalls/llmErrs/llmMs) / record() 内 if path=="/api/llm/chat" 整块 / snapshot() 内 llmAvg,llmP95 声明+if n:=len(s.llmMs) 整块 / return map 的 "llm" 行
+- web/admin-metrics.html: 4 张 LLM 卡片行删除
+- 核心指标(req_total/top/recent/rpm)原样; sort.Slice 仍被 tops 消费
+### 可选后续
+- 统计改造为跟踪 /api/ai/chat(SSE 路径, 需区分流式)——feature 非 清创, 独立 OPT

@@ -42,10 +42,6 @@ function render(d){
     ["总请求",fnum(d.req_total||0),""],
     ["每分钟请求",d.rpm||0,""],
     ["错误率",(d.error_rate||0).toFixed(2)+"%",(d.error_rate>5?"warn":"")],
-    ["LLM 调用",(d.llm&&d.llm.calls)||0,""],
-    ["LLM 错误",(d.llm&&d.llm.errors)||0,((d.llm&&d.llm.errors)>0?"warn":"")],
-    ["LLM 均耗时",Math.round((d.llm&&d.llm.avg_ms)||0)+"ms",""],
-    ["LLM P95",Math.round((d.llm&&d.llm.p95_ms)||0)+"ms",""],
     ["运行时长",(d.uptime_sec>=3600?(d.uptime_sec/3600).toFixed(1)+"h":Math.round((d.uptime_sec||0)/60)+"min"),""]
   ];
   document.getElementById("cards").innerHTML=cards.map(function(c){
