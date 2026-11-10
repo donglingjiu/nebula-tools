@@ -538,3 +538,20 @@
 - 唯一在册 AI 通道: /api/ai/chat(登录 + 功能门 + SSE); workflows 已迁(OPT-018)
 ### 验证
 - 五端点 410; /api/ai/chat 匿名 401 / Bearer SSE data 行正常; 五页面 200; 三门全绿
+
+## [2026-11-06] OPT-016d flowChat 注入持久化材料（nt47→nt49→nt50 三轮闭环）
+
+### nt47 停摆（守门断言拦截, 零写入, 树无污染）
+- 锚点 `for _, m := range f.Chats {` 全仓两处(flowChat 历史循环 + flowExport 导出循环); 教训: 锚点唯一性是全仓属性, 侦察必须全局计数
+### nt49 停摆（计数门误标定; 突变已完成, 停在构建前）
+- 突变全部成功([OK]x2, gofmt 通过=语法有效), 计数门 expect=3 实际=4: 助手文档注释行同样命中裸词 grep
+- 准确账本: preset=3(注释+定义+调用) + flow=1(调用) = 4; "def+2 calls" 口算漏了注释
+- 教训入库: 计数门必须用精确模式分项检查(定义/调用/持久化各自 grep), 裸词计数只做记录; 停摆点在突变后时, 恢复走"续跑验证"而非重放突变
+### 变更
+- Flow struct + MaterialIDs []string; flowStartStd 持久化 req.MaterialIDs
+- 注入循环抽为 Service.appendMaterialCtx(预算语义逐字保留: 单条 12000 rune / 总 30000 rune, 失效 ID 宽容跳过), start7 与 flowChat 双处复用
+- flowChat 在 flowCtx 之后、历史之前追加材料 system 消息(len==0 零改动); 前端零改动(flow id 已带)
+### 已知边界
+- 多轮追问 = 材料全文 + Chats 历史累积注入, token 随轮次增长(预算上限兜底; 对话压缩为独立后续 OPT)
+### 验证
+- 三门绿; start7 带 material_ids 零上游; flowList 确认持久化; flowChat 材料专属问题一次小调用注入生效; 无材料流程追问零回归

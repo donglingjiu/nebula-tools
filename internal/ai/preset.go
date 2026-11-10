@@ -71,12 +71,13 @@ func (s *Service) flowStartStd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	f := &Flow{
-		ID:        newFlowID(),
-		UserID:    u.ID,
-		Title:     title,
-		State:     "created",
-		CreatedAt: time.Now().Format(time.RFC3339),
-		ProfileID: req.ProfileID,
+		ID:          newFlowID(),
+		UserID:      u.ID,
+		Title:       title,
+		State:       "created",
+		CreatedAt:   time.Now().Format(time.RFC3339),
+		ProfileID:   req.ProfileID,
+		MaterialIDs: req.MaterialIDs,
 	}
 	for i, sd := range std7 {
 		p := sd.Tmpl
@@ -85,20 +86,7 @@ func (s *Service) flowStartStd(w http.ResponseWriter, r *http.Request) {
 			if m := strings.TrimSpace(req.Material); m != "" {
 				p += "\n\n【参考资料】\n" + truncRunes(m, 8000)
 			}
-			used := 0
-			for _, mid := range req.MaterialIDs {
-				mat, merr := s.GetMaterial(mid)
-				if merr != nil || mat == nil {
-					continue
-				}
-				if used >= 30000 {
-					p += "\n\n(库材料已达注入上限, 其余未附)"
-					break
-				}
-				body := truncRunes(mat.Content, 12000)
-				p += "\n\n【库材料·" + mat.Title + "】\n" + body
-				used += len([]rune(body))
-			}
+			p = s.appendMaterialCtx(p, req.MaterialIDs)
 		}
 		f.Steps = append(f.Steps, FlowStep{Name: sd.Title, Prompt: p, Status: "pending"})
 	}
@@ -186,4 +174,24 @@ func (s *Service) flowProfiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, 200, admin.ListEnabledProfiles(s.dir))
+}
+
+// appendMaterialCtx 按预算追加库材料上下文(单条 12000 rune, 总 30000 rune)
+// OPT-016d: start7 建流程与 flowChat 追问共用同一注入语义; 失效 ID 宽容跳过
+func (s *Service) appendMaterialCtx(p string, ids []string) string {
+	used := 0
+	for _, mid := range ids {
+		mat, merr := s.GetMaterial(mid)
+		if merr != nil || mat == nil {
+			continue
+		}
+		if used >= 30000 {
+			p += "\n\n(库材料已达注入上限, 其余未附)"
+			break
+		}
+		body := truncRunes(mat.Content, 12000)
+		p += "\n\n【库材料·" + mat.Title + "】\n" + body
+		used += len([]rune(body))
+	}
+	return p
 }

@@ -29,14 +29,15 @@ type FlowStep struct {
 }
 
 type Flow struct {
-	ID        string              `json:"id"`
-	UserID    string              `json:"user_id,omitempty"`
-	ProfileID string              `json:"profile_id,omitempty"`
-	Title     string              `json:"title"`
-	State     string              `json:"state"`
-	CreatedAt string              `json:"created_at"`
-	Steps     []FlowStep          `json:"steps"`
-	Chats     []map[string]string `json:"chats,omitempty"`
+	ID          string              `json:"id"`
+	UserID      string              `json:"user_id,omitempty"`
+	ProfileID   string              `json:"profile_id,omitempty"`
+	Title       string              `json:"title"`
+	State       string              `json:"state"`
+	CreatedAt   string              `json:"created_at"`
+	Steps       []FlowStep          `json:"steps"`
+	Chats       []map[string]string `json:"chats,omitempty"`
+	MaterialIDs []string            `json:"material_ids,omitempty"`
 }
 
 type flowStore struct {
@@ -360,6 +361,14 @@ func (s *Service) flowChat(w http.ResponseWriter, r *http.Request) {
 			"role":    "system",
 			"content": "流程「" + f.Title + "」步骤输出:\n" + ctx,
 		})
+	}
+	if len(f.MaterialIDs) > 0 {
+		if mc := s.appendMaterialCtx("", f.MaterialIDs); strings.TrimSpace(mc) != "" {
+			msgs = append(msgs, map[string]string{
+				"role":    "system",
+				"content": "参考资料(供回答时引用):\n" + strings.TrimSpace(mc),
+			})
+		}
 	}
 	for _, m := range f.Chats {
 		msgs = append(msgs, m)
