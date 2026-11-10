@@ -144,6 +144,46 @@ func flowCtx(f *Flow) string {
 	return strings.TrimSpace(sb.String())
 }
 
+// histBudgetRunes 是 flowChat 注入历史的 rune 预算(旧消息先丢, 确定性截断)
+const histBudgetRunes = 8000
+
+// compressChats 从最新往旧按预算保留对话, 截断时返回 true。
+// OPT-019: 确定性截断替代 LLM 摘要(零额外调用, 行为可预测);
+// 仅压缩送模视图, 落盘历史全量保留(flowExport 仍导出完整记录)。
+func compressChats(chats []map[string]string, budget int) ([]map[string]string, bool) {
+	if len(chats) == 0 {
+		return chats, false
+	}
+	used := 0
+	kept := make([]map[string]string, 0, len(chats))
+	for i := len(chats) - 1; i >= 0; i-- {
+		n := len([]rune(chats[i]["content"]))
+		if used+n > budget && len(kept) > 0 {
+			break
+		}
+		if n > budget {
+			kept = append(kept, map[string]string{
+				"role":    chats[i]["role"],
+				"content": truncRunes(chats[i]["content"], budget),
+			})
+			break
+		}
+		kept = append(kept, chats[i])
+		used += n
+	}
+	// kept 为新到旧; 截断可能切在问答对中间, 修剪最旧处的非 user 开头
+	for len(kept) > 0 && kept[len(kept)-1]["role"] != "user" {
+		kept = kept[:len(kept)-1]
+	}
+	if len(kept) == 0 {
+		return nil, len(chats) > 0
+	}
+	for i, j := 0, len(kept)-1; i < j; i, j = i+1, j-1 {
+		kept[i], kept[j] = kept[j], kept[i]
+	}
+	return kept, len(kept) < len(chats)
+}
+
 // gateNow 门链+默认Profile解析(AI消耗端点共用)
 func (s *Service) gateNow(u *auth.User, want string) (admin.Profile, string, *gateErr) {
 	if _, _, ge := s.gateCheck(u, want); ge != nil {
@@ -370,7 +410,14 @@ func (s *Service) flowChat(w http.ResponseWriter, r *http.Request) {
 			})
 		}
 	}
-	for _, m := range f.Chats {
+	hist, trunc := compressChats(f.Chats, histBudgetRunes)
+	if trunc {
+		msgs = append(msgs, map[string]string{
+			"role":    "system",
+			"content": "(早期对话因长度限制已省略)",
+		})
+	}
+	for _, m := range hist {
 		msgs = append(msgs, m)
 	}
 	msgs = append(msgs, map[string]string{

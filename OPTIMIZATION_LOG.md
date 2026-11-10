@@ -582,3 +582,16 @@
 - 核心指标(req_total/top/recent/rpm)原样; sort.Slice 仍被 tops 消费
 ### 可选后续
 - 统计改造为跟踪 /api/ai/chat(SSE 路径, 需区分流式)——feature 非 清创, 独立 OPT
+
+## [2026-11-06] OPT-019 flowChat 历史预算压缩（确定性截断, nt55→nt56 续跑闭环）
+
+### nt55 停摆（单测校准门, 突变后拦截, 零生产影响）
+- TestCompressChatsHugeSingle 断言 n<=budget 失败: 实际 105=100+5, truncRunes 截断时追加可见标记
+- 判定: 测试校准失误非逻辑缺陷——compressChats 委托 truncRunes 与 appendMaterialCtx 材料截断同语义, 标记让模型知晓内容被截; 保留 helper, 测试改 exact-form(got==truncRunes(原文,budget))+前缀保全双断言
+- 教训入库: 断言既有助手输出形状时用 exact-form 对照, 不猜精确数值
+### 变更
+- compressChats: 从最新往旧按 rune 预算保留; 单条超限走 truncRunes(标记可见); 窗口修剪非 user 开头; 截断前置 system「早期对话已省略」
+- histBudgetRunes = 8000(截断标记个位数超限可忽略); 仅压缩送模视图, 落盘历史全量保留(flowExport 完整导出); 前端零改动
+- compress_test.go: 3 用例(预算内全保/超限部分保+user起始+最新存活/单条巨消息 exact-form)
+### 验证
+- 单测 3 绿; 三门绿; 双轮探针 chat#2 复述 chat#1 指定词 = 历史经压缩路径注入实证; f.Chats 全仓仅剩 flowExport 一处消费(回归门)
