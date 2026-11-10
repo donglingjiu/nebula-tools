@@ -71,6 +71,7 @@ func OpenStore(dir string) (*Store, error) {
 			{ID: newID(), Key: "data_insight", Name: "数据洞察", Category: "数据", Enabled: true},
 			{ID: newID(), Key: "ppt_tools", Name: "PPT 助手", Category: "PPT", Enabled: true},
 			{ID: newID(), Key: "mind_tools", Name: "脑图", Category: "脑图", Enabled: true},
+			{ID: newID(), Key: "workflow_decompose", Name: "工作流AI拆解", Category: "AI", Enabled: true},
 		}
 		if err := s.saveLocked(); err != nil {
 			return nil, err

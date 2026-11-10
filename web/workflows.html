@@ -231,7 +231,7 @@ if(!chk){toast('请先输入需求',true);return}
 if(!cur){toast('请先新建或选择工作流',true);return}
 window._aiNeed=need;aiIntentGate()});
 function aiChatSSE(msgs){var tok=localStorage.getItem('nb_token')||localStorage.getItem('token')||'';
-return fetch('/api/ai/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({messages:msgs})}).then(function(res){
+return fetch('/api/ai/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({messages:msgs, feature_key:'workflow_decompose'})}).then(function(res){
 if(!res.ok||!res.body||String(res.headers.get('Content-Type')||'').indexOf('text/event-stream')<0){
 return res.json().catch(function(){return{}}).then(function(j){throw new Error((j&&j.message)||('HTTP '+res.status))})}
 var rd=res.body.getReader(),dec=new TextDecoder(),buf='',out='';

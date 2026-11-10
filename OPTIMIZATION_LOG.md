@@ -595,3 +595,24 @@
 - compress_test.go: 3 用例(预算内全保/超限部分保+user起始+最新存活/单条巨消息 exact-form)
 ### 验证
 - 单测 3 绿; 三门绿; 双轮探针 chat#2 复述 chat#1 指定词 = 历史经压缩路径注入实证; f.Chats 全仓仅剩 flowExport 一处消费(回归门)
+
+## [2026-11-06] OPT-020 workflows AI 拆解接 feature_key（nt57→nt58→nt59 三轮闭环）
+
+### nt57 停摆（守门断言拦截, 零写入成功）
+- F1 全文侦察揭示: chat handler 早已带 FeatureKey(feature_key) 字段且 gateCheck 已参数化(req.FeatureKey)——后端通道现成, nt57 方案(加字段+参数化)系过度工程
+- 真实缺口仅两处: workflows.html aiChatSSE 未带 feature_key; workflow_decompose 键未注册
+- 教训入库: 突变前置侦察须覆盖目标文件完整现状(若断言未拦, api.go 将被塞死字段 Feature 与 FeatureKey 并存); 锚点假设要在侦察阶段验证
+### nt58 停摆（测试门拦截, 三处突变全部成功, 停在提交前）
+- admin_test.go:95 种子功能应7条: 8——种子数量 exact-count 断言与产品变更(新键入种子)脱节
+- 判定: 测试校准滞后非产品回归——种子是部署通道(admin.json 不入库, 不随 git 走), 新装机必须带 workflow_decompose 否则拆解 404; 回滚种子 = 新部署残废
+- 教训入库: exact-count 断言对种子数据天然脆(本轮即证); presence 断言(FeatureByKey 查键存在)更耐老化——记为改进项未动
+### 变更（api.go 零改动, 后端通道现成）
+- workflows.html: aiChatSSE body + feature_key='workflow_decompose'（意图门判断+拆解两处调用同源）
+- store.go 种子 + data/admin.json 运行时: workflow_decompose 键(enabled, 免费与现状同价)
+- admin_test.go: 种子数量断言 7→8(校准同步产品意图)
+- quickchat 零改动(不传 feature_key = 默认 ai_chat, resolveFeature 语义)
+### 门控链（现成语义, 备案）
+- resolveFeature(want): 空→defaultFeatureKey(ai_chat)→缺失回落首个启用; 非空→checkGate(503 总开关→404 不存在→410 下线→402 付费带 price)
+### 验证
+- 三门绿; 双形状探针: 无 feature_key 零回归 + 带 workflow_decompose 键门放行; admin features API 新键在列
+- 负向探针(关→410)留浏览器验收: admin-features 页切换开关

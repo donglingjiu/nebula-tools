@@ -91,8 +91,8 @@ func TestAdminFlow(t *testing.T) {
 
 	_, m = do(t, ts, "GET", "/api/admin/features", super, "")
 	fs := m["features"].([]any)
-	if len(fs) != 7 {
-		t.Fatalf("种子功能应7条: %d", len(fs))
+	if len(fs) != 8 {
+		t.Fatalf("种子功能应8条: %d", len(fs))
 	}
 	fid := fs[0].(map[string]any)["id"].(string)
 	if c, _ := do(t, ts, "PUT", "/api/admin/features/"+fid, super, `{"enabled":false,"is_paid":true,"price":9.9}`); c != 200 {
