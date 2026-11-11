@@ -43,6 +43,7 @@ function render(d){
     ["每分钟请求",d.rpm||0,""],
     ["错误率",(d.error_rate||0).toFixed(2)+"%",(d.error_rate>5?"warn":"")],
     ["运行时长",(d.uptime_sec>=3600?(d.uptime_sec/3600).toFixed(1)+"h":Math.round((d.uptime_sec||0)/60)+"min"),""]
+    ['AI 调用', (d.ai?d.ai.calls:0), ''],
   ];
   document.getElementById("cards").innerHTML=cards.map(function(c){
     return '<div class="card '+c[2]+'"><div class="v">'+c[1]+'</div><div class="k">'+c[0]+'</div></div>';

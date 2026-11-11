@@ -54,6 +54,7 @@ func ntSeedFeatures() []*Feature {
 		mk("ai-materials", "ai", "材料库", "跨流程复用的参考资料", "/materials.html", "online", 95, true),
 		mk("wf-flowchart", "workflow", "流程图", "流程图绘制", "/flowchart.html", "online", 100, false),
 		mk("wf-pipeline-7", "workflow", "全流程 7 步", "头脑风暴到测试落地", "/ai-studio.html", "online", 100, true),
+		mk("wf-decompose", "workflow", "智能工作流", "数据清洗步骤链, AI 拆解自然语言", "/workflows.html", "online", 100, true),
 		mk("wf-metrics", "workflow", "监控看板", "QPS/延迟/错误率/LLM 调用", "/admin-metrics.html", "online", 100, false),
 	}
 }

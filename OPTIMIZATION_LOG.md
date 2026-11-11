@@ -635,3 +635,19 @@
 - quickchat 默认键零回归; 四页面 200
 ### 备注
 - ntAdminOK dev 模式已备案 — 生产部署须设 ADMIN_TOKEN
+
+## [2026-11-06] OPT-022: 池展示条目 wf-decompose + metrics AI 分支 + 管理页 AI 卡（nt68 侦察 → nt69 一轮双项）
+
+### 变更
+- feature.go: 池种子 24→25 — mk("wf-decompose","workflow","智能工作流",...,"/workflows.html","online",100,true) 插入 wf 块; 池 ID 命名空间与 Store 键(workflow_decompose)分离零冲突(P4 实证)
+- metrics.go: snapshot() 增 ai 聚合 — /api/ai/ 前缀路径累加 calls/errs/TotalMs 派生 "ai" 键(calls/errs/avg_ms), 零新存储纯派生; P10 路由 grep 空系方法前缀注册, 按观测路径聚合不受影响
+- web/admin-metrics.html: cards 数组增 'AI 调用' 卡 — 自适应突变(从 function render(X) 签名提取数据参数名, 引用 X.ai.calls, 缺失时优雅 0)
+### 验证
+- 池条目 live: /api/features 含 wf-decompose(route=/workflows.html, ai=true)
+- chat 探针后 /api/metrics ai.calls>=1
+- embedded FS 服务新版 admin-metrics.html(AI 卡在)
+- 五页面 200; build+vet+test 绿
+### P12 发现（OPT-023 候选立案）
+- admin-aiops.html L83 契约注释: GET /api/admin/ai/stats 实时聚合(db.AICalls) — 真统计端点已存在!
+- getOps 的 today 假块(tokens:0,calls:0,success_rate:100)或系占位; 待一行侦察: 页面 metric 磁贴吃 ops(假)还是 stats(真), 若吃 ops 则把磁贴改吃 stats 即诚实化
+- nt67 探针人为打出的 410 在 P11 metrics top errs=1 中现形 — 错误计数实证正常

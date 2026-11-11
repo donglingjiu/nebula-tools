@@ -112,11 +112,24 @@ func (s *mStore) snapshot() map[string]interface{} {
 	for i, j := 0, len(recent)-1; i < j; i, j = i+1, j-1 {
 		recent[i], recent[j] = recent[j], recent[i]
 	}
+	aiCalls, aiErrs, aiMs := 0, 0, int64(0)
+	for p, st := range s.paths {
+		if strings.HasPrefix(p, "/api/ai/") {
+			aiCalls += st.Count
+			aiErrs += st.Errs
+			aiMs += st.TotalMs
+		}
+	}
+	aiAvg := 0.0
+	if aiCalls > 0 {
+		aiAvg = float64(aiMs) / float64(aiCalls)
+	}
 	return map[string]interface{}{
 		"ok": true, "uptime_sec": int(time.Since(s.start).Seconds()),
 		"req_total": s.reqTotal, "req_errors": s.reqErrs,
 		"error_rate": errRate, "rpm": rpm,
 		"top": tops, "recent": recent,
+		"ai": map[string]interface{}{"calls": aiCalls, "errs": aiErrs, "avg_ms": aiAvg},
 	}
 }
 
