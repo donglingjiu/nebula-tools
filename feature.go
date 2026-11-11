@@ -212,20 +212,12 @@ func FeatureWrap(next http.Handler) http.Handler {
 			ntFeaturePool.hPublicList(w, r)
 		case "/api/features/stream":
 			ntFeaturePool.hStream(w, r)
-		case "/api/admin/features":
+		case "/api/pool/features":
 			ntFeaturePool.hAdminList(w, r)
-		case "/api/admin/features/toggle":
+		case "/api/pool/features/toggle":
 			ntFeaturePool.hToggle(w, r)
 		default:
 			next.ServeHTTP(w, r)
 		}
 	})
-}
-
-// init registers on DefaultServeMux as fallback.
-func init() {
-	http.HandleFunc("/api/features", ntFeaturePool.hPublicList)
-	http.HandleFunc("/api/features/stream", ntFeaturePool.hStream)
-	http.HandleFunc("/api/admin/features", ntFeaturePool.hAdminList)
-	http.HandleFunc("/api/admin/features/toggle", ntFeaturePool.hToggle)
 }

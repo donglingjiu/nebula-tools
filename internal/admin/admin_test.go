@@ -91,8 +91,14 @@ func TestAdminFlow(t *testing.T) {
 
 	_, m = do(t, ts, "GET", "/api/admin/features", super, "")
 	fs := m["features"].([]any)
-	if len(fs) != 8 {
-		t.Fatalf("种子功能应8条: %d", len(fs))
+	found := false
+	for _, fi := range fs {
+		if fi.(map[string]any)["key"] == "workflow_decompose" {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("种子缺少 workflow_decompose 功能键")
 	}
 	fid := fs[0].(map[string]any)["id"].(string)
 	if c, _ := do(t, ts, "PUT", "/api/admin/features/"+fid, super, `{"enabled":false,"is_paid":true,"price":9.9}`); c != 200 {

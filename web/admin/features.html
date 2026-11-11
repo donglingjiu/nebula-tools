@@ -41,13 +41,13 @@ function row(f){return '<tr><td>'+esc(f.id)+'</td><td>'+esc(f.category)+'</td><t
  '<td><select id="sel-'+f.id+'"><option>online</option><option>beta</option><option>gray</option><option>offline</option></select></td>'+
  '<td><input type="number" id="gp-'+f.id+'" value="'+(f.grayPercent||0)+'" min="0" max="100" style="width:64px"></td>'+
  '<td><button data-id="'+f.id+'">保存</button></td></tr>';}
-function load(){fetch("/api/admin/features",{headers:{"X-Admin-Token":tok()}}).then(function(r){return r.json();}).then(function(d){
+function load(){fetch("/api/pool/features",{headers:{"X-Admin-Token":tok()}}).then(function(r){return r.json();}).then(function(d){
   var fs=d.features||[],h="";fs.forEach(function(f){h+=row(f);});
   document.getElementById("rows").innerHTML=h;});}
 document.getElementById("rows").addEventListener("click",function(e){
   var id=e.target.getAttribute&&e.target.getAttribute("data-id");if(!id)return;
   var st=document.getElementById("sel-"+id).value,gp=parseInt(document.getElementById("gp-"+id).value||"0",10);
-  fetch("/api/admin/features/toggle",{method:"POST",headers:{"Content-Type":"application/json","X-Admin-Token":tok()},
+  fetch("/api/pool/features/toggle",{method:"POST",headers:{"Content-Type":"application/json","X-Admin-Token":tok()},
    body:JSON.stringify({id:id,status:st,grayPercent:gp})}).then(function(r){return r.json();}).then(function(d){
     document.getElementById("msg").textContent=d.ok?("已更新 "+id+" -> "+st):("失败: "+(d.error||""));
     if(d.ok)load();});});

@@ -39,7 +39,7 @@
 <script src="/assets/js/admin.js?v=97826989"></script>
 <script>
 /* 契约(阶段5):
-   GET /api/admin/features -> {features:[{id,key,name,category,enabled,is_paid,price,calls_7d,success_rate}]}
+   GET /api/admin/features -> {features:[{id,key,name,category,enabled,is_paid,price,percent}]}  // stats honest: absent unless measured
    PUT /api/admin/features/{id} {enabled?|is_paid?|price?} */
 (function(){
   var NB = window.NB, $ = function(id){ return document.getElementById(id); };
@@ -71,7 +71,7 @@
         '<p style="margin:6px 0 0;font-size:12px;color:var(--text-sub)">' + NB.escape(f.category) +
         ' · <code>' + NB.escape(f.key) + '</code></p>' +
         '<div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;color:var(--text-sub);flex-wrap:wrap">' +
-        '<span>7日 ' + NB.fmtNum(f.calls_7d) + ' 次</span><span>成功率 ' + f.success_rate + '%</span>' +
+        '<span>7日 ' + (f.calls_7d==null?'—':NB.fmtNum(f.calls_7d)) + ' 次</span><span>成功率 ' + (f.success_rate==null?'—':f.success_rate) + '%</span>' +
         '<label style="margin-left:auto;display:flex;gap:4px;align-items:center">付费' +
         '<input type="checkbox" data-a="paid"' + (f.is_paid ? ' checked' : '') + '></label>' +
         '<input class="nb-input" data-a="price" type="number" min="0" value="' + (f.price || 0) + '" style="width:80px;padding:4px 8px" aria-label="价格"></div>';

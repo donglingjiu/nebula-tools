@@ -276,7 +276,6 @@ func (s *Service) listFeatures(w http.ResponseWriter, r *http.Request) {
 		arr = append(arr, map[string]any{
 			"id": f.ID, "key": f.Key, "name": f.Name, "category": f.Category,
 			"enabled": f.Enabled, "is_paid": f.IsPaid, "price": f.Price, "percent": f.Percent,
-			"calls_7d": 0, "success_rate": 100,
 		})
 	}
 	writeJSON(w, 200, map[string]any{"features": arr})

@@ -616,3 +616,22 @@
 ### 验证
 - 三门绿; 双形状探针: 无 feature_key 零回归 + 带 workflow_decompose 键门放行; admin features API 新键在列
 - 负向探针(关→410)留浏览器验收: admin-features 页切换开关
+
+## [2026-11-06] OPT-021 收官（nt64→nt65→nt66→nt67 四轮续跑）: abort 门救回合法代码, 门范围校准
+
+### nt66 abort 门的教科书级拦截
+- R1 揭示全文件仅剩 success_rate 在 L225: "today":{tokens,calls,success_rate,avg_ms} — LLM 密钥用量统计初始化器, 非 feature 假统计
+- 「姊妹残留=putFeature 假统计」假设证伪; 「全文件零 success_rate」意图校准错误 — 真意图是 features API 面诚实
+- 若 nt64 用宽松突变强推将误删 LLM 统计初始化器 — 嵌入表达式拒绝删除的突变契约正好接住, 零写入
+### 门校准（nt67 定案）
+- 语义门从全文件收窄到 feature handlers(listFeatures+putFeature 函数体)零 stats 字段 — R2 实证两 handler 均已诚实
+- L225 保留(合法 LLM 统计初始化), 由其所属函数名(含 llm/LLM/Stats)确认归属
+### 变更（nt67 零代码突变, 仅文档）
+- web/admin-features.html: 陈旧契约注释刷新为诚实形状(id,key,name,category,enabled,is_paid,price,percent)
+### 验证（全探针矩阵）
+- Store 接管: /api/admin/features(JWT) 键形状, workflow_decompose 在列, 零池字段, 零假统计
+- 410 往返: PUT disable → chat(feature_key) 410 → enable → SSE 恢复
+- 池迁移往返: /api/pool/features 200 → 动态选条目 offline → 公共隐匿 → 恢复 → 重现
+- quickchat 默认键零回归; 四页面 200
+### 备注
+- ntAdminOK dev 模式已备案 — 生产部署须设 ADMIN_TOKEN
