@@ -42,7 +42,7 @@ function render(d){
     ["总请求",fnum(d.req_total||0),""],
     ["每分钟请求",d.rpm||0,""],
     ["错误率",(d.error_rate||0).toFixed(2)+"%",(d.error_rate>5?"warn":"")],
-    ["运行时长",(d.uptime_sec>=3600?(d.uptime_sec/3600).toFixed(1)+"h":Math.round((d.uptime_sec||0)/60)+"min"),""]
+    ["运行时长",(d.uptime_sec>=3600?(d.uptime_sec/3600).toFixed(1)+"h":Math.round((d.uptime_sec||0)/60)+"min"),""],
     ['AI 调用', (d.ai?d.ai.calls:0), ''],
   ];
   document.getElementById("cards").innerHTML=cards.map(function(c){

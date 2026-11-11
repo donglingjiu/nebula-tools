@@ -143,6 +143,13 @@ func (w *mWriter) WriteHeader(code int) {
 	w.ResponseWriter.WriteHeader(code)
 }
 
+// Flush passes through so SSE handlers asserting http.Flusher keep working under MetricsWrap.
+func (w *mWriter) Flush() {
+	if f, ok := w.ResponseWriter.(http.Flusher); ok {
+		f.Flush()
+	}
+}
+
 // MetricsWrap is the outermost wrapper: counts every request incl. auth rejects.
 func MetricsWrap(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -160,9 +167,4 @@ func MetricsWrap(next http.Handler) http.Handler {
 func metHJSON(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	_ = json.NewEncoder(w).Encode(met.snapshot())
-}
-
-// init registers on DefaultServeMux as fallback.
-func init() {
-	http.HandleFunc(metP, metHJSON)
 }

@@ -651,3 +651,21 @@
 - admin-aiops.html L83 契约注释: GET /api/admin/ai/stats 实时聚合(db.AICalls) — 真统计端点已存在!
 - getOps 的 today 假块(tokens:0,calls:0,success_rate:100)或系占位; 待一行侦察: 页面 metric 磁贴吃 ops(假)还是 stats(真), 若吃 ops 则把磁贴改吃 stats 即诚实化
 - nt67 探针人为打出的 410 在 P11 metrics top errs=1 中现形 — 错误计数实证正常
+
+## [2026-11-06] OPT-024: 监控看板复活 + SSE 解锁（nt71 三线解密 → nt72 红/绿 harness 收敛）
+
+### 三 bug 判定链
+- BUG-1 metrics 死页: 真凶是 nt69 自伤 — 上一卡行无尾逗号 + 插入行 → JS 把后续 [..] 解析为成员访问(逗号运算符取下标) → cards 尾元素 undefined → map 内 c[2] TypeError → innerHTML 永不赋值 → .catch 静默吞 → 截图逐帧吻合(无卡/无行/#ts "-")
+- 教训入库(两个世界第 4 变体): curl 探针只 grep 文本从未执行 JS — 新军规: 前端突变必须执行级验证(headless harness, node 可用则红/绿双跑; 红测先复现再修, 防诊断自证)
+- BUG-2 stats 401: 路由存在(main.go:568)且 handler 已真实聚合 db.AICalls(573-612) — 但被 s.admin 旧鉴权包裹(NB.api 带 JWT 仍 401, 同 token ops 200 铁证) — 第三次双表面(旧/新 auth 世界); nt73 换 asvc.RequireRole
+- BUG-3 SSE 500: MetricsWrap 的 mWriter 不实现 http.Flusher → hStream 断言失败 → features.html 红点 + metrics top errs=4 实录; 修复: Flush 透传方法(结构化接口满足, 一法救全局)
+### 变更
+- web/admin-metrics.html: 尾逗号补齐 + 结构门(cards 元素行全逗号收尾)
+- metrics.go: mWriter.Flush 透传; init() DefaultServeMux 死代码删(nt64 判例同款)
+### 验证
+- 红测: pre-fix 文件 headless 执行 render → RENDER_FAIL(诊断实证); 绿测: 修复后 RENDER_OK
+- /api/features/stream → 200 text/event-stream(Flusher 解锁)
+- served 页结构门通过(embedded FS 反映修复); chat 探针 → ai.calls>=1
+### 备案
+- /api/metrics 公开无鉴权 — 池卡片"监控看板"面向全员, 暂保公开; 收紧需页面接 token
+- aiops 磁贴期待 tool_calls/error_rate/active_users — stats handler 输出键是否齐备待 nt73 recon 判读
