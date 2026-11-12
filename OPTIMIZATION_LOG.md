@@ -669,3 +669,20 @@
 ### 备案
 - /api/metrics 公开无鉴权 — 池卡片"监控看板"面向全员, 暂保公开; 收紧需页面接 token
 - aiops 磁贴期待 tool_calls/error_rate/active_users — stats handler 输出键是否齐备待 nt73 recon 判读
+
+## [2026-11-06] OPT-023: ai/stats 鉴权统一 + getOps 假块清理（nt72 侦察 → nt73 实施）
+
+### 判定链
+- stats 路由存在(main.go:568)且 handler 已真实聚合三层(AICalls today + History 工具 + Logs 错误 + users 活跃) — 但被 s.admin 旧鉴权锁死, NB.api 带 JWT 仍 401 — 双表面第三次(旧/新 auth 世界)
+- getOps 假 today 块(tokens:0,calls:0,success_rate:100)零消费者(aiops 页 loadOps 只碰 switches, 磁贴全在 loadStats 吃 stats) — 纯后端遗留债, 删
+- R4 发现: AddAICall 全仓零调用者 — db.AICalls 恒空, stats today.calls 将是真 0(诚实) — 数据源点火立案 OPT-025(热路径突变独立轮)
+### 变更
+- main.go: stats 注册 s.admin(...) → asvc.RequireRole("admin", ...)(括号平衡字符串替换, 作用域 asvc 预检+编译器双保险)
+- internal/admin/api.go: getOps 删假 today 块
+- web/admin-aiops.html: ops 契约注释刷新(today 移至 stats 条目)
+### 验证
+- stats: JWT 200 + 键形状验收(7 磁贴键清单差集打印); no-token 401
+- ops: today 键消失, switches 完好
+- SSE 持续 200 event-stream; 四页面 200
+### 备注
+- stats today.calls=0 系数据源未点火(真 0 非假 100%) — OPT-025: chat 完成点调 db.AddAICall(依赖注入侦察 nt73 R4 已备)

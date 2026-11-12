@@ -565,7 +565,7 @@ func newRouter(db *DB) http.Handler {
 		go notifySend(url, ch, map[string]string{"event": "test", "tool": "alert-test", "user": "admin", "error": "渠道测试", "time": time.Now().Format(time.RFC3339)})
 		J(w, map[string]any{"ok": true})
 	}))
-	mux.HandleFunc("GET /api/admin/ai/stats", s.admin(func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /api/admin/ai/stats", asvc.RequireRole("admin", func(w http.ResponseWriter, r *http.Request) {
 		db.mu.Lock()
 		var toks, msSum int64
 		okN, calls := 0, 0

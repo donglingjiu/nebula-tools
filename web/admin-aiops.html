@@ -78,7 +78,7 @@
 <script src="/assets/js/admin.js?v=97826989"></script>
 <script>
 /* 契约(阶段5):
-   GET /api/admin/ai/ops -> {switches:{ai_enabled,paid_mode,default_profile_id},today:{tokens,calls,success_rate,avg_ms},recent:[{ts,user,module,model,tokens,ms,ok}]}
+   GET /api/admin/ai/ops -> {switches:{ai_enabled,paid_mode,default_profile_id}}  // stats moved to /api/admin/ai/stats (JWT admin)
    PUT /api/admin/ai/ops {ai_enabled?|paid_mode?|default_profile_id?} 仅超级管理员
    GET /api/admin/ai/stats -> {today:{tokens,calls,success_rate,avg_ms},recent:[...]} 实时聚合(db.AICalls)
    GET /api/admin/llm/profiles 复用密钥页接口填充默认模型下拉 */

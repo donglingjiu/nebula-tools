@@ -222,7 +222,6 @@ func (s *Service) getOps(w http.ResponseWriter, r *http.Request) {
 	s.st.mu.Unlock()
 	writeJSON(w, 200, map[string]any{
 		"switches": map[string]any{"ai_enabled": o.AIEnabled, "paid_mode": o.PaidMode, "default_profile_id": o.DefaultProfileID},
-		"today":    map[string]any{"tokens": 0, "calls": 0, "success_rate": 100, "avg_ms": 0},
 		"recent":   []any{},
 	})
 }
