@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"nova/internal/admin"
 	"nova/internal/auth"
@@ -54,6 +55,9 @@ func Mount(mux *http.ServeMux, dir string, asvc *auth.Service) error {
 	mux.HandleFunc("GET /api/ai/orders", asvc.RequireRole("user", s.orderList))
 	return nil
 }
+
+// OnAICall is wired by main (ai.OnAICall = db.AddAICall); nil-safe no-op when unset.
+var OnAICall func(user, module, model string, tokens, ms int64, ok bool)
 
 // checkGate 门槛链: 总开关503 → 功能404 → 下线410 → 付费402(带price)
 func checkGate(st *admin.Store, key string) *gateErr {
@@ -140,11 +144,19 @@ func (s *Service) chat(w http.ResponseWriter, r *http.Request) {
 		fail(w, 503, err.Error())
 		return
 	}
-	relaySSE(w, r, prof, key, req.Messages)
+	start := time.Now()
+	ok := relaySSE(w, r, prof, key, req.Messages)
+	if OnAICall != nil {
+		u := ""
+		if gu != nil {
+			u = gu.Email
+		}
+		OnAICall(u, "chat", prof.Model, 0, time.Since(start).Milliseconds(), ok)
+	}
 }
 
 // relaySSE 转发上游 OpenAI 兼容 SSE 流(逐行透传 data:/event:/注释/空行)
-func relaySSE(w http.ResponseWriter, r *http.Request, prof admin.Profile, key string, msgs []map[string]string) {
+func relaySSE(w http.ResponseWriter, r *http.Request, prof admin.Profile, key string, msgs []map[string]string) bool {
 	payload, _ := json.Marshal(map[string]any{
 		"model": prof.Model, "messages": msgs, "stream": true,
 	})
@@ -152,7 +164,7 @@ func relaySSE(w http.ResponseWriter, r *http.Request, prof admin.Profile, key st
 		strings.TrimRight(prof.BaseURL, "/")+"/chat/completions", bytes.NewReader(payload))
 	if err != nil {
 		fail(w, 500, "构造上游请求失败")
-		return
+		return false
 	}
 	up.Header.Set("Content-Type", "application/json")
 	up.Header.Set("Authorization", "Bearer "+key)
@@ -160,13 +172,13 @@ func relaySSE(w http.ResponseWriter, r *http.Request, prof admin.Profile, key st
 	resp, err := http.DefaultClient.Do(up)
 	if err != nil {
 		fail(w, 502, "上游不可达: "+err.Error())
-		return
+		return false
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		b, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
 		fail(w, 502, fmt.Sprintf("上游返回 %d: %s", resp.StatusCode, strings.TrimSpace(string(b))))
-		return
+		return false
 	}
 	w.Header().Set("Content-Type", "text/event-stream; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-cache")
@@ -185,6 +197,10 @@ func relaySSE(w http.ResponseWriter, r *http.Request, prof admin.Profile, key st
 			}
 		}
 	}
+	if e := sc.Err(); e != nil {
+		return false
+	}
+	return true
 }
 
 func writeJSON(w http.ResponseWriter, code int, v any) {

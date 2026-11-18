@@ -686,3 +686,22 @@
 - SSE 持续 200 event-stream; 四页面 200
 ### 备注
 - stats today.calls=0 系数据源未点火(真 0 非假 100%) — OPT-025: chat 完成点调 db.AddAICall(依赖注入侦察 nt73 R4 已备)
+
+## [2026-11-06] OPT-025 终审: aiops 去嵌(console 实锤) + AICall 点火(relaySSE 返回 ok) + 诚实掩码
+
+### 侦察弧(三轮三判决, 教训密集)
+- nt75 括号失衡论被自家 balance=0 证伪 → postcondition 门拒绝 corrupting write(零写入, 门再立功; 教训: 突变契约须后置门, 前置断言只编码必要不充分条件)
+- nt76 幽灵 API 论被 R2 交叉证伪(adminGate DEFINED @ admin.js:4)
+- nt77 机械深度追踪 + 浏览器 console = 终审: loadStats 嵌套于 loadOps(depth=2), bootstrap 回调(IIFE 层)调用 → ReferenceError; console 同时反证 NB.api 存在(loadOps 同步先执行无 TypeError)
+- grep 假阴性事故: 'NB\.api\s*=' 在本机 BRE 退化(\\s 不支持) → 对 repo 与 served 双双漏报, sed dump 直接打脸 — 军规: 空结果须先对已知阳性校验 grep 自身
+### 变更
+- web/admin-aiops.html: loadOps 闭括号前移 + 孪生 } 删一(净平衡不变, 机械追踪后置门: 三 loader 全顶层 balance=0); m_rate 掩码(calls==0 → '—')
+- internal/ai/api.go: OnAICall 包级回调(nil 安全); relaySSE 返回 ok bool(3 个 fail 路径 false, 流末 sc.Err() 判真伪 — 上游断流记失败, 客户端断连不影响上游 ok); chat 点火(start 计时 + gu.Email 身份 + ok 透传)
+- main.go: ai.OnAICall = db.AddAICall(方法值类型严丝合缝; Mount 作用域 db 预检 + 编译器双验)
+### 验证
+- 点火: 快聊 1 次 → stats today.calls>=1 + recent>=1 + active_users>=1(gu.Email 落地) + avg_ms 真值; metrics ai.calls 同步
+- served 页机械追踪后置门(embedded FS 反映); SSE 持续; 五页面 200
+### 备案
+- tokens=0 系 LLM 流无 usage 字段(诚实零; 解析 usage 为后续)
+- flow 路径(ai-studio collectChat)未点火 — 独立 backlog
+- 旧截图开关 OFF vs db=true 之雾未预设 — 修复后浏览器终验裁决(toggle CSS 或历史 token 作废, 均不阻塞)

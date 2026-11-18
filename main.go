@@ -142,6 +142,7 @@ func newRouter(db *DB) http.Handler {
 		if err := admin.Mount(mux, dataDir, asvc); err != nil {
 			log.Printf("admin mount: %v", err)
 		}
+		ai.OnAICall = db.AddAICall
 		if err := ai.Mount(mux, dataDir, asvc); err != nil {
 			log.Printf("ai mount: %v", err)
 		}

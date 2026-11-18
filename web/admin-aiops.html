@@ -89,11 +89,12 @@
       $('sw_ai').checked = !!r.switches.ai_enabled;
       $('sw_paid').checked = !!r.switches.paid_mode;
     }).catch(function(e){ $('tip').textContent = '加载失败(阶段5接入): ' + e.message; });
+  }
   function loadStats(){
     NB.api('/api/admin/ai/stats').then(function(r){
       $('m_tok').textContent = NB.fmtNum(r.today.tokens);
       $('m_calls').textContent = NB.fmtNum(r.today.calls);
-      $('m_rate').textContent = r.today.success_rate + '%';
+      $('m_rate').textContent = (r.today.calls===0?'—':r.today.success_rate+'%');
       $('m_ms').textContent = r.today.avg_ms + 'ms';
       $('m_tools').textContent = NB.fmtNum(r.today.tool_calls);
       $('m_err').textContent = r.today.error_rate + '%';
@@ -108,7 +109,6 @@
         tb.appendChild(tr);
       });
     }).catch(function(e){ $('tip').textContent = '统计加载失败: ' + e.message; });
-  }
   }
   function loadModels(){
     NB.api('/api/admin/llm/profiles').then(function(r){
