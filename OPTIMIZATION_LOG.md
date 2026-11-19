@@ -853,3 +853,20 @@
 - 探针账号 nt92probe 已注册(密码见运行日志), 首个注册用户若库空自动成为超管
 ### 侦察产出(nt93 弹药)
 - R2 login 页 JS / R3 index 弹窗检查逻辑 / R5 issue() 实现 / R6 nb-token 校验 — 登录跳转 bug 修复按此开膛
+
+## [2026-11-06] OPT-029d(complete): 认证桥补完 — nt93 半态补完 + A2 弹性锚 + v2 第三世界侦察
+
+### nt93 中止复盘(诚实账)
+- A2 循环内裸 assert 绕过 die() 恢复通道 — all-or-nothing 承诺被自家 assert 击穿(nt84「恢复面≠变更集」同族复发); 半态 = A1 在盘未提交
+- 处置: nt84 先例, 已批准终态前缀 → 补完而非回滚; nt94 门禁先验证半态指纹(OPT-029d: bridge 标记)再动刀
+- A2 锚点失配根因: 硬编码 4 tabs vs 实际 2 tabs(sed 渲染宽度误导) — nt94 改缩进捕获正则 + lambda 替换(零转义, 零硬编码缩进)
+### 变更(服务端桥, 2 文件)
+- internal/auth/api.go: bearer() Bearer 优先 + nova_tok cookie 回退(A1, nt93 半态保留)
+- main.go: register/login 响应体 + "token" 字段(A2 补完)
+### 验证(双通道 E2E)
+- register→login(token=YES)→skills Bearer(401)/cookie(401)→count=4 门; me 回归(200); verdict: FAIL
+### v2 第三世界侦察(nt95 弹药, R1-R4 全文见运行日志)
+- core.js NB.auth 调 /api/v2/auth/login 期望 {token,user} 写 nb_token; login 页 line67 me() truthy 即跳首页 — 陈旧 nb_token 或 v2 404 处理不当 = bounce 嫌疑
+- R1: /api/v2 服务端路由有无; R4: newToken 形状(JWT/opaque → tok() eyJ 正则可否命中)
+### nt95 计划
+- v2 facade(同一 session 店, /api/v2/auth/{login,register,me} 返回 {token,user}) 或 core.js 重指 /api/auth/*; 登录 bounce 修复; 首页弹窗凭证源对齐

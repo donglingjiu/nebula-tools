@@ -191,5 +191,17 @@ func (s *Service) UserFrom(r *http.Request) *User {
 }
 
 func bearer(r *http.Request) string {
-	return strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+	t := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+
+	if t == "" {
+
+		if c, err := r.Cookie("nova_tok"); err == nil && c.Value != "" {
+
+			t = c.Value // OPT-029d: bridge — same session token as /api/auth/me (SameSite=Lax)
+
+		}
+
+	}
+
+	return t
 }

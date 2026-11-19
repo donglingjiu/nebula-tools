@@ -172,8 +172,8 @@ func newRouter(db *DB) http.Handler {
 			E(w, 400, err.Error())
 			return
 		}
-		s.issue(w, u.Username)
-		J(w, map[string]any{"ok": true, "username": u.Username, "role": u.Role})
+		tk := s.issue(w, u.Username)
+		J(w, map[string]any{"ok": true, "username": u.Username, "role": u.Role, "token": tk})
 	})
 	mux.HandleFunc("POST /api/auth/login", func(w http.ResponseWriter, r *http.Request) {
 		var req struct {
@@ -188,8 +188,9 @@ func newRouter(db *DB) http.Handler {
 			E(w, 401, "用户名或密码错误")
 			return
 		}
-		u := db.SessionUser(s.issue(w, req.Username))
-		J(w, map[string]any{"ok": true, "username": req.Username, "role": u.Role})
+		tk := s.issue(w, req.Username)
+		u := db.SessionUser(tk)
+		J(w, map[string]any{"ok": true, "username": req.Username, "role": u.Role, "token": tk})
 	})
 	mux.HandleFunc("POST /api/auth/logout", func(w http.ResponseWriter, r *http.Request) {
 		if c, err := r.Cookie("nova_tok"); err == nil {
