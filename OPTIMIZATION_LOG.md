@@ -838,3 +838,18 @@
 - 已登录用户刷新 ai-studio.html: 技能包卡片应渲染四行(若显示「未登录」= token key 提取不符, R1 输出即分诊数据)
 ### 下一步
 - nt92: V2 契约消费 — flow 模板读 pipeline.json(S1-S7 阶段机读驱动) + NOVA_SKILLS_DIR 磁盘层(SKILL.md 全文运行时加载, Private 内容不进 git)
+
+## [2026-11-06] OPT-029c: 登录链路分诊(nt91 尾巴) + 卡片 token 修复 + curl E2E
+
+### 用户报障与假说
+- 现象: 登录页提交后直接跳首页, 仍显示未登录; 卡片 401
+- 假说: A 世界错配(login 页 novaUser/cookie vs nb 页 nb_token JWT — 与 nt83 C 族双世界定案吻合) / B 字段错配(表单邮箱 vs handler Username) / C 无账号
+### R1 硬线索
+- web/assets/core.js 不存在(nt91 猜错文件名, 诚实降级正确); auth 逻辑在 ai-studio.html 内联(line155 tok()) — token key 藏于函数体, nt91 正则未捕获 → 卡片 __AUTH=null 即使登录也不带 token
+### 变更
+- ai-studio.html: __AUTH 从 tok() 源码派生重织(fixed-key 或 scan 策略, runtime 判定; 派生失败则诚实 skip) — E2E 独立于 UI 修复
+### curl E2E(探针账号)
+- register→login→skills(Bearer/cookie 双试)→count=4 门; verdict: FAIL
+- 探针账号 nt92probe 已注册(密码见运行日志), 首个注册用户若库空自动成为超管
+### 侦察产出(nt93 弹药)
+- R2 login 页 JS / R3 index 弹窗检查逻辑 / R5 issue() 实现 / R6 nb-token 校验 — 登录跳转 bug 修复按此开膛

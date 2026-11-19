@@ -275,13 +275,13 @@
 </section>
 <script>
 (function(){
-  const __AUTH = null; // no token key found in page/core.js — bare fetch, 401 shows honest login hint
+  function __scanTok(){ try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i) || ''; if (k.toLowerCase().indexOf('token') >= 0) { var v = localStorage.getItem(k); if (v) return v; } } } catch (e) {} return null; }
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   async function load(){
     var box = document.getElementById('skillsPack');
     try {
       var h = {};
-      if (__AUTH) { var t = localStorage.getItem(__AUTH.key); if (t) h[__AUTH.hdr] = __AUTH.pre + t; }
+      if (true) { var t = __scanTok(); if (t) h['Authorization'] = 'Bearer ' + t; }
       var r = await fetch('/api/ai/skills', { headers: h });
       if (!r.ok) {
         throw new Error(r.status === 401 ? '未登录或会话过期（请先登录后再试）' : ('HTTP ' + r.status));
