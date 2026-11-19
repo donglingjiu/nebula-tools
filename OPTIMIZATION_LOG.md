@@ -729,3 +729,16 @@
 - 10 页收编重刷=给博物馆抛光, settings/roles/logs/analytics 等仅旧版有 UI — 归档/标注 legacy 属产品决策, 待裁决
 ### 验证
 - served 11/11 全指纹门; build/vet/test; 回归五页 200
+
+## [2026-11-06] OPT-027a+: 归档补完(nt84 abort 复盘) + 四基座克隆普查
+
+### nt84 abort 复盘(诚实账)
+- PYB heredoc 字符串续行符损坏 -> SyntaxError; abort 恢复 main.go+删 tag 零腐化, 但 A 步文件迁移未被 abort 覆盖(半态残留) — 恰为已批准终态前缀, nt85 补完而非回滚
+- 教训: abort handler 恢复面必须等于变更集; 多步变更应整体门控(all-or-nothing)
+- 侦察金矿: //go:embed web 递归(legacy/ 静态可访) / flow 骨架 7 端点(start/start7/edit-step/profiles/advance/run/chat) / eval.go 嵌 tasks.jsonl / ai-studio.html 无常规 tab 标记(V1 需专项结构侦察)
+### 归档补完
+- main.go: GET /admin/{page} -> 410 Gone(Go raw string + list-of-lines 手术, 零 fmt 依赖 — nt84 引号地狱的教训); design-gallery 11 链接改 legacy/ + banner; tag legacy-admin-v1 重设
+### 四基座(donglingjiu/{web-delivery-team,AutoDev,frontend-builder,product-expert-team})
+- product-expert-team 已恢复(Private, 8 commits, agents/deliverables/docs-cases/references/scripts/skills — 比 README 缓存更丰富)
+- 路线确认: 先优化基座(机器可消费化) 再建工作台(直接解析) — 基座优化即工作台契约设计
+- 优化矩阵(市面对标落地): pipeline.json(阶段图+门+并行 DAG) / gate.json(5 门形式化) / 产出物 schema / frontmatter 统一 / 交叉引用完整性
