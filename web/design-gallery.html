@@ -29,16 +29,16 @@ const front=[
 ['10','移动端预览','mobile.html','10-mobile.jpg','手机首页、AI 对话和工具入口布局。']
 ];
 const admin=[
-['01','管理总览','admin/index.html','11-admin-overview.jpg','平台运行、服务健康、使用趋势和审计事件。'],
-['02','用户管理','admin/users.html','12-admin-users.jpg','用户筛选、角色状态、使用额度和详情操作。'],
-['03','工具管理','admin/tools.html','13-admin-tools.jpg','工具目录、启停开关、版本、推荐与配置。'],
-['04','运营分析','admin/analytics.html',null,'使用默认专业数据台布局：指标、趋势、占比与报表。'],
-['05','内容管理','admin/content.html',null,'使用默认后台布局：公告、首页模块与内容审核。'],
-['06','权限管理','admin/roles.html',null,'使用默认后台布局：角色、权限范围与访问策略。'],
-['07','操作日志','admin/logs.html',null,'使用默认后台布局：审计事件、筛选和日志详情。'],
-['08','任务与文件管理','admin/exports.html',null,'使用默认后台布局：导出任务、状态和文件清单。'],
-['09','系统设置','admin/settings.html',null,'使用默认后台布局：服务配置、安全与功能开关。'],
-['10','通知中心','admin/notifications.html',null,'使用默认后台布局：通知模板、发送状态和提醒。']
+['01','管理总览','legacy/index.html','11-admin-overview.jpg','平台运行、服务健康、使用趋势和审计事件。'],
+['02','用户管理','legacy/users.html','12-admin-users.jpg','用户筛选、角色状态、使用额度和详情操作。'],
+['03','工具管理','legacy/tools.html','13-admin-tools.jpg','工具目录、启停开关、版本、推荐与配置。'],
+['04','运营分析','legacy/analytics.html',null,'使用默认专业数据台布局：指标、趋势、占比与报表。'],
+['05','内容管理','legacy/content.html',null,'使用默认后台布局：公告、首页模块与内容审核。'],
+['06','权限管理','legacy/roles.html',null,'使用默认后台布局：角色、权限范围与访问策略。'],
+['07','操作日志','legacy/logs.html',null,'使用默认后台布局：审计事件、筛选和日志详情。'],
+['08','任务与文件管理','legacy/exports.html',null,'使用默认后台布局：导出任务、状态和文件清单。'],
+['09','系统设置','legacy/settings.html',null,'使用默认后台布局：服务配置、安全与功能开关。'],
+['10','通知中心','legacy/notifications.html',null,'使用默认后台布局：通知模板、发送状态和提醒。']
 ];
 function card(item,isAdmin){const [n,title,href,img,desc]=item;const image=img?`<div class="gallery-image"><img loading="lazy" src="design-reference/approved-single-page/${img}" alt="${title}设计参考图"><button class="image-open" data-preview="design-reference/approved-single-page/${img}" style="position:absolute;right:10px;bottom:10px;border:1px solid #fff;background:#ffffffdc;color:#365da4;border-radius:9px;padding:7px 9px;font-size:10px;cursor:pointer">放大查看</button></div>`:`<div class="gallery-image"><div class="gallery-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M8 14h3M8 17h7"/></svg><strong>默认后台设计</strong><small>当前没有单独生成的参考图，使用网站内已实现的后台布局与交互样式。</small></div></div>`;return `<article class="gallery-card"><div class="gallery-top">${image}</div><div class="gallery-meta"><div class="num">${isAdmin?'ADMIN':'FRONTEND'} / ${n}</div><h3>${title}</h3><p>${desc}</p><div class="gallery-actions"><a class="primary-link" href="${href}">打开实际页面 →</a>${img?`<button type="button" data-preview="design-reference/approved-single-page/${img}">查看设计图</button>`:''}</div></div></article>`}
 document.getElementById('frontCards').innerHTML=front.map(x=>card(x,false)).join('');document.getElementById('adminCards').innerHTML=admin.map(x=>card(x,true)).join('');
