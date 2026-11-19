@@ -148,6 +148,13 @@ func newRouter(db *DB) http.Handler {
 		}
 	}
 
+	// OPT-027: legacy admin (上一代 Nova 后台) 已归档到 web/legacy/ — 旧路径显式 410
+	mux.HandleFunc("GET /admin/{page}", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusGone)
+		_, _ = w.Write([]byte(`<!doctype html><html lang='zh-CN'><meta charset='utf-8'><title>410 Gone</title><body style='font:14px system-ui;padding:40px;line-height:1.7'><h2>旧版后台已归档 (410 Gone)</h2><p>上一代 Nova 后台已下线，仅存档于仓库 web/legacy/（tag legacy-admin-v1）。</p><p>现役入口：<a href='/admin.html'>/admin.html</a> · <a href='/admin-features.html'>/admin-features.html</a> · <a href='/admin-metrics.html'>/admin-metrics.html</a></p></body></html>`))
+	})
+
 	mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) {
 		J(w, map[string]any{"ok": true, "app": "nova", "version": Version, "db_driver": "json", "users": db.UserCount(), "uptime_sec": int(time.Since(started).Seconds())})
 	})
