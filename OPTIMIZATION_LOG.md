@@ -705,3 +705,14 @@
 - tokens=0 系 LLM 流无 usage 字段(诚实零; 解析 usage 为后续)
 - flow 路径(ai-studio collectChat)未点火 — 独立 backlog
 - 旧截图开关 OFF vs db=true 之雾未预设 — 修复后浏览器终验裁决(toggle CSS 或历史 token 作废, 均不阻塞)
+
+## [2026-11-06] OPT-026b: 塌陷修复收尾(容错 matcher) — 4 页 skip 分诊
+
+### 分诊判定
+- excel/word2pdf: body rules=2 = @media 移动端覆写副本 — len==1 断言过严(nt81 预写的 "media override?" 提示没接处理分支) → 修法: 转换所有带指纹的 body 规则(media 副本加 flex-wrap 无害)
+- json/jsonx: 字面量 'display:flex' 不在规则内但容错正则 flex=True — 间距变体(display: flex 带空格) — 且 justify-content 与塌陷无关(塌陷条件 = body flex + nav 兄弟, 居中只是作者偏好)
+- 教训对仗: nt75 前置断言过松(必要不充分) vs 本轮过严(字面量拒绝合法变体) — 门均尽职零腐化, matcher 表达力决定门智商
+### 变更
+- 容错 matcher: display\s*:\s*flex 指纹 + 全部 flex 规则转换 + 逐页后置门; 11 页全量重落(nt81 已回滚)
+### backlog
+- C 族(admin/ 10 页 + features.html)身世侦察 nt82 E2: 入站链接图/闭环检测/app.js 鉴权世界/旧端点存活 — 数据裁决 收编重刷 vs 退役归档
