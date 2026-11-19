@@ -823,3 +823,18 @@
 - build/vet/test(skills.Load 4-pack 门); served: /api/ai/skills 未认证 401/403(路由在+受保护); 回归页 200
 ### 下一步
 - nt91: ai-studio.html 技能包 tab(基于 nt90 R2 结构取证) + 登录态 200 门
+
+## [2026-11-06] OPT-029b: ai-studio 技能包卡片 — V1 UI 落地
+
+### 设计决策(nt90 R2 + 截图)
+- ai-studio 为单卡片面板无 tab 系统 → 追加式注入(</body> 前, 不碰现有结构, 锚点唯一可靠)
+- token header 模式双源提取(ai-studio.html + assets/core.js)写入 /tmp, 手术同轮织入; 找不到则 __AUTH=null 裸 fetch + 401 诚实登录提示, 绝不静默猜
+### 变更
+- web/ai-studio.html: 技能包卡片(四包摘要行: pipeline 门数+DAG节点 / routing 专家+规则+技能 / FB 红线+自检 / AD 模式+步骤; XSS esc; 失败态诚实显示)
+- internal/ai/skills_api_test.go: skillsList handler 直测(200 + count=4, 零 auth 依赖)
+### 验证
+- build/vet/test(handler gate); served 指纹门(card/container/api-call/无占位残留); /api/ai/skills unauth 401
+### 登录态终验(浏览器)
+- 已登录用户刷新 ai-studio.html: 技能包卡片应渲染四行(若显示「未登录」= token key 提取不符, R1 输出即分诊数据)
+### 下一步
+- nt92: V2 契约消费 — flow 模板读 pipeline.json(S1-S7 阶段机读驱动) + NOVA_SKILLS_DIR 磁盘层(SKILL.md 全文运行时加载, Private 内容不进 git)

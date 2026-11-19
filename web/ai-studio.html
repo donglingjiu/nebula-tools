@@ -255,5 +255,70 @@
 })();
 </script>
 
+<!-- OPT-029b: 技能包 · 基座契约 (V1, append-mode) -->
+<style>
+.sk-card{max-width:960px;margin:24px auto;background:#fff;border:1px solid #eee8df;border-radius:14px;padding:20px 22px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+.sk-card h2{margin:0 0 4px;font-size:17px;color:#1f2430}
+.sk-sub{margin:0 0 12px;font-size:12px;color:#8a8f9c}
+.sk-list{display:flex;flex-direction:column;gap:8px}
+.sk-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #f0ece5;border-radius:10px;background:#fffdf9;flex-wrap:wrap}
+.sk-name{font-weight:700;font-size:14px;color:#2a3040}
+.sk-tag{font-size:11px;padding:2px 8px;border-radius:999px;background:#efe7ff;color:#6d3fc0;white-space:nowrap}
+.sk-sum{font-size:12px;color:#5a6072;flex:1}
+.sk-ver{font-size:11px;color:#9aa0ad}
+.sk-err{color:#b45309;font-size:13px;padding:8px 10px;background:#fef3c7;border-radius:8px}
+</style>
+<section class="sk-card" aria-label="技能包">
+  <h2>技能包 · 基座契约</h2>
+  <p class="sk-sub">四大基座的机器可读契约（pipeline / routing / builder-contract）— 工作台流程引擎的数据源。契约 JSON 入库可公开；SKILL.md 全文 V2 经运行时目录加载（不进 git）。</p>
+  <div id="skillsPack" class="sk-list">加载中…</div>
+</section>
+<script>
+(function(){
+  const __AUTH = null; // no token key found in page/core.js — bare fetch, 401 shows honest login hint
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  async function load(){
+    var box = document.getElementById('skillsPack');
+    try {
+      var h = {};
+      if (__AUTH) { var t = localStorage.getItem(__AUTH.key); if (t) h[__AUTH.hdr] = __AUTH.pre + t; }
+      var r = await fetch('/api/ai/skills', { headers: h });
+      if (!r.ok) {
+        throw new Error(r.status === 401 ? '未登录或会话过期（请先登录后再试）' : ('HTTP ' + r.status));
+      }
+      var j = await r.json();
+      var rows = (j.packs || []).map(function(p){
+        var m = {}, c = {};
+        try { m = JSON.parse(p.meta); } catch (e) {}
+        try { c = JSON.parse(p.contract); } catch (e) {}
+        var sum = '—', extra = '';
+        if (p.contractKind === 'pipeline' && c.stages) {
+          var gates = {};
+          c.stages.forEach(function(s){ if (s.gate) gates[s.gate] = 1; });
+          sum = Object.keys(gates).length + ' 道门 · ' + c.stages.length + ' 个 DAG 节点';
+          if ((c.shortcuts || []).length) extra = ' · ' + c.shortcuts.length + ' 快捷路径';
+        } else if (p.contractKind === 'routing' && c.experts) {
+          var sk = 0;
+          Object.keys(c.experts).forEach(function(k){ sk += (c.experts[k].skills || []).length; });
+          sum = Object.keys(c.experts).length + ' 专家 · ' + (c.rules || []).length + ' 路由规则 · ' + sk + ' 技能映射';
+        } else if (p.contractKind === 'builder-contract' && c.redlines) {
+          sum = c.redlines.length + ' 红线 · ' + (c.selfCheck || []).length + ' 自检项';
+        } else if (p.contractKind === 'builder-contract' && c.modes) {
+          sum = Object.keys(c.modes).length + ' 模式 · ' + (c.steps || []).length + ' 步骤';
+        }
+        return '<div class="sk-row"><span class="sk-name">' + esc(m.skillName || p.repo) + '</span>' +
+               '<span class="sk-tag">' + esc(p.contractKind) + '</span>' +
+               '<span class="sk-sum">' + esc(sum) + esc(extra) + '</span>' +
+               '<span class="sk-ver">v' + esc(m.version || '?') + '</span></div>';
+      });
+      box.innerHTML = rows.join('') || '<div class="sk-err">空包列表</div>';
+    } catch (e) {
+      box.innerHTML = '<div class="sk-err">加载失败：' + esc(e && e.message ? e.message : e) + '</div>';
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', load); else load();
+})();
+</script>
+
 </body>
 </html>
