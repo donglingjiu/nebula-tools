@@ -716,3 +716,16 @@
 - 容错 matcher: display\s*:\s*flex 指纹 + 全部 flex 规则转换 + 逐页后置门; 11 页全量重落(nt81 已回滚)
 ### backlog
 - C 族(admin/ 10 页 + features.html)身世侦察 nt82 E2: 入站链接图/闭环检测/app.js 鉴权世界/旧端点存活 — 数据裁决 收编重刷 vs 退役归档
+
+## [2026-11-06] OPT-026c: excel 收官(第 11 页) + C 族身世定案 + 归因更正
+
+### 归因更正(诚实账)
+- nt82 日志「json/jsonx = display:flex 间距变体」有误: R0 census 实录 body 规则 flex=True jc=False — 真因是规则无 justify-content:center, nt81 指纹错误要求 jc; 容错 matcher 砍掉 jc 后顺手修对, 结果不变归因更正
+### 变更
+- web/excel.html: body flex 规则 +flex-wrap:wrap; 双 .nova-nav 规则中定位 position:sticky 主规则 +width:100% (media 副本不动) — matcher 第 3 盲区(规则多副本)以 sticky 锚定解决
+### C 族定案(admin/ 10 页 + features.html)
+- 平行上一代产品实锤: novaUser+/api/auth/* 会话 vs nb_token JWT; styles+nova-v4/5/6+app.js vs tokens+admin.css+core.js; 端点存活(users/settings/logs/analytics)非死壳; 入站仅 design-gallery(设计地图页); 最后触碰 nt1 时代
+- admin/features.html: 全站零入站 + 已被池管理取代 → 退役候选
+- 10 页收编重刷=给博物馆抛光, settings/roles/logs/analytics 等仅旧版有 UI — 归档/标注 legacy 属产品决策, 待裁决
+### 验证
+- served 11/11 全指纹门; build/vet/test; 回归五页 200
