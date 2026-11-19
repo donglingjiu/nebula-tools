@@ -755,3 +755,22 @@
 - 交叉引用闭环确认: 4 库互引 + 7 slugs 全命中, 调度链无断裂
 ### 下一步(nt87)
 - pipeline.json schema 定稿(对齐 stage-gates.yaml + meta-info.json 风格) — web-delivery-team 库内首轮基座变更(commit+push 其自身 origin)
+
+## [2026-11-06] OPT-028b: 基座 OPT-002 — web-delivery-team pipeline.json 契约化(nt87c 三膛落定)
+
+### nt87/nt87b 双中止复盘(诚实账)
+- nt87: R5 术前拦截无 node — 校验器改 python(本地 py3.6/CI ubuntu 双环境), 零污染
+- nt87b: 我方过度转义 bug — 引号 heredoc 内写 split('\\n') 致 Python 视为字面量反斜杠+n → 全文件成单元素(idx=1 口供) → 静默 append 兜底把注入块粘进原末行 → bash line18 语法错; abort 零腐化
+- 新门禁入册: ①生成 shell 必过 bash -n(本次可当场拦截) ②注入点缺失即 abort, 禁静默 append; nt84(引号地狱)/nt87b(过度转义)同族教训: heredoc 内转义只写单层
+### scorer 漂移完整地图(nt87c R1 全文实录)
+- scorer 键=旧阶段编号 G1~G7 缺 G5; yaml=新编号 G0~G6 — 全表错位一号, 按 S1~S7 阶段对齐严丝合缝(req_completeness 70 / prd 75 / design 80 / frontend 80 / — / qa 90 / deploy 100)
+- S5(后端/G4-fullstack)旧编号 G5 从未定义评分维度; S1/G0 无 scorer 维度 — OPT-003: 重排 scorer 键 + 补 S5 维度 + 定夺 G0 形态
+### web-delivery-team 变更(OPT-002, 其库内 commit+push)
+- pipeline.json(nova-pipeline/v1): 7 阶段 DAG + 并行组 + 门引用 + agent 映射 + 技能 slug + 快捷路径 + 降级 + notes.scorerLegacyMap(按阶段完整换算表入契约)
+- meta-info.json; SKILL.md frontmatter + 单一真源指向; validate_pipeline.py + crosscheck_skills.py + validate.sh 注入(结构门后 OK 前)
+### 验证(三重新门)
+- bash -n + py_compile 术前门; validate.sh 绿(结构+pipeline+crosscheck); push 成功(CI ubuntu python3 通跑)
+### 下一步
+- nt88 product-expert-team: CEO 路由表机读化 + meta-info.json + 五专家 skills 核验
+- nt89 frontend-builder/AutoDev: meta-info 补齐
+- nt90+ nebula-tools V1: embed 四库 + /api/ai/skills + ai-studio 技能包 tab
