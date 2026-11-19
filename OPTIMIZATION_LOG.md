@@ -742,3 +742,16 @@
 - product-expert-team 已恢复(Private, 8 commits, agents/deliverables/docs-cases/references/scripts/skills — 比 README 缓存更丰富)
 - 路线确认: 先优化基座(机器可消费化) 再建工作台(直接解析) — 基座优化即工作台契约设计
 - 优化矩阵(市面对标落地): pipeline.json(阶段图+门+并行 DAG) / gate.json(5 门形式化) / 产出物 schema / frontmatter 统一 / 交叉引用完整性
+
+## [2026-11-06] OPT-028: design-gallery 死链补刀 + 四基座深读(pipeline.json 设计前侦察)
+
+### nebula-tools 尾巴
+- nt84 R2 数到 11 处 admin/*.html, nt85 仅换 href=" 形式 1 处 — 10 处残留(JS 字符串/单引号)指向 410 死链; nt86 any-context 替换全清, served 门 0 残留
+### 四基座深读要点(全量输出见 nt86 运行日志)
+- web-delivery-team: SKILL.md(8阶段表) + stage-gates.yaml(已有机读门!设计 pipeline.json 须对齐而非重造) + scripts/references/docs + OPTIMIZATION_LOG(已有优化史)
+- AutoDev: meta-info.json(机读元数据 schema 参照) + SKILL.md 三模式 + tasks/templates
+- frontend-builder: SKILL.md 红线/自检 + references
+- product-expert-team: COMPANY.md(组织) + 6 agents AGENTS.md(ceo+5专家) + skills/ 7 slug 全集 — MetaGPT Code=SOP(Team) 资产版
+- 交叉引用闭环确认: 4 库互引 + 7 slugs 全命中, 调度链无断裂
+### 下一步(nt87)
+- pipeline.json schema 定稿(对齐 stage-gates.yaml + meta-info.json 风格) — web-delivery-team 库内首轮基座变更(commit+push 其自身 origin)
