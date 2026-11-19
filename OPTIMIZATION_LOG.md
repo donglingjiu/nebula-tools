@@ -774,3 +774,16 @@
 - nt88 product-expert-team: CEO 路由表机读化 + meta-info.json + 五专家 skills 核验
 - nt89 frontend-builder/AutoDev: meta-info 补齐
 - nt90+ nebula-tools V1: embed 四库 + /api/ai/skills + ai-studio 技能包 tab
+
+## [2026-11-06] OPT-028c: WT pycache 卫生修复 + product-expert-team OPT-002(路由机读化)
+
+### 我方瑕疵认领(nt87c 尾巴)
+- py_compile 术前门在 WT 仓库生成 __pycache__, add -A 扫入 OPT-002 提交(两个 .pyc) — 门工具选错; 修正: 语法检查改 ast.parse(零副产物), WT 已 gitignore+untrack(hygiene commit)
+- CI 截图判读: Success 为 33ad45f 旧 run 重跑(workflow_dispatch + Re-run), 证明基建绿但非 OPT-002 检查; f3b08fe push 应已自动触发新 run 待核对; Node20 弃用警告良性(GitHub 侧 checkout@v4)
+### product-expert-team 变更(OPT-002, 其库内 commit+push)
+- routing.json(nova-routing/v1): 5 专家 skills(优先 AGENTS.md frontmatter 声明, 空缺 fallback 标注) + 20 条任务类型→专家→技能规则 + 澄清策略 + unassignedSkills 显式清单(53 技能库存)
+- meta-info.json(AutoDev schema); scripts/validate_routing.py(引用完整性 + 反向核对 web-delivery pipeline slug); validate.sh 注入
+- OPT-001 自认「未与 stage-gates.yaml 字段级对齐」债: 技能引用层已偿还, artifact 契约层留 OPT-003
+### 下一步
+- nt89 frontend-builder + AutoDev: meta-info 补齐 + 红线/自检形式化
+- nt90+ nebula-tools V1: 四库 embed + /api/ai/skills + ai-studio 技能包 tab(需 ai-studio.html 结构专项侦察)
