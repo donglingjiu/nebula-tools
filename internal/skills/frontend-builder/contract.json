@@ -1,0 +1,67 @@
+{
+  "schema": "nova-builder-contract/v1",
+  "name": "frontend-builder",
+  "version": "1.0.0",
+  "description": "前端构建机读契约：环境识别协议 + 六条红线 + 交付前自检。nebula-tools 工作台 S4 阶段消费（pipeline.json agent=frontend-builder）。",
+  "environmentProtocol": {
+    "detect": "pwd && hostname && env | grep -Ei 'sandbox|container|codespaces'",
+    "local": {
+      "delivery": "dev server + localhost 访问地址",
+      "prereq": "依赖安装与端口说明"
+    },
+    "sandbox": {
+      "forbidden": "禁止把容器内 URL 当访问地址交付",
+      "delivery": "npm run build 静态产物 + 产物绝对路径 + 打开/部署指引",
+      "fallback": "拿不准就按沙箱处理"
+    }
+  },
+  "redlines": [
+    {
+      "id": "R1",
+      "rule": "不新增依赖",
+      "detail": "优先复用项目已有组件库、工具函数与设计变量"
+    },
+    {
+      "id": "R2",
+      "rule": "导入路径复制自参考页面",
+      "detail": "禁止凭推断写 import"
+    },
+    {
+      "id": "R3",
+      "rule": "样式数值复制自参考",
+      "detail": "间距/颜色/字号不拍脑袋写魔法数字"
+    },
+    {
+      "id": "R4",
+      "rule": "不自造 icon/占位图/插图",
+      "detail": "用项目已有图标方案或成熟开源图标库"
+    },
+    {
+      "id": "R5",
+      "rule": "布局严格对齐参考页面",
+      "detail": "栅格与层级对齐，用户明确要求改版式时除外"
+    },
+    {
+      "id": "R6",
+      "rule": "需求细节不全时先问再写",
+      "detail": "不靠猜"
+    }
+  ],
+  "selfCheck": [
+    "代码能直接运行？运行方式说清了？",
+    "有明确审美方向，而不是通用模板？",
+    "工程红线全过：零新增依赖/导入复制/无魔法数字/无自造图标/布局对齐",
+    "响应式与基础可访问性处理了？",
+    "访问地址真实可用（沙箱环境绝不报 localhost）？"
+  ],
+  "references": {
+    "designGuide": "references/design-guide.md",
+    "frameworkPatterns": "references/framework-patterns.md",
+    "pureFrontendChecklist": "references/pure-frontend-checklist.md"
+  },
+  "redlineScanners": {
+    "autodev": "../AutoDev/scripts/redline-check.sh",
+    "web-delivery-team": "../web-delivery-team/scripts/redline-check.js",
+    "note": "兄弟库扫描器存在性视 clone 而定，validator 信息性报告不硬门"
+  }
+}

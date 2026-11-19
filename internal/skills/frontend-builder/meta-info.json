@@ -1,0 +1,6 @@
+{
+  "name": "frontend-builder",
+  "skillName": "前端构建专家",
+  "description": "生成项目级生产质量的前端代码与界面：环境识别协议（本机/沙箱）+ 六条工程红线 + 交付前自检。机器可读契约见 contract.json。",
+  "version": "1.0.0"
+}

@@ -1,0 +1,58 @@
+{
+  "schema": "nova-builder-contract/v1",
+  "name": "autodev",
+  "version": "1.0.0",
+  "description": "通用需求交付机读契约：五步流程 + 四模式分支 + 硬性约束。nebula-tools 工作台 S5 阶段消费（pipeline.json agent=autodev）。",
+  "entry": {
+    "inputs": {
+      "repo": "必须：git URL / user/repo / 本地路径",
+      "branch": "可选：默认 main，不向用户索要",
+      "requirement": "必须：自然语言或 issue URL"
+    },
+    "askWhenMissing": true
+  },
+  "modes": {
+    "MISS": {
+      "action": "Builder 模式",
+      "detail": "探索→采访(每题附推荐默认值)→生成 .agents/skills/autodev-{module}/，覆盖前须确认"
+    },
+    "NEED_UPDATE": {
+      "action": "Updater 模式",
+      "detail": "版本比较 sort -V 语义序，禁字符串比较；模板同步保留模块个性化，仅结构迁移时问 ≤3 问"
+    },
+    "UP_TO_DATE": {
+      "action": "Runner 模式",
+      "detail": "需求确认→计划过审→阶段执行(保留 PASS/FAIL 证据)→变更收敛(只改需求范围)→提交/PR(附验证证据)"
+    },
+    "BUILDER_UNAVAILABLE": {
+      "action": "报错停止",
+      "detail": "meta-info.json 缺失，修复安装"
+    }
+  },
+  "steps": [
+    "Step1 入参解析：模块名 = 仓库路径末段(去 .git)；issue URL → 平台 CLI 拉标题正文",
+    "Step2 拉取代码：本地有则 fetch+ff-only，无则 clone -b；失败贴 stderr 指明动作，不重试超过一次",
+    "Step3 检测模块 Skill：scripts/detect-skill.sh → MISS/NEED_UPDATE/UP_TO_DATE/BUILDER_UNAVAILABLE",
+    "Step4 按模式分支（单 Agent 顺序执行，不派子任务）",
+    "Step5 收尾：汇总交付 + 写 .autodev-state.json"
+  ],
+  "hardConstraints": [
+    "入参不全绝不启动开发",
+    "不猜仓库地址，不用写死默认值",
+    "破坏性操作(reset --hard / clean -fd / 删仓库目录)先向用户确认",
+    "输出不粘贴密钥 token"
+  ],
+  "artifacts": {
+    "stateFile": ".autodev-state.json",
+    "moduleSkillDir": ".agents/skills/autodev-{module}/"
+  },
+  "detectScript": "scripts/detect-skill.sh",
+  "templates": [
+    "templates/skill-main.md",
+    "templates/stage1-planning.md",
+    "templates/stage2-development.md",
+    "templates/stage3-summary.md",
+    "templates/task-tracking.md",
+    "templates/codegen-trace.md"
+  ]
+}

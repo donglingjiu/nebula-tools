@@ -1,0 +1,6 @@
+{
+  "name": "web-delivery-team",
+  "skillName": "Web 交付团队总编排",
+  "description": "端到端 Web 交付总编排 Agent：按 8 阶段 DAG 调度四大基座，阶段门量化评分，并行组/快捷路径/降级策略内置。",
+  "version": "1.0.0"
+}

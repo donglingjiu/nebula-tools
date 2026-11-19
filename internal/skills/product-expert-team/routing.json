@@ -1,0 +1,291 @@
+{
+  "schema": "nova-routing/v1",
+  "router": {
+    "slug": "ceo",
+    "name": "CEO / 中枢",
+    "contract": "agents/ceo/AGENTS.md"
+  },
+  "version": "1.1.0",
+  "description": "CEO 任务路由机读契约：任务类型→专家→技能。hub-and-spoke：跨专家串联由中枢转交产出原文，专家不互连。归属不明时列候选专家澄清，不代为猜测。",
+  "experts": {
+    "discovery": {
+      "name": "产品发现专家",
+      "domains": "创意与实验头脑风暴、假设识别与排序、用户反馈分析",
+      "skills": [
+        "analyze-feature-requests",
+        "brainstorm-experiments-existing",
+        "brainstorm-experiments-new",
+        "brainstorm-ideas-existing",
+        "brainstorm-ideas-new",
+        "identify-assumptions-existing",
+        "identify-assumptions-new",
+        "interview-script",
+        "metrics-dashboard",
+        "opportunity-solution-tree",
+        "prioritize-assumptions",
+        "prioritize-features",
+        "summarize-interview"
+      ],
+      "skillsSource": "agents-frontmatter"
+    },
+    "execution": {
+      "name": "执行专家",
+      "domains": "PRD、用户故事、Sprint 计划、OKR、路线图、发布说明等落地文档",
+      "skills": [
+        "brainstorm-okrs",
+        "create-prd",
+        "dummy-dataset",
+        "job-stories",
+        "outcome-roadmap",
+        "pre-mortem",
+        "prioritization-frameworks",
+        "release-notes",
+        "retro",
+        "sprint-plan",
+        "stakeholder-map",
+        "strategy-red-team",
+        "summarize-meeting",
+        "test-scenarios",
+        "user-stories",
+        "wwas"
+      ],
+      "skillsSource": "agents-frontmatter"
+    },
+    "growth": {
+      "name": "营销增长专家",
+      "domains": "营销创意、北极星指标、产品命名、定位与价值主张文案",
+      "skills": [
+        "marketing-ideas",
+        "north-star-metric",
+        "positioning-ideas",
+        "product-name",
+        "value-prop-statements"
+      ],
+      "skillsSource": "agents-frontmatter"
+    },
+    "market": {
+      "name": "市场研究专家",
+      "domains": "竞品分析、用户旅程、市场细分与测算、情感分析、用户画像",
+      "skills": [
+        "competitor-analysis",
+        "customer-journey-map",
+        "market-segments",
+        "market-sizing",
+        "sentiment-analysis",
+        "user-personas",
+        "user-segmentation"
+      ],
+      "skillsSource": "agents-frontmatter"
+    },
+    "strategy": {
+      "name": "产品战略专家",
+      "domains": "产品愿景、商业模式、精简画布、定价策略、竞争分析框架",
+      "skills": [
+        "ansoff-matrix",
+        "business-model",
+        "lean-canvas",
+        "monetization-strategy",
+        "pestle-analysis",
+        "porters-five-forces",
+        "pricing-strategy",
+        "product-strategy",
+        "product-vision",
+        "startup-canvas",
+        "swot-analysis",
+        "value-proposition"
+      ],
+      "skillsSource": "agents-frontmatter"
+    }
+  },
+  "rules": [
+    {
+      "taskType": "PRD/产品需求文档",
+      "expert": "execution",
+      "skills": [
+        "create-prd"
+      ]
+    },
+    {
+      "taskType": "用户故事/任务拆解",
+      "expert": "execution",
+      "skills": [
+        "user-stories",
+        "job-stories"
+      ]
+    },
+    {
+      "taskType": "Sprint 计划",
+      "expert": "execution",
+      "skills": [
+        "sprint-plan"
+      ]
+    },
+    {
+      "taskType": "路线图",
+      "expert": "execution",
+      "skills": [
+        "outcome-roadmap"
+      ]
+    },
+    {
+      "taskType": "发布说明",
+      "expert": "execution",
+      "skills": [
+        "release-notes"
+      ]
+    },
+    {
+      "taskType": "优先级排序",
+      "expert": "strategy",
+      "skills": [
+        "prioritization-frameworks",
+        "prioritize-features"
+      ]
+    },
+    {
+      "taskType": "定价/商业化",
+      "expert": "strategy",
+      "skills": [
+        "pricing-strategy",
+        "monetization-strategy"
+      ]
+    },
+    {
+      "taskType": "商业模式/画布",
+      "expert": "strategy",
+      "skills": [
+        "business-model",
+        "lean-canvas",
+        "startup-canvas"
+      ]
+    },
+    {
+      "taskType": "竞争分析/SWOT/五力",
+      "expert": "strategy",
+      "skills": [
+        "swot-analysis",
+        "porters-five-forces",
+        "competitor-analysis"
+      ]
+    },
+    {
+      "taskType": "竞品分析",
+      "expert": "market",
+      "skills": [
+        "competitor-analysis"
+      ]
+    },
+    {
+      "taskType": "用户画像/细分",
+      "expert": "market",
+      "skills": [
+        "user-personas",
+        "user-segmentation"
+      ]
+    },
+    {
+      "taskType": "用户旅程",
+      "expert": "market",
+      "skills": [
+        "customer-journey-map"
+      ]
+    },
+    {
+      "taskType": "市场测算",
+      "expert": "market",
+      "skills": [
+        "market-sizing",
+        "market-segments"
+      ]
+    },
+    {
+      "taskType": "头脑风暴/创意发现",
+      "expert": "discovery",
+      "skills": [
+        "brainstorm-ideas-new",
+        "brainstorm-ideas-existing"
+      ]
+    },
+    {
+      "taskType": "假设识别与排序",
+      "expert": "discovery",
+      "skills": [
+        "identify-assumptions-new",
+        "identify-assumptions-existing",
+        "prioritize-assumptions"
+      ]
+    },
+    {
+      "taskType": "用户反馈分析",
+      "expert": "discovery",
+      "skills": [
+        "analyze-feature-requests",
+        "summarize-interview"
+      ]
+    },
+    {
+      "taskType": "营销创意",
+      "expert": "growth",
+      "skills": [
+        "marketing-ideas"
+      ]
+    },
+    {
+      "taskType": "产品命名",
+      "expert": "growth",
+      "skills": [
+        "product-name"
+      ]
+    },
+    {
+      "taskType": "定位/价值主张",
+      "expert": "growth",
+      "skills": [
+        "positioning-ideas",
+        "value-proposition",
+        "value-prop-statements"
+      ]
+    },
+    {
+      "taskType": "北极星指标/指标看板",
+      "expert": "growth",
+      "skills": [
+        "north-star-metric",
+        "metrics-dashboard"
+      ]
+    }
+  ],
+  "clarification": {
+    "when": "任务类型无法判断归属专家",
+    "action": "列出候选专家供用户选择（对话内），不代为猜测"
+  },
+  "unassignedSkills": {
+    "count": 0,
+    "list": [],
+    "note": "未被 AGENTS.md 声明或 rules 覆盖的库存技能 — 驱动 AGENTS.md skills 声明补全"
+  },
+  "notes": {
+    "provenanceFix": "v1.0 解析器仅支持内联列表(skills: [a,b])，未支持块状列表(skills:\\n  - x) → 误判 0/5 declared 全走 curated fallback，且 ceo 被误列为 expert(6 experts)。v1.1: 块状列表解析 + ceo 归位 router + frontmatter 为权威源(结果对但出处错的假阳性修正)",
+    "pendingCuration": {
+      "execution": [
+        "interview-script",
+        "metrics-dashboard",
+        "opportunity-solution-tree"
+      ],
+      "growth": [
+        "value-proposition"
+      ],
+      "market": [
+        "stakeholder-map",
+        "wwas"
+      ],
+      "strategy": [
+        "pre-mortem",
+        "prioritization-frameworks",
+        "prioritize-features",
+        "strategy-red-team"
+      ]
+    },
+    "pendingNote": "仅存在于 v1.0 策划值、未见于 AGENTS.md 声明的技能 — 归属待库主定夺(补进 AGENTS.md 或从路由剔除)"
+  }
+}

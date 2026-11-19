@@ -1,0 +1,274 @@
+{
+  "schema": "nova-pipeline/v1",
+  "name": "web-delivery-team",
+  "version": "1.0.0",
+  "description": "端到端 Web 交付 DAG：需求→产品→设计→前端→后端(条件)→测试→部署。机器可读契约，nebula-tools 工作台直接消费。门唯一真源 stage-gates.yaml。",
+  "gatesFile": "stage-gates.yaml",
+  "scorerFile": "scripts/gate-scorer.js",
+  "notes": {
+    "gateAuthority": "过门判定 = yaml checklist + artifact 存在性; scorer 分数为参考(键为旧编号, 按 scorerLegacyMap 换算)",
+    "scorerLegacyMap": {
+      "comment": "gate-scorer.js 键为旧阶段编号(G1~G7 缺 G5), yaml 为新编号(G0~G6) — 全表错位一号, 按阶段对齐; OPT-003 重排 scorer 键 + 补 S5 维度",
+      "byStage": {
+        "S1": {
+          "yamlGate": "G0-discovery",
+          "scorerKey": "G1",
+          "dims": [
+            "req_completeness"
+          ],
+          "threshold": 70
+        },
+        "S2": {
+          "yamlGate": "G1-product",
+          "scorerKey": "G2",
+          "dims": [
+            "prd_coverage",
+            "user_confirmed"
+          ],
+          "threshold": 75
+        },
+        "S3": {
+          "yamlGate": "G2-design",
+          "scorerKey": "G3",
+          "dims": [
+            "token_coverage",
+            "page_list_ready"
+          ],
+          "threshold": 80
+        },
+        "S4": {
+          "yamlGate": "G3-frontend",
+          "scorerKey": "G4",
+          "dims": [
+            "lint_pass_rate",
+            "test_pass_rate",
+            "design_fidelity"
+          ],
+          "threshold": 80
+        },
+        "S5": {
+          "yamlGate": "G4-fullstack",
+          "scorerKey": null,
+          "dims": [],
+          "threshold": null
+        },
+        "S6": {
+          "yamlGate": "G5-qa",
+          "scorerKey": "G6",
+          "dims": [
+            "qa_pass_rate",
+            "agentic_redline"
+          ],
+          "threshold": 90
+        },
+        "S7": {
+          "yamlGate": "G6-release",
+          "scorerKey": "G7",
+          "dims": [
+            "deploy_success"
+          ],
+          "threshold": 100
+        }
+      },
+      "missing": [
+        "S5/G4-fullstack 旧编号 G5 从未定义评分维度 — OPT-003 新增(api_connected/e2e_pass 候选)",
+        "S1/G0 保持 checklist-only 或补维度 — OPT-003 定夺"
+      ]
+    }
+  },
+  "agents": {
+    "ceo": {
+      "repo": "product-expert-team",
+      "path": "agents/ceo",
+      "role": "router"
+    },
+    "discovery": {
+      "repo": "product-expert-team",
+      "path": "agents/discovery",
+      "role": "expert"
+    },
+    "strategy": {
+      "repo": "product-expert-team",
+      "path": "agents/strategy",
+      "role": "expert"
+    },
+    "market": {
+      "repo": "product-expert-team",
+      "path": "agents/market",
+      "role": "expert"
+    },
+    "execution": {
+      "repo": "product-expert-team",
+      "path": "agents/execution",
+      "role": "expert"
+    },
+    "growth": {
+      "repo": "product-expert-team",
+      "path": "agents/growth",
+      "role": "expert"
+    },
+    "frontend-builder": {
+      "repo": "frontend-builder",
+      "path": "SKILL.md",
+      "role": "builder"
+    },
+    "autodev": {
+      "repo": "AutoDev",
+      "path": "SKILL.md",
+      "role": "builder"
+    },
+    "local": {
+      "repo": "web-delivery-team",
+      "path": "references/",
+      "role": "reference"
+    }
+  },
+  "stages": [
+    {
+      "id": "S1",
+      "seq": 1,
+      "name": "需求澄清",
+      "agent": "ceo",
+      "skills": [],
+      "gate": "G0-discovery",
+      "artifact": "BASELINE_ANALYSIS.md",
+      "next": [
+        "S2"
+      ],
+      "hint": "归属不明时 CEO 向用户澄清；识别纯静态/改版快捷路径"
+    },
+    {
+      "id": "S2",
+      "seq": 2,
+      "name": "产品定义",
+      "agent": "execution",
+      "skills": [
+        "create-prd",
+        "user-stories",
+        "prioritization-frameworks"
+      ],
+      "gate": "G1-product",
+      "artifact": "PRD.md",
+      "next": [
+        "P1",
+        "P2"
+      ]
+    },
+    {
+      "id": "P1",
+      "name": "页面清单",
+      "parallel": true,
+      "join": "S3",
+      "agent": "execution",
+      "skills": [
+        "user-stories"
+      ]
+    },
+    {
+      "id": "P2",
+      "name": "设计令牌",
+      "parallel": true,
+      "join": "S3",
+      "agent": "local",
+      "ref": "references/ui-ux-brief.md"
+    },
+    {
+      "id": "S3",
+      "seq": 3,
+      "name": "设计",
+      "agent": "local",
+      "ref": "references/ui-ux-brief.md",
+      "gate": "G2-design",
+      "artifact": "DESIGN_SPEC.md",
+      "next": [
+        "S4"
+      ],
+      "parallelSub": [
+        "设计令牌提取",
+        "组件清单"
+      ]
+    },
+    {
+      "id": "S4",
+      "seq": 4,
+      "name": "前端",
+      "agent": "frontend-builder",
+      "gate": "G3-frontend",
+      "artifact": "FRONTEND_BUILD.md",
+      "next": [
+        "S5"
+      ],
+      "hint": "沙箱环境禁交付不可达 URL；红线见其 SKILL.md"
+    },
+    {
+      "id": "S5",
+      "seq": 5,
+      "name": "后端",
+      "agent": "autodev",
+      "ref": "references/backend-guide.md",
+      "conditional": "非纯前端项目",
+      "gate": "G4-fullstack",
+      "artifact": "API_CONTRACT.md",
+      "next": [
+        "S6"
+      ]
+    },
+    {
+      "id": "S6",
+      "seq": 6,
+      "name": "测试",
+      "agent": "local",
+      "ref": "references/qa-checklist.md",
+      "gate": "G5-qa",
+      "artifact": "QA_REPORT.md",
+      "next": [
+        "S7"
+      ],
+      "parallelSub": [
+        "功能测试",
+        "性能测试"
+      ]
+    },
+    {
+      "id": "S7",
+      "seq": 7,
+      "name": "部署",
+      "agent": "local",
+      "ref": "references/deploy-options.md",
+      "gate": "G6-release",
+      "artifact": "DEPLOY_RUNBOOK.md",
+      "next": []
+    }
+  ],
+  "shortcuts": [
+    {
+      "id": "pure-frontend",
+      "when": "声明为纯前端的项目",
+      "effect": "跳过 S5；禁后端依赖/运行时 CDN/数据走 localStorage"
+    },
+    {
+      "id": "iteration",
+      "when": "改版需求",
+      "effect": "压缩 S1-S2（复用既有 PRD 与基线）"
+    }
+  ],
+  "degradation": [
+    {
+      "on": "frontend-builder 异常",
+      "fallback": "AutoDev generic 前端流程"
+    },
+    {
+      "on": "product-expert-team 异常",
+      "fallback": "本库内置简化 PRD 模板"
+    },
+    {
+      "on": "全部子库异常",
+      "fallback": "暂停并输出问题清单"
+    }
+  ],
+  "contextBudget": "每阶段通过后压缩：仅保留需求简报/页面清单/设计令牌/阶段门评分",
+  "traces": {
+    "dir": "docs/traces/",
+    "format": "references/task-trace.md"
+  }
+}

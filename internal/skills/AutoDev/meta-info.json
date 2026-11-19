@@ -1,0 +1,6 @@
+{
+  "name": "autodev",
+  "skillName": "AutoDev 通用需求交付",
+  "description": "通用需求交付 Agent：给定代码仓库与需求，检测/构建模块级自主开发 Skill，按 计划-开发-交付 三阶段自主完成开发、验证与提交。模块 Skill 一次构建、随仓复用。",
+  "version": "1.0.0"
+}

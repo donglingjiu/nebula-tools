@@ -806,3 +806,20 @@
 - AutoDev: contract.json(S5 模式/步骤/约束) ✓
 ### 下一步
 - nt90 nebula-tools V1: 四库 embed(internal/skills)+/api/ai/skills 端点+ai-studio 技能包 tab(先专项侦察 ai-studio.html 结构)
+
+## [2026-11-06] OPT-029a: 工作台 V1 骨架 — 基座契约 embed + /api/ai/skills 端点
+
+### 前情(nt89 三阶段全绿 + 三库 CI 闭环)
+- PET routing v1.1: frontmatter 权威(declared 13/16/5/7/12), unassigned=0/53, pendingCuration 差异集入库主定夺
+- FB/AutoDev contract.json + validator + CI 注入; 三库 Actions 全绿(AutoDev #2 7s / FB #2 7s / PET #3 9s)
+### 变更
+- internal/skills/: 四库契约快照(pipeline.json+routing.json+contract.json×2+meta-info×4+stage-gates.yaml) + scripts/sync-bases.sh(后续刷新)
+- internal/skills/skills.go: //go:embed */* + Load()(sync.Once) + Pack 结构; GatesYAML 用 string(YAML 非合法 JSON, RawMessage 会炸 marshal — 测试覆盖)
+- internal/skills/skills_test.go: 4-pack/可解析/marshal 门 — go test 自动执行
+- internal/ai/skills_api.go: GET /api/ai/skills(RequireRole user); api.go 注入(与 flow 行同构)
+### 可见性契约(embed 边界)
+- 契约 JSON 进仓库(自写流程定义+技能名清单, 公开安全); SKILL.md/AGENTS.md 全文不进 git(PET 为 Private) — V2 走 NOVA_SKILLS_DIR 运行时磁盘加载(复用 NOVA_WEB_DIR 模式先例)
+### 验证
+- build/vet/test(skills.Load 4-pack 门); served: /api/ai/skills 未认证 401/403(路由在+受保护); 回归页 200
+### 下一步
+- nt91: ai-studio.html 技能包 tab(基于 nt90 R2 结构取证) + 登录态 200 门

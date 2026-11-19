@@ -1,0 +1,45 @@
+version: 1
+description: delivery stage gates, machine readable
+gates:
+  - id: G0-discovery
+    name: baseline
+    checklist:
+      - repo code and docs boundary read
+      - real capability vs demo data separated
+    artifact: BASELINE_ANALYSIS.md
+  - id: G1-product
+    name: product
+    checklist:
+      - feature pool defined
+      - priority matrix confirmed
+    artifact: PRD.md
+  - id: G2-design
+    name: design
+    checklist:
+      - design tokens and page skeleton finalized
+      - component list reviewed
+    artifact: DESIGN_SPEC.md
+  - id: G3-frontend
+    name: frontend
+    checklist:
+      - core pages interactive
+      - responsive and a11y self-check passed
+    artifact: FRONTEND_BUILD.md
+  - id: G4-fullstack
+    name: fullstack
+    checklist:
+      - api connected with persistence
+      - core e2e passed
+    artifact: API_CONTRACT.md
+  - id: G5-qa
+    name: qa
+    checklist:
+      - qa checklist all green
+      - defects closed or downgraded with record
+    artifact: QA_REPORT.md
+  - id: G6-release
+    name: release
+    checklist:
+      - deploy artifacts ready
+      - monitoring and alert channel verified
+    artifact: DEPLOY_RUNBOOK.md
