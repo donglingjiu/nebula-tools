@@ -787,3 +787,22 @@
 ### 下一步
 - nt89 frontend-builder + AutoDev: meta-info 补齐 + 红线/自检形式化
 - nt90+ nebula-tools V1: 四库 embed + /api/ai/skills + ai-studio 技能包 tab(需 ai-studio.html 结构专项侦察)
+
+## [2026-11-06] OPT-028d: PET routing 溯源修复 v1.1 + FB/AutoDev OPT-002 — 基座契约全就位
+
+### CI 闭环(nt88 保留项解除)
+- 截图实证: f3b08fe→validate #3 绿(10s, push 触发), e7c2166→#4 绿(7s), 手动 #5 绿(9s) — pipeline.json 新检查在 CI ubuntu python3 真跑通过, 双环境闭环
+### 我方 bug 认领与修复(A 阶段)
+- nt88 解析器只处理内联 skills 列表, 未支持块状 YAML(五专家 AGENTS.md 实际格式) → 误判 0/5 declared 全走 fallback; 且 ceo 误列 expert(6 experts)
+- v1.1: 块状列表解析 + ceo 归位 router + frontmatter 权威源 + pendingCuration 差异集(策划值 vs 真声明) — 「结果对出处错」型假阳性的修正
+### 基座变更( PET=landed FB=landed AutoDev=landed)
+- PET: routing.json v1.1(溯源修正)
+- frontend-builder: contract.json(环境协议+6红线+5自检)+meta-info+validator+CI注入
+- AutoDev: contract.json(4模式+5步骤+4硬约束)+validator+CI注入
+### 基座契约状态(工作台消费面)
+- web-delivery-team: pipeline.json(7阶段DAG+并行组+门引用) ✓
+- product-expert-team: routing.json v1.1(5专家+20规则+53技能) ✓
+- frontend-builder: contract.json(S4 红线/自检/环境协议) ✓
+- AutoDev: contract.json(S5 模式/步骤/约束) ✓
+### 下一步
+- nt90 nebula-tools V1: 四库 embed(internal/skills)+/api/ai/skills 端点+ai-studio 技能包 tab(先专项侦察 ai-studio.html 结构)
