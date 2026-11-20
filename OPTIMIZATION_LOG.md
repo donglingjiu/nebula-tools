@@ -1007,3 +1007,19 @@
 - 新增结构性指纹: '<script>\n// OPT-030c' 邻接检查 + <script>/</script> 标签守恒 — 今后注入类手术必带结构断言
 ### 好消息（同批截图证实）
 - 面板 71 条 = admin canAccess 全量可见 + owner 隔离双实证; 行渲染（title/state/步数/运行钮）完整; 按钮三元门前端门正确
+
+## [2026-11-06] OPT-030 战役终账 — 浏览器全链贯通（用户真实用例实证）
+
+### 四图证据链(nt104 复验)
+- 图1: 裸 JS 文本消失(渲染修复); Violation 归因 hook-exec.js/react.js 注入脚本, 非本应用
+- 图2: prompt 弹出 = createFlowFromContract 已定义(行为级) — ReferenceError 消除
+- 图3: alert 9 步 + POST from-contract 200 @ ai-studio.html:336(行号证实执行自包裹 script); click handler 27.4s = prompt 阻塞 = 用户打字耗时, 属预期
+- 图4: ?id=18e9b2b273093d5a → 面板 71→72 → 新流程蓝框高亮+自动展开, 步骤名与契约一致(S1/P1/P2/S4…)
+### 用户真实用例
+- 「县城 个人 石雕工作室」— 契约流程进入真实使用
+- V2 打磨入册: title 前缀 slug(应显 Pack Meta 中文名); state 徽章英文(应本地化)
+### 战役六段全收
+nt90-96 契约端点 → nt100c 实例化 → nt101b 按钮 → nt103 面板 → nt104 热修 → 终验四图
+### OPT-031a 启动: 休眠引擎唤醒(OPT-012 human-in-the-loop 落地)
+- nt105 侦察轮(零变异): 四 handler 实录 + export 探针 + advance 探针(503 形状或真执行)
+- nt106: 步骤详情 UI(实录驱动) — 单步推进/编辑产出/步内追问/导出
