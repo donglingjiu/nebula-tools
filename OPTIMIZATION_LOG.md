@@ -870,3 +870,23 @@
 - R1: /api/v2 服务端路由有无; R4: newToken 形状(JWT/opaque → tok() eyJ 正则可否命中)
 ### nt95 计划
 - v2 facade(同一 session 店, /api/v2/auth/{login,register,me} 返回 {token,user}) 或 core.js 重指 /api/auth/*; 登录 bounce 修复; 首页弹窗凭证源对齐
+
+## [2026-11-06] OPT-029e(retry): 客户端桥落地 — app.js 真身路径修正(nt95b)
+
+### nt95 中止复盘(诚实账)
+- app.js 路径写错: 脚本用 web/assets/js/app.js, 真身 web/assets/app.js(R1 grep 实录 475 行) — 侦察数据与手术参数脱节, 同轮未交叉核对
+- in-memory patch 设计经受住考验: A3 炸膛时四文件全部未落盘, die() 双保险还原, 磁盘零污染(与 nt93 半态形成对照)
+### R2/R3 侦察更正(重要)
+- v2 register/login 均返回 {token,user}(api.go:118/141) — core.js 期望完全匹配, register 链路自洽
+- v2 token = JWT(parseToken+Email claim+ByEmail 反查), 非 opaque — 老 tok() eyJ 扫描其实可命中 v2 token; A4 仍做(直读 nb_token 更快更准), 但定性从「死→活修复」更正为「规范化」
+- RequireRole→authenticate→s.store.ByEmail 链路实锤 v2 自有用户店; nt94 老 token 双 401 完整解释
+### 变更(4 文件)
+- core.js: login/register 同步 novaUser(弹窗桥); NB.logout 双清
+- app.js(web/assets/app.js:475): novaLogout 增清 nb_token(单行安全插入, 匹配原紧凑风格)
+- ai-studio.html: tok() 直读 nb_token 优先(eyJ 扫描保留为回退)
+- internal/auth/api.go: 回退跨店死桥 A1
+### 验证
+- v2 全链 E2E: register→login→skills Bearer(200, count=4)→v2 me(200); verdict: PASS-V2(full user path)
+- served 指纹: core bridge/NB.logout 双清/novaLogout nb_token/tok nb_token/card 全过
+### 用户操作(浏览器)
+- DevTools 清 localStorage(清陈旧 nb_token/novaUser) → /register.html 注册(邮箱+密码, 首个 v2 用户自动超管) → 登录 → 首页弹窗显示名字 → ai-studio 卡片四行

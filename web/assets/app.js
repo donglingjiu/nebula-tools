@@ -472,7 +472,7 @@ if(ep==='/api/fx/pdf-merge'){
 
 
 
-function novaLogout(e){if(e)e.preventDefault();fetch('/api/auth/logout',{method:'POST'}).finally(function(){try{localStorage.removeItem('novaUser')}catch(_){}location.href='login.html'})}
+function novaLogout(e){try{localStorage.removeItem('nb_token')}catch(_){};if(e)e.preventDefault();fetch('/api/auth/logout',{method:'POST'}).finally(function(){try{localStorage.removeItem('novaUser')}catch(_){}location.href='login.html'})}
 function novaLogin(e){
   var em=document.querySelector("#email"),pw=document.querySelector("#password");
   var say=function(m,ok){try{toast(m,ok?"good":"error");return}catch(_){}

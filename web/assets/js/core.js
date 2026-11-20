@@ -85,13 +85,17 @@
     },
     async login(email, password) {
       var r = await NB.api('/api/v2/auth/login', { method: 'POST', silent: true, body: { email: email, password: password } });
-      localStorage.setItem('nb_token', r.token); meCache = r.user; return r.user;
+      localStorage.setItem('nb_token', r.token); meCache = r.user;
+      try { localStorage.setItem('novaUser', JSON.stringify({ name: (r.user && (r.user.name || r.user.username || r.user.email)) || email, role: (r.user && r.user.role) || 'user' })); } catch (e) {}
+      return r.user;
     },
     async register(email, password) {
       var r = await NB.api('/api/v2/auth/register', { method: 'POST', silent: true, body: { email: email, password: password } });
-      localStorage.setItem('nb_token', r.token); meCache = r.user; return r.user;
+      localStorage.setItem('nb_token', r.token); meCache = r.user;
+      try { localStorage.setItem('novaUser', JSON.stringify({ name: (r.user && (r.user.name || r.user.username || r.user.email)) || email, role: (r.user && r.user.role) || 'user' })); } catch (e) {}
+      return r.user;
     },
-    logout() { localStorage.removeItem('nb_token'); meCache = null; location.href = '/'; },
+    logout() { localStorage.removeItem('nb_token'); localStorage.removeItem('novaUser'); meCache = null; location.href = '/'; },
     isAdmin(user) { return user && (user.role === 'admin' || user.role === 'super'); }
   };
   NB.emitAuthExpired = function () {
