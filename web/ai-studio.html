@@ -351,7 +351,7 @@ function createFlowFromContract(repo){
   <div id="nb-flows-list"><span style="color:#999">加载中…</span></div>
 </div>
 <script>
-// OPT-030d: my-flows panel — list + ?id= highlight + per-flow run (V1)
+// OPT-031a: my-flows panel v2 — step details + advance + edit-step + chat + export (实录-driven)
 (function(){
   var E = (typeof esc === 'function') ? esc : function(v){ return String(v).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
   function tk(){
@@ -361,52 +361,131 @@ function createFlowFromContract(repo){
     return localStorage.getItem('nb_token') || '';
   }
   function H(){ return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tk() }; }
+  var API = '/api/ai/flow';
+  var SZ = {created:'已创建', running:'运行中', done:'已完成', failed:'失败'};
+  var PZ = {pending:'待执行', running:'运行中', done:'已完成', failed:'失败'};
   var el = document.getElementById('nb-flows-list');
   if (!el) return;
-  fetch('/api/ai/flow/list', { headers: H() }).then(function(res){
-    if (!res.ok) { el.innerHTML = '<div style="color:#999">请先登录后查看流程</div>'; return null; }
-    return res.json();
-  }).then(function(j){
-    if (j === null) return;
-    var arr = (Object.prototype.toString.call(j) === '[object Array]') ? j : (j.flows || j.items || j.data || []);
-    var cnt = document.getElementById('nb-flows-count');
-    if (cnt) cnt.textContent = '(' + arr.length + ')';
-    var mid = '';
-    try { mid = new URLSearchParams(location.search).get('id') || ''; } catch(e){}
-    var html = '';
-    for (var i = 0; i < arr.length; i++){
-      var f = arr[i];
-      var n = (f.steps && f.steps.length) || f.stepCount || 0;
-      var stepsHtml = '';
-      if (f.steps && f.steps.length){
-        stepsHtml = '<ol style="margin:8px 0 0;padding-left:20px;color:#556;font-size:13px">'
-          + f.steps.map(function(s){ return '<li>' + E(s.name || s.title || '?') + ' — ' + E(s.status || 'pending') + '</li>'; }).join('')
-          + '</ol>';
+  var expanded = {};
+  try { var _m = new URLSearchParams(location.search).get('id'); if (_m) expanded[_m] = true; } catch(e){}
+  function post(path, body, cb){
+    fetch(API + path, { method:'POST', headers:H(), body: JSON.stringify(body) })
+      .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
+      .then(cb).catch(function(e){ alert('网络错误：' + e); });
+  }
+  function errmsg(j){ return (j && (j.error || j.message)) || ('HTTP ' + ((j && j.code) || 'err')); }
+  function nextPending(f){ for (var i=0;i<(f.steps||[]).length;i++){ if (f.steps[i].status !== 'done') return i; } return -1; }
+  function btn(cls, label, extra){ return '<button class="'+cls+'" style="margin-left:8px;padding:2px 10px;font-size:12px;border:1px solid #6478d6;background:#eef1ff;color:#3b55c9;border-radius:8px;cursor:pointer'+(extra||'')+'">'+label+'</button>'; }
+  function row(f){
+    var fid = f.id || '';
+    var open = expanded[fid] ? ' open' : '';
+    var steps = '';
+    var np = nextPending(f);
+    for (var i=0;i<(f.steps||[]).length;i++){
+      var st = f.steps[i];
+      steps += '<div class="nb-step" style="margin:6px 0;padding:6px 10px;border:1px solid #e6eaf5;border-radius:8px;background:#fff">'
+        + '<b>'+(i+1)+'. '+E(st.name||'?')+'</b> <span class="sk-tag">'+E(PZ[st.status]||st.status||'?')+'</span>';
+      if (st.status === 'done'){
+        steps += btn('nb-edit', '编辑产出', '" data-i="'+i);
+        if (st.output) steps += '<details style="margin-top:4px"><summary style="cursor:pointer;color:#3b55c9;font-size:13px">查看产出</summary>'
+          + '<pre class="nb-out" style="white-space:pre-wrap;margin:6px 0 0;font-size:13px;color:#334;background:#f6f8ff;padding:8px;border-radius:6px;max-height:300px;overflow:auto">'+E(st.output)+'</pre></details>';
+      } else if (st.status === 'pending' && i === np){
+        steps += btn('nb-adv', '推进此步');
       }
-      html += '<details class="nb-flow-row" data-fid="' + E(f.id || '') + '" style="margin:8px 0;padding:10px 14px;border:1px solid #e3e7f5;border-radius:10px;background:#fafbff">'
-        + '<summary style="cursor:pointer;list-style:none"><b>' + E(f.title || f.name || '(无标题)') + '</b> '
-        + '<span class="sk-tag">' + E(f.state || f.status || '?') + '</span> '
-        + '<span style="color:#889;font-size:13px">' + n + ' 步</span>'
-        + '<button class="nb-flow-run" data-rid="' + E(f.id || '') + '" style="margin-left:10px;padding:2px 10px;font-size:12px;border:1px solid #6478d6;background:#eef1ff;color:#3b55c9;border-radius:8px;cursor:pointer">运行</button>'
-        + '</summary>' + stepsHtml + '</details>';
+      steps += '</div>';
     }
-    el.innerHTML = html || '<div style="color:#999">暂无流程 — 从上方技能包卡片「一键创建流程」开始</div>';
-    el.addEventListener('click', function(ev){
-      var b = ev.target && ev.target.closest ? ev.target.closest('.nb-flow-run') : null;
-      if (!b) return;
+    var chats = '';
+    var cl = f.chats || [];
+    if (cl.length){
+      chats += '<div style="margin-top:8px"><b style="font-size:13px">对话记录</b>';
+      for (var k=0;k<cl.length;k++) chats += '<div style="font-size:13px;margin:3px 0"><b>'+E(cl[k].role==='assistant'?'AI':'用户')+'</b>: '+E(cl[k].content||'')+'</div>';
+      chats += '</div>';
+    }
+    chats += '<div style="margin-top:8px;display:flex;gap:6px"><input class="nb-chat-in" style="flex:1;padding:6px 10px;border:1px solid #ccd4ea;border-radius:8px;font-size:13px" placeholder="就此流程追问（AI 可见全部步骤产出）">'
+      + '<button class="nb-chat-send" style="padding:4px 14px;font-size:13px;border:1px solid #6478d6;background:#eef1ff;color:#3b55c9;border-radius:8px;cursor:pointer">发送</button></div>';
+    return '<details class="nb-flow-row" data-fid="'+E(fid)+'"'+open+' style="margin:8px 0;padding:10px 14px;border:1px solid #e3e7f5;border-radius:10px;background:#fafbff">'
+      + '<summary style="cursor:pointer;list-style:none"><b>'+E(f.title||'(无标题)')+'</b> <span class="sk-tag">'+E(SZ[f.state]||f.state||'?')+'</span>'
+      + ' <span style="color:#889;font-size:13px">'+((f.steps||[]).length)+' 步</span>'
+      + btn('nb-run', '运行全部') + btn('nb-exp', '导出 MD')
+      + '</summary><div style="margin-top:8px">'+steps+chats+'</div></details>';
+  }
+  function load(){
+    fetch(API+'/list', { headers:H() }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+      if (j === null){ el.innerHTML = '<div style="color:#999">请先登录后查看流程</div>'; return; }
+      var arr = (Object.prototype.toString.call(j) === '[object Array]') ? j : (j.flows || []);
+      var cnt = document.getElementById('nb-flows-count'); if (cnt) cnt.textContent = '('+arr.length+')';
+      var html = '';
+      for (var i=0;i<arr.length;i++) html += row(arr[i]);
+      el.innerHTML = html || '<div style="color:#999">暂无流程 — 从上方技能包卡片「一键创建流程」开始</div>';
+      try {
+        var mid = new URLSearchParams(location.search).get('id');
+        if (mid){ var t = el.querySelector('details[data-fid="'+mid+'"]'); if (t){ t.open = true; t.style.borderColor = '#6478d6'; t.scrollIntoView({behavior:'smooth', block:'center'}); } }
+      } catch(e){}
+    }).catch(function(){ el.innerHTML = '<div style="color:#999">流程列表加载失败</div>'; });
+  }
+  el.addEventListener('click', function(ev){
+    var t = ev.target; if (!t || !t.closest) return;
+    var d, fid;
+    if (t.closest('.nb-adv')){
       ev.preventDefault(); ev.stopPropagation();
-      if (!confirm('运行该流程？全部步骤将依次执行（需已配置默认模型 Profile）')) return;
-      fetch('/api/ai/flow/run', { method: 'POST', headers: H(), body: JSON.stringify({ id: b.getAttribute('data-rid') }) })
-        .then(function(r){ return r.json().then(function(j2){ return { ok: r.ok, j: j2 }; }); })
-        .then(function(x){
-          alert(x.ok ? ('已触发运行：' + JSON.stringify(x.j).slice(0, 220)) : ('运行失败：' + ((x.j && (x.j.error || x.j.message)) || ('HTTP ' + x.j))));
-        });
-    });
-    if (mid){
-      var t = el.querySelector('details[data-fid="' + mid + '"]');
-      if (t){ t.open = true; t.style.borderColor = '#6478d6'; t.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      d = t.closest('details'); fid = d.getAttribute('data-fid');
+      if (!confirm('推进下一步？将调用模型执行该步骤')) return;
+      post('/advance', {id:fid}, function(x){
+        if (!x.ok){ alert('推进失败：'+errmsg(x.j)); return; }
+        if (x.j && x.j.done){ alert('流程全部完成！'); }
+        else { var sp = (x.j && x.j.step) || {}; alert('步骤完成：'+(sp.name||'')+'\n\n产出预览：\n'+String(sp.output||'').slice(0,300)); }
+        load();
+      });
+      return;
     }
-  }).catch(function(){ if (el) el.innerHTML = '<div style="color:#999">流程列表加载失败</div>'; });
+    if (t.closest('.nb-edit')){
+      ev.preventDefault(); ev.stopPropagation();
+      d = t.closest('details'); fid = d.getAttribute('data-fid');
+      var stepDiv = t.closest('.nb-step'); var idx = t.getAttribute('data-i');
+      if (stepDiv.querySelector('.nb-editbox')) return;
+      var cur = ''; var pre = stepDiv.querySelector('pre.nb-out'); if (pre) cur = pre.textContent;
+      var box = document.createElement('div'); box.className = 'nb-editbox';
+      box.innerHTML = '<textarea style="width:100%;min-height:120px;margin-top:6px;font-size:13px;padding:8px;border:1px solid #ccd4ea;border-radius:6px;box-sizing:border-box"></textarea>'
+        + '<div style="margin-top:6px"><button class="nb-save" style="padding:3px 12px;font-size:12px;border:1px solid #4a67c9;background:#3b55c9;color:#fff;border-radius:8px;cursor:pointer">保存修订</button> '
+        + '<button class="nb-cancel" style="padding:3px 12px;font-size:12px;border:1px solid #ccd4ea;background:#fff;color:#556;border-radius:8px;cursor:pointer">取消</button></div>';
+      box.querySelector('textarea').value = cur;
+      var det = stepDiv.querySelector('details'); if (det) det.style.display = 'none';
+      stepDiv.appendChild(box);
+      box.querySelector('.nb-save').onclick = function(){
+        post('/edit-step', {id:fid, index:parseInt(idx,10), output:box.querySelector('textarea').value}, function(x){
+          if (!x.ok){ alert('修订失败：'+errmsg(x.j)); return; }
+          load();
+        });
+      };
+      box.querySelector('.nb-cancel').onclick = function(){ load(); };
+      return;
+    }
+    if (t.closest('.nb-chat-send')){
+      ev.preventDefault(); ev.stopPropagation();
+      d = t.closest('details'); fid = d.getAttribute('data-fid');
+      var inp = d.querySelector('.nb-chat-in'); var m = (inp && inp.value || '').trim();
+      if (!m){ alert('请输入追问内容'); return; }
+      post('/chat', {id:fid, message:m}, function(x){
+        if (!x.ok){ alert('追问失败：'+errmsg(x.j)); return; }
+        load();
+      });
+      return;
+    }
+    if (t.closest('.nb-run')){
+      ev.preventDefault(); ev.stopPropagation();
+      d = t.closest('details'); fid = d.getAttribute('data-fid');
+      if (!confirm('运行全部剩余步骤？将依次调用模型，可能需要数分钟')) return;
+      post('/run', {id:fid}, function(x){ alert(x.ok ? ('已触发：'+JSON.stringify(x.j).slice(0,200)) : ('运行失败：'+errmsg(x.j))); load(); });
+      return;
+    }
+    if (t.closest('.nb-exp')){
+      ev.preventDefault(); ev.stopPropagation();
+      d = t.closest('details'); fid = d.getAttribute('data-fid');
+      location.href = API + '/export?id=' + fid;
+      return;
+    }
+  });
+  load();
 })();
 </script>
 

@@ -1023,3 +1023,18 @@ nt90-96 契约端点 → nt100c 实例化 → nt101b 按钮 → nt103 面板 →
 ### OPT-031a 启动: 休眠引擎唤醒(OPT-012 human-in-the-loop 落地)
 - nt105 侦察轮(零变异): 四 handler 实录 + export 探针 + advance 探针(503 形状或真执行)
 - nt106: 步骤详情 UI(实录驱动) — 单步推进/编辑产出/步内追问/导出
+
+## [2026-11-06] OPT-031b: panel v2 — 休眠引擎唤醒（步骤详情四能力上线）
+
+### nt105 实录要点
+- 四 handler 请求形状: advance{id}/chat{id,message}/export GET ?id= Markdown(非JSON)/edit-step{id,index:int,output 仅done步}
+- P2 advance=200 → 引擎真执行: 默认 Profile 已配, 模型调用成功, S1 pending→done, state created→running
+- gate 撞名澄清: writeGate/gateNow=模型Profile可用性门(503来源) ≠ stage-gates.yaml 七道门 — B分叉仍开放
+- export Markdown 含每步提示词+输出+对话记录 = 天然审计单; V1 prompt 拼装质量审计坐实(V2 promptTemplate 值得)
+### 变更(ai-studio.html 整块替换 v1 面板, 结构指纹)
+- 步骤行: 状态中文化 + done步[查看产出 details/编辑产出(inline textarea)] + 首个pending步[推进此步]
+- 流程行: 运行全部(flow/run)/导出 MD(location.href 附件下载)/步内追问 chat(防御性响应提取+reload)
+- 修订: edit-step {id,index,output} → 后续步骤经 flowCtx 消费新产出(OPT-012 human-in-the-loop 闭环)
+### 验证
+- served 指纹: v2 marker + v1 消失 + 4 路由 + script 守恒
+- E2E: advance(step done+output非空) → edit-step(修订) → export 含修订文本 → chat 响应 keys 实录
