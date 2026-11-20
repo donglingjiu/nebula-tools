@@ -979,3 +979,18 @@
 - handler: prompt 创意 → Bearer → from-contract → 跳转侦察证实页
 ### 验证
 - served 五指纹: nb-flow-btn / 三元门 / 创意 prompt / FLOW_PAGE?id= / token 链
+
+## [2026-11-06] OPT-030d: 「我的流程」面板 — 展示层缺口收口
+
+### nt102 冰山发现
+- 服务端 10 路由全功能引擎(start/from-contract/start7/list/edit-step/profiles/advance/run/chat/export) vs UI 仅消费 3 条 — advance/chat/export/edit-step 全休眠, V2+ 零后端工作量升级弹药
+- UI 唯一流程入口 = flowRun 一次性直跑(215 start→222 run), 无列表无持久展示; ?id= 死参数确认(app.js 只消费 prompt/next/tool)
+- flowList 现成(preset.go:102, RequireRole user) — nt103 只欠前端
+### 方法: runtime shape assert 先于手术
+- 真实 create(from-contract)→list→断言创建 id 在列→才写 UI — 运行时实证替代字段名猜测(nt100 教训的正面形态)
+### 变更(ai-studio.html 单文件)
+- 页尾面板: details/summary 行(title/state 徽章/步数/运行按钮, 展开=步骤名+状态)
+- 运行按钮: confirm→flow/run{id}→alert 结果; ?id= 参数→高亮+展开+scrollIntoView
+- 防御: 本地 esc 兜底(不假设页面全局 esc), token 四级链(hdrs→tok→__scanTok→localStorage), 非 pipeline 数组形状兼容
+### 验证
+- runtime assert: probe 流程在 list 中可见; served 五指纹(panel/list fetch/run btn/get(id)/data-fid)
