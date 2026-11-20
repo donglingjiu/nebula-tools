@@ -68,3 +68,27 @@ func Contract(repo string) ([]byte, error) {
 	}
 	return nil, fmt.Errorf("unknown contract repo: %s", repo)
 }
+
+// DisplayName returns the localized display name for a pack repo (V2 polish).
+// Meta is json.RawMessage — runtime parse; tags from meta-info.json实录 (skillName).
+func DisplayName(repo string) string {
+	ps, err := Load()
+	if err != nil {
+		return ""
+	}
+	for _, p := range ps {
+		if p.Repo == repo && len(p.Meta) > 0 {
+			var m struct {
+		SkillName string `json:"skillName"`
+			}
+			if json.Unmarshal(p.Meta, &m) == nil {
+				for _, v := range []string{m.SkillName} {
+					if v != "" {
+						return v
+					}
+				}
+			}
+		}
+	}
+	return ""
+}

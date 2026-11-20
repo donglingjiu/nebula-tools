@@ -368,10 +368,10 @@ function createFlowFromContract(repo){
   if (!el) return;
   var expanded = {};
   try { var _m = new URLSearchParams(location.search).get('id'); if (_m) expanded[_m] = true; } catch(e){}
-  function post(path, body, cb){
+  function post(path, body, cb, fin){
     fetch(API + path, { method:'POST', headers:H(), body: JSON.stringify(body) })
       .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
-      .then(cb).catch(function(e){ alert('网络错误：' + e); });
+      .then(function(x){ cb(x); if (fin) fin(); }).catch(function(e){ alert('网络错误：' + e); if (fin) fin(); });
   }
   function errmsg(j){ return (j && (j.error || j.message)) || ('HTTP ' + ((j && j.code) || 'err')); }
   function nextPending(f){ for (var i=0;i<(f.steps||[]).length;i++){ if (f.steps[i].status !== 'done') return i; } return -1; }
@@ -465,9 +465,13 @@ function createFlowFromContract(repo){
       d = t.closest('details'); fid = d.getAttribute('data-fid');
       var inp = d.querySelector('.nb-chat-in'); var m = (inp && inp.value || '').trim();
       if (!m){ alert('请输入追问内容'); return; }
+      var sbtn = t.closest('.nb-chat-send'); if (sbtn){ sbtn.disabled = true; sbtn.textContent = '思考中…'; }
       post('/chat', {id:fid, message:m}, function(x){
-        if (!x.ok){ alert('追问失败：'+errmsg(x.j)); return; }
+        if (!x.ok){ alert('追问失败：'+errmsg(x.j)); }
         load();
+      }, function(){
+        var b2 = d.querySelector('.nb-chat-send');
+        if (b2){ b2.disabled = false; b2.textContent = '发送'; }
       });
       return;
     }

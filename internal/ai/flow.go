@@ -516,7 +516,11 @@ func (s *Service) flowFromContract(w http.ResponseWriter, r *http.Request) {
 	idea := strings.TrimSpace(req.Idea)
 	title := strings.TrimSpace(req.Title)
 	if title == "" {
-		title = pc.Name
+		_dn := skills.DisplayName(req.Repo)
+		if _dn == "" {
+			_dn = pc.Name
+		}
+		title = _dn
 		if idea != "" {
 			title += ": " + truncRunes(idea, 24)
 		}

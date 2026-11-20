@@ -1038,3 +1038,18 @@ nt90-96 契约端点 → nt100c 实例化 → nt101b 按钮 → nt103 面板 →
 ### 验证
 - served 指纹: v2 marker + v1 消失 + 4 路由 + script 守恒
 - E2E: advance(step done+output非空) → edit-step(修订) → export 含修订文本 → chat 响应 keys 实录
+
+## [2026-11-06] OPT-031c(retry2): DisplayName 落地 — meta-info.json/skillName 实录修正
+
+### nt107b die 复盘(第三次防线开火, 零污染)
+- 文件名假设错: meta.json → 真身 meta-info.json, glob 扑空; 但 die 上方 R1 grep 已打印全部谜底
+- 字段名假设错: name/title → 真身 skillName(camelCase, 三 pack 一致); description 为中文长句须排除出取值序
+### R2 谜题告破(中文名来源)
+- 前端运行时 JSON.parse(p.meta)(string/object 双防御) → m.skillName; 服务端 DisplayName 用同构思路(运行时 Unmarshal)
+- 数据源: /api/ai/skills(api.go:40 skillsList); stages[].gate + shortcuts 字段实锤 — B 分叉弹药
+### 变更
+- skills.go: DisplayName(repo) — RawMessage 运行时解析, tag 取实录(skillName 优先, description 排除), title/name 兜底
+- flow.go: 自适应 title 手术 — pc.Name 唯一性校验 + title 行验证 + _dn 前导(锚首次被验证而非猜测)
+- ai-studio.html: post() fin + chat 思考态
+### 教训入库
+- A2 锚两次未被执行到(都死在 A0) = 未验证锚潜伏 — 本轮自适应化: 实录→唯一性→行身份三重门
