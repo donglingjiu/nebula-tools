@@ -308,7 +308,7 @@
           sum = Object.keys(c.modes).length + ' 模式 · ' + (c.steps || []).length + ' 步骤';
         }
         return '<div class="sk-row"><span class="sk-name">' + esc(m.skillName || p.repo) + '</span>' +
-               '<span class="sk-tag">' + esc(p.contractKind) + '</span>' +
+               '<span class="sk-tag">' + esc(p.contractKind) + '</span>' + (p.contractKind === 'pipeline' ? ' <button class="nb-flow-btn" style="margin-left:8px;padding:2px 10px;font-size:12px;border:1px solid #6478d6;background:#eef1ff;color:#3b55c9;border-radius:8px;cursor:pointer" onclick="event.stopPropagation();createFlowFromContract(&#39;' + p.repo + '&#39;)">一键创建流程</button>' : '') +
                '<span class="sk-sum">' + esc(sum) + esc(extra) + '</span>' +
                '<span class="sk-ver">v' + esc(m.version || '?') + '</span></div>';
       });
@@ -320,6 +320,30 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', load); else load();
 })();
 </script>
+
+
+// OPT-030c: instantiate flow from pipeline contract (V1: linear, P1/P2 flattened)
+function createFlowFromContract(repo){
+  var idea = prompt('一句话描述你的创意（将注入 S1 需求澄清）：');
+  if (idea === null) return;
+  idea = idea.trim();
+  if (!idea) { alert('创意不能为空'); return; }
+  var tk = '';
+  try { if (typeof tok === 'function') tk = tok() || ''; } catch(e){}
+  if (!tk) { try { if (typeof __scanTok === 'function') tk = __scanTok() || ''; } catch(e){} }
+  if (!tk) { tk = localStorage.getItem('nb_token') || ''; }
+  fetch('/api/ai/flow/from-contract', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tk },
+    body: JSON.stringify({ repo: repo, idea: idea })
+  }).then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+  .then(function(x){
+    if (x.ok && x.j && x.j.id) {
+      alert('流程已创建（' + (x.j.steps ? x.j.steps.length : '?') + ' 步）— 即将进入工作台');
+      location.href = '/ai-studio.html?id=' + x.j.id;
+    } else { alert('创建失败：' + ((x.j && (x.j.error || x.j.message)) || ('HTTP ' + (x.j && x.j.code)) || '未知')); }
+  }).catch(function(e){ alert('网络错误：' + e); });
+}
 
 </body>
 </html>

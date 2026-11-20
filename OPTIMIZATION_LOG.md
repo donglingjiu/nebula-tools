@@ -964,3 +964,18 @@
 ### nt101 计划(修订)
 - ai-studio 卡片「一键创建流程」按钮 — 仅 pipeline 契约卡显示; 点击 → from-contract(带 idea 输入框) → 跳工作台
 - 双流程入口文档化: start7(通用产品流) / from-contract(契约驱动流)
+
+## [2026-11-06] OPT-030c(retry): UI 收口 — 单行锚手术 + 侦察驱动跳转
+
+### nt101 失败复盘(防线开火, 零污染)
+- A1 块级正则猜箭头函数结构, 真身是迭代体内 if/else-if 链(296-311), 开头距 contractKind 超 400 字符窗口 → die 于写盘前, 服务无感
+- 教训入库: grep 已给行号时直接锚定发射行(311 sk-tag), 不做块级结构假设
+### R1/R2 双救场
+- /flows.html 不存在(nt101 原脚本会注入 404 跳转) — 跳转目标改为侦察驱动: 首个引用 /api/ai/flow 的页面
+- ai-studio.html 自身已消费 flow/start(215)/flow/run(222) — 工作台部分内嵌; aiworkflow.html(AI 项目流水线)为外部候选
+- token 链修正: 裸 tok 引用改 typeof 防御三级回落(tok→__scanTok→localStorage)
+### 变更(ai-studio.html 单文件)
+- line311 sk-tag 徽章后追加三元按钮(pipeline 卡专属, stopPropagation 防冒泡, 内联样式不依赖 .btn 类)
+- handler: prompt 创意 → Bearer → from-contract → 跳转侦察证实页
+### 验证
+- served 五指纹: nb-flow-btn / 三元门 / 创意 prompt / FLOW_PAGE?id= / token 链
