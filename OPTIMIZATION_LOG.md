@@ -941,3 +941,26 @@
 ### nt100 设计(待 R1/R2 实录修订)
 - 新端点 POST /api/ai/flow/from-contract {repo}: 读契约 stages[] → 映射 FlowStep(name=stage title, prompt=stage prompt 模板) → 复用 flowStart 落盘
 - stages[].next/shortcuts 在 Flow 上仅作展示元数据(执行语义仍为线性 flowCtx 注入, DAG 并行 V3 再议)
+
+## [2026-11-06] OPT-030b(retry2): 契约实例化落地 — Contract() 走 Load() 复用 + 双流程并存定案
+
+### nt100b 中止复盘(防线按设计开火, 非事故)
+- A0 die 在任何写盘前触发 → 三文件零污染(对比 nt100: 子串守卫失效→build 兜底; 本轮: 写盘前拦截) — 恢复设计三代演进的正形态
+- 根因: specs 是 Load() 内 once.Do 闭包的局部 := 变量, 非包级 var — 两个正则都没料到 := 形态
+### R1 架构发现(化繁为简)
+- Pack struct 已携带 Contract 字节(json.RawMessage) → Contract() 复用 Load()(sync.Once 缓存)即可: 零 spec 表引用/零表复制/零 Load 改动
+- 教训定版: 伸手进私有内部之前先找既有访问器(nt98「追依赖注入链」同族)
+### R2 战略发现: std7 ≠ pipeline.json — 并存定案
+- start7 = 通用产品七步(brainstorm/评估/分析/方案/拆解/实现/…), 手工打磨富模板({{IDEA}} 占位/markdown 输出结构/MoSCoW/红线自查)
+- pipeline.json = web 交付九阶段(S1-S7+P1/P2, agent/artifact/skills) — 语义不同的两个流程
+- nt100b「start7 委托契约实例化/硬编码退场」计划作废 — 替换会摧毁模板资产; start7(通用产品流)与 from-contract(契约驱动流)并存
+- 诚实评估: from-contract V1 prompt 为脚手架(name+hint+artifact 拼装), 丰富度逊于 std7 — V1 交付机制, prompt 质量列 V2(契约增 promptTemplate 字段)
+### 变更(3 文件)
+- skills.go: Contract(repo) 走 Load(), Pack 字段名实录核验
+- flow.go: flowFromContract(idea 种子 S1 + material_ids/profile_id 直通 + 非 pipeline 契约 400 守卫)
+- api.go: POST /api/ai/flow/from-contract(RequireRole user)
+### 验证
+- E2E: steps=9 且 S1 含创意种子; bad-repo 404; bad-profile 400; routing-repo 400(非 pipeline 守卫); verdict: PASS(contract instantiation full)
+### nt101 计划(修订)
+- ai-studio 卡片「一键创建流程」按钮 — 仅 pipeline 契约卡显示; 点击 → from-contract(带 idea 输入框) → 跳工作台
+- 双流程入口文档化: start7(通用产品流) / from-contract(契约驱动流)

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"nova/internal/admin"
+	"nova/internal/skills"
 	"nova/internal/auth"
 )
 
@@ -476,4 +477,93 @@ func (s *Service) flowExport(w http.ResponseWriter, r *http.Request) {
 		"attachment; filename=flow-"+f.ID+".md")
 	w.WriteHeader(200)
 	w.Write([]byte(sb.String()))
+}
+
+// flowFromContract OPT-030b: instantiate a flow from an embedded skill-pack contract.
+// Request parity with flowStartStd: idea seeds S1, material_ids/profile_id passthrough.
+// V1 semantics: linear execution (stages[].next/shortcuts display metadata; P1/P2 flattened in contract order).
+func (s *Service) flowFromContract(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Repo        string   `json:"repo"`
+		Title       string   `json:"title"`
+		Idea        string   `json:"idea"`
+		MaterialIDs []string `json:"material_ids,omitempty"`
+		ProfileID   string   `json:"profile_id,omitempty"`
+	}
+	if json.NewDecoder(r.Body).Decode(&req) != nil || strings.TrimSpace(req.Repo) == "" {
+		fail(w, 400, "参数错误: 需要 repo")
+		return
+	}
+	raw, err := skills.Contract(req.Repo)
+	if err != nil {
+		fail(w, 404, err.Error())
+		return
+	}
+	var pc struct {
+		Name   string `json:"name"`
+		Stages []struct {
+			ID       string   `json:"id"`
+			Name     string   `json:"name"`
+			Hint     string   `json:"hint"`
+			Artifact string   `json:"artifact"`
+			Skills   []string `json:"skills"`
+		} `json:"stages"`
+	}
+	if err := json.Unmarshal(raw, &pc); err != nil {
+		fail(w, 500, "契约解析失败: "+err.Error())
+		return
+	}
+	idea := strings.TrimSpace(req.Idea)
+	title := strings.TrimSpace(req.Title)
+	if title == "" {
+		title = pc.Name
+		if idea != "" {
+			title += ": " + truncRunes(idea, 24)
+		}
+	}
+	if req.ProfileID != "" && !admin.ProfileAvailable(s.dir, req.ProfileID) {
+		fail(w, 400, "指定的模型 Profile 不可用")
+		return
+	}
+	u := s.auth.UserFrom(r)
+	if u == nil {
+		fail(w, 401, "未登录")
+		return
+	}
+	st, err := s.loadFlows()
+	if err != nil {
+		fail(w, 500, "读取流程失败")
+		return
+	}
+	fl := &Flow{
+		ID: newFlowID(), UserID: u.ID, Title: title,
+		State: "created", CreatedAt: time.Now().Format(time.RFC3339),
+		ProfileID: req.ProfileID, MaterialIDs: req.MaterialIDs,
+	}
+	for _, sg := range pc.Stages {
+		prompt := sg.Name
+		if sg.Hint != "" {
+			prompt += "。" + sg.Hint
+		}
+		if sg.Artifact != "" {
+			prompt += "。交付物: " + sg.Artifact
+		}
+		if len(sg.Skills) > 0 {
+			prompt += "。关联技能: " + strings.Join(sg.Skills, "、")
+		}
+		if sg.ID == "S1" && idea != "" {
+			prompt += "。用户创意: " + idea
+		}
+		fl.Steps = append(fl.Steps, FlowStep{Name: sg.ID + " " + sg.Name, Prompt: prompt, Status: "pending"})
+	}
+	if len(fl.Steps) == 0 {
+		fail(w, 400, "该契约不支持流程实例化（需 pipeline 类契约）")
+		return
+	}
+	st.Flows[fl.ID] = fl
+	if err := s.saveFlows(st); err != nil {
+		fail(w, 500, "保存流程失败")
+		return
+	}
+	writeJSON(w, 200, fl)
 }

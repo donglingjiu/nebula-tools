@@ -52,3 +52,19 @@ func Load() ([]Pack, error) {
 	})
 	return packs, loadEr
 }
+
+// Contract returns the raw contract bytes for a repo (OPT-030b: flow engine consumption).
+// Reuses Load() (sync.Once cached) — Pack already carries Contract bytes; no second spec table,
+// no Load() modification (nt100/100b lesson: reuse accessors, never reach into unseen internals).
+func Contract(repo string) ([]byte, error) {
+	ps, err := Load()
+	if err != nil {
+		return nil, err
+	}
+	for _, p := range ps {
+		if p.Repo == repo {
+			return []byte(p.Contract), nil
+		}
+	}
+	return nil, fmt.Errorf("unknown contract repo: %s", repo)
+}
