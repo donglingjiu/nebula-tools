@@ -929,3 +929,15 @@
 - 第二片: 引擎消费 stages 数组(门判定/快捷路径走 shortcuts), 硬编码降级为 fallback 并标记 deprecated
 ### 回归
 - build/vet/test 全绿(本轮零变更, 纯侦察)
+
+## [2026-11-06] OPT-030a(round2): 侦察补完 — 前提更正 + 契约真身定位
+
+### nt98 侦察重大更正(诚实账)
+- flow.go 全文无 S1-S7 硬编码 — 引擎是完全通用的步骤执行器(steps 全由客户端请求传入), nt98 设计书的「硬编码迁移」是假靶子
+- 真实工作定性: 从零建立契约消费 — flowStart 增加从 pipeline.json 实例化预设流程的能力(模板→Flow.Steps), 复用 collectChat/flowCtx/canAccess 现成机制
+- 侦察虫: R2 候选路径全空+capture_output py3.6 不支持; A 段包名错(internal/skills 非 internal/ai) — 零污染, in-memory 设计再次兑现
+### R1-R4 本轮产出
+- skills 包真身与 embed 形状 / pipeline.json 真实路径与 stages/shortcuts 结构 / flowStart 路由锚 — nt100 实例化手术弹药
+### nt100 设计(待 R1/R2 实录修订)
+- 新端点 POST /api/ai/flow/from-contract {repo}: 读契约 stages[] → 映射 FlowStep(name=stage title, prompt=stage prompt 模板) → 复用 flowStart 落盘
+- stages[].next/shortcuts 在 Flow 上仅作展示元数据(执行语义仍为线性 flowCtx 注入, DAG 并行 V3 再议)
