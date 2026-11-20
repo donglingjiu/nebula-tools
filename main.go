@@ -674,6 +674,14 @@ func newRouter(db *DB) http.Handler {
 	registerToolkit(mux, db)
 	// ---------- 静态资源（embed 进二进制，部署只需一个可执行文件） ----------
 	sub, _ := fs.Sub(webFS, "web")
+	// OPT-029g: extensionless pretty-URL aliases (redirect 301)
+	for _, p := range []string{"ai-studio", "login", "register", "index", "profile", "quickchat"} {
+		tgt := "/" + p + ".html"
+		mux.HandleFunc("GET /"+p, func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, tgt, http.StatusMovedPermanently)
+		})
+	}
+
 	fileServer := noCacheHandler(http.FileServer(http.FS(sub)))
 	if d := os.Getenv("NOVA_WEB_DIR"); d != "" {
 		if _, err := os.Stat(d + "/assets/app.js"); err == nil {

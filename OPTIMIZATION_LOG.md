@@ -903,3 +903,17 @@
 - register.html JS 侦察(R1)入库
 ### 用户操作
 - 清 localStorage → register.html 注册(或直接 ai-studio 刷新看卡片摘要是否变实) → 弹窗名字 → 卡片四行实数据
+
+## [2026-11-06] OPT-029g: 无扩展名别名重定向 — 404 尾巴收口
+
+### 截图终验判读(nt96 后用户三图)
+- 首页弹窗「你好，Nova 用户」= novaUser 桥+活数据生效, 用户实际已登录
+- register 报「邮箱已注册」= admin@example.com 已在 v2 店(此前尝试留存), 直接登录即可; nb_token=eyJ... JWT 有效在册
+- /ai-studio(无 .html) 404 = Go 静态服务无扩展名别名 — 手输 URL 习惯差异, 非认证问题
+### 变更
+- main.go: 六个无扩展名路径 301 重定向到对应 .html(FileServer 注册前注入)
+### 验证
+- /ai-studio -> 301 -> /ai-studio.html 200; vet/test 全绿
+### OPT-029 战役全收口
+- 契约 embed(nt90) + 端点+UI(nt91/96) + 认证双世界桥(nt93-95b) + 用户体验尾巴(96/97)
+- 用户路径: 登录(v2 email) -> 弹窗名字 -> ai-studio 卡片四行实数据 — 全链闭环
