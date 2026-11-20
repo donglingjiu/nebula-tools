@@ -506,6 +506,7 @@ func (s *Service) flowFromContract(w http.ResponseWriter, r *http.Request) {
 			Name     string   `json:"name"`
 			Hint     string   `json:"hint"`
 			Artifact string   `json:"artifact"`
+			Prompt string `json:"prompt"`
 			Skills   []string `json:"skills"`
 		} `json:"stages"`
 	}
@@ -557,6 +558,9 @@ func (s *Service) flowFromContract(w http.ResponseWriter, r *http.Request) {
 		}
 		if sg.ID == "S1" && idea != "" {
 			prompt += "。用户创意: " + idea
+		}
+		if sg.Prompt != "" {
+			prompt = strings.ReplaceAll(sg.Prompt, "{idea}", idea)
 		}
 		fl.Steps = append(fl.Steps, FlowStep{Name: sg.ID + " " + sg.Name, Prompt: prompt, Status: "pending"})
 	}

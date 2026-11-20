@@ -1053,3 +1053,20 @@ nt90-96 契约端点 → nt100c 实例化 → nt101b 按钮 → nt103 面板 →
 - ai-studio.html: post() fin + chat 思考态
 ### 教训入库
 - A2 锚两次未被执行到(都死在 A0) = 未验证锚潜伏 — 本轮自适应化: 实录→唯一性→行身份三重门
+
+## [2026-11-06] OPT-032a(retry2): promptTemplate 全 9 步覆盖 — 假阳性 die 复盘 + append 锚修正
+
+### nt108b die 复盘(第五次开火, 零污染) — 假阳性
+- 守卫本体 bug: 'Name string' 字面子串 vs gofmt 列对齐多空格 — Artifact(\s+ 柔)能配, Name(字面刚)配不上; 同一守卫两种严格度
+- 修复: Name/Hint 验证一律 \s+ 正则
+- 意外之喜: 假阳性 die 拦下 A2' 潜伏陷阱 — 用户创意行在 S1-only if 块内, 原插点会把 override 嵌进分支(仅 S1 吃模板, 编译通过语义错), E2E 多步断言是唯一防线
+### R0' 全图
+- 匿名内联 struct pc.Stages[]{ID,Name,Hint,Artifact,Skills}; 组装链 +=Hint/交付物/关联技能/if-S1+=用户创意; append 行=循环内+组装后+每阶段必经 → 新锚
+- stage0 全键: agent(ceo)/next([S2])/seq — DAG+调度字段, B 分叉弹药
+### 变更
+- pipeline.json: 9/9 stage prompt(统一包装器, P1/P2 回退阶段名, {idea} 运行时占位)
+- flow.go: 解析 struct 增 Prompt(flex-regex 验证); override 置于 append 行前 — 全 9 步吃模板, 结构上不可能嵌错分支
+### 在野观察(截图)
+- 石雕流程 S1 推进全链成功(产出预览结构完整); S2 两次 advance POST 失败待归因(502/503, 待报错文本); 产出含[填写日期]未填占位 → OPT-032b: 模板 {date} 注入
+### 验证
+- E2E 全 9 步断言: role/proto/idea 全真 + S1 BASELINE + S2 PRD + P1 回退 + 占位清零 + steps==9
