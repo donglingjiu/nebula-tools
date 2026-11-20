@@ -994,3 +994,16 @@
 - 防御: 本地 esc 兜底(不假设页面全局 esc), token 四级链(hdrs→tok→__scanTok→localStorage), 非 pipeline 数组形状兼容
 ### 验证
 - runtime assert: probe 流程在 list 中可见; served 五指纹(panel/list fetch/run btn/get(id)/data-fid)
+
+## [2026-11-06] OPT-030e: 热修 — 裸 JS 文本块包 script（截图钉死的静默功能失效）
+
+### 截图评审发现（指纹体系盲区）
+- nt101b handler 注入缺 <script> 包裹 → 函数体整段渲染为页面可见文本 → createFlowFromContract 未定义, 按钮点击必抛 ReferenceError
+- 子串指纹全过（文本也是子串）— 指纹验证「存在」不验证「语义」; JS 在 script 内永不可见渲染 = 截图的判定力
+- 控制台零错误 = 静默失效, 点击前无任何报错 — 比 crash 更危险
+### 变更（ai-studio.html 单文件）
+- 裸块（OPT-030c 注释至函数闭括号）包裹 <script>；前提双检（不在 script 内/无嵌 script/闭括号完整）
+### 指纹升级（方法论入库）
+- 新增结构性指纹: '<script>\n// OPT-030c' 邻接检查 + <script>/</script> 标签守恒 — 今后注入类手术必带结构断言
+### 好消息（同批截图证实）
+- 面板 71 条 = admin canAccess 全量可见 + owner 隔离双实证; 行渲染（title/state/步数/运行钮）完整; 按钮三元门前端门正确

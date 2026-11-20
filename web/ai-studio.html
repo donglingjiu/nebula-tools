@@ -322,6 +322,7 @@
 </script>
 
 
+<script>
 // OPT-030c: instantiate flow from pipeline contract (V1: linear, P1/P2 flattened)
 function createFlowFromContract(repo){
   var idea = prompt('一句话描述你的创意（将注入 S1 需求澄清）：');
@@ -344,8 +345,7 @@ function createFlowFromContract(repo){
     } else { alert('创建失败：' + ((x.j && (x.j.error || x.j.message)) || ('HTTP ' + (x.j && x.j.code)) || '未知')); }
   }).catch(function(e){ alert('网络错误：' + e); });
 }
-
-
+</script>
 <div id="nb-flows-panel" style="max-width:960px;margin:36px auto;padding:16px 20px;border:1px solid #e3e7f5;border-radius:12px;background:#fff">
   <h3 style="margin:0 0 12px;font-size:16px">我的流程 <span id="nb-flows-count" style="color:#889;font-weight:normal"></span></h3>
   <div id="nb-flows-list"><span style="color:#999">加载中…</span></div>
