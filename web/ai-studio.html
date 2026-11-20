@@ -290,8 +290,8 @@
       var j = await r.json();
       var rows = (j.packs || []).map(function(p){
         var m = {}, c = {};
-        try { m = JSON.parse(p.meta); } catch (e) {}
-        try { c = JSON.parse(p.contract); } catch (e) {}
+        try { m = (typeof p.meta === 'string') ? JSON.parse(p.meta) : (p.meta || {}); } catch (e) {}
+        try { c = (typeof p.contract === 'string') ? JSON.parse(p.contract) : (p.contract || {}); } catch (e) {}
         var sum = '—', extra = '';
         if (p.contractKind === 'pipeline' && c.stages) {
           var gates = {};

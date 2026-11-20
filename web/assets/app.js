@@ -1,3 +1,4 @@
+window.__nbRenderHeader = function(){ try { ROOT.innerHTML = (document.body.dataset.adminPage? adminHeader() : frontHeader()); } catch(e){} };
 if(typeof window.toast!=='function'){window.toast=function(m,t){var bad=/失败|错误|请先|无效/.test(m);var d=document.createElement('div');d.textContent=m;d.style.cssText='position:fixed;top:22px;left:50%;transform:translateX(-50%);background:'+(bad?'#d64545':'#188a54')+';color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,.18)';document.body.appendChild(d);setTimeout(function(){d.remove()},2600)}}
 if(typeof window.toast!=='function'){window.toast=function(m,t){var bad=/失败|错误|请先|无效/.test(m);var d=document.createElement('div');d.textContent=m;d.style.cssText='position:fixed;top:22px;left:50%;transform:translateX(-50%);background:'+(bad?'#d64545':'#188a54')+';color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,.18)';document.body.appendChild(d);setTimeout(function(){d.remove()},2600)}}
 /* Nova — lightweight static UX prototype. No third-party runtime dependencies. */
@@ -114,7 +115,11 @@ const adminRoutes=[
 const currentAdminPage=document.body.dataset.adminPage||'index';
 function computeCurrentID(){var p=document.body.dataset.adminPage||'index';return IS_ADMIN?(p==='index'?'admin-dashboard':'admin-'+p):(PAGE==='home'?'home':PAGE)}var currentID=computeCurrentID();
 function logo(){return `<a class="brand" href="${href('index.html')}" aria-label="Nova 首页"><span class="brand-symbol">${icon('planet',23)}</span><span>Nova</span></a>`}
-function dropdownProfile(){var u=null;try{u=JSON.parse(localStorage.getItem('novaUser')||'null')}catch(e){}
+function dropdownProfile(){
+  if (window.NB && NB.auth && NB.auth.me) { NB.auth.me().then(function(u){
+    if (u && typeof window.__nbRenderHeader === 'function') window.__nbRenderHeader();
+  }).catch(function(){}); }
+var u=null;try{u=JSON.parse(localStorage.getItem('novaUser')||'null')}catch(e){}
   var name=u&&u.name?u.name:'';
   if(!name){return `<div class="relative"><button class="icon-btn" data-dropdown="profileMenu" aria-label="个人菜单"><span class="avatar">N</span></button><div class="dropdown" id="profileMenu"><div class="dropdown-head"><strong>未登录</strong><span>登录后解锁对话与用量</span></div><a href="${href('login.html')}">${icon('user')}去登录</a></div></div>`}
   var safe=String(name).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]});

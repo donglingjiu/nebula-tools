@@ -890,3 +890,16 @@
 - served 指纹: core bridge/NB.logout 双清/novaLogout nb_token/tok nb_token/card 全过
 ### 用户操作(浏览器)
 - DevTools 清 localStorage(清陈旧 nb_token/novaUser) → /register.html 注册(邮箱+密码, 首个 v2 用户自动超管) → 登录 → 首页弹窗显示名字 → ai-studio 卡片四行
+
+## [2026-11-06] OPT-029f: 截图终验抓双虫 — 卡片双重解析 + 弹窗静态快照升级
+
+### 截图判读(用户三图)
+- ai-studio 卡片四行渲染 = v2 认证已通(API 200) — 用户实际已登录, nb_token 有效
+- 但摘要列全「—」版本全「v?」= nt91 卡片 JS 对 p.meta/p.contract 做 JSON.parse, 而 Go json.RawMessage marshal 后已是对象, parse(object) 必抛 → 全字段回落 fallback — 「渲染成功但内容空壳」型 bug
+- 弹窗仍「未登录」+ login 页被弹走 = novaUser 只在新登录/注册写入(旧 nb_token 无桥), 且 login.html line67 me() truthy 即跳首页(已有有效 token 者打不开登录页, 体感「登录不了」)
+### 变更
+- ai-studio.html 卡片: typeof 分流消费 meta/contract(对象直用, 字符串才 parse) — 摘要/版本将显示真实数据(7门9节点/5专家20规则53技能/6红线5自检/4模式5步骤)
+- app.js: dropdownProfile 注入时异步 NB.auth.me() 成功则重渲染头部(novaUser 缺失的旧会话也能弹窗显示) — 静态快照→活数据
+- register.html JS 侦察(R1)入库
+### 用户操作
+- 清 localStorage → register.html 注册(或直接 ai-studio 刷新看卡片摘要是否变实) → 弹窗名字 → 卡片四行实数据
