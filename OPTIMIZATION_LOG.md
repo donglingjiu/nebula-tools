@@ -917,3 +917,15 @@
 ### OPT-029 战役全收口
 - 契约 embed(nt90) + 端点+UI(nt91/96) + 认证双世界桥(nt93-95b) + 用户体验尾巴(96/97)
 - 用户路径: 登录(v2 email) -> 弹窗名字 -> ai-studio 卡片四行实数据 — 全链闭环
+
+## [2026-11-06] OPT-030a(round1): V2 契约消费 — flow 引擎全侦察 + 手术设计(零变异轮)
+
+### 为什么本轮不动刀
+- flow.go 全文从未读过(nt90 只扫过路由块) — 盲手术违背 nt93/95 教训(先追依赖链/先看脏器)
+- 本轮产出: flow.go 全文 + pipeline.json stages 结构 + 突变点清单(R1-R3 见运行日志), nt99 依此开膛
+### nt99 手术设计(基于 R1/R2 预判, 开膛前按实录修订)
+- 目标: flow 引擎阶段机从硬编码迁移为 pipeline.json 驱动(stages[].id/gate/next 为唯一真相源)
+- 第一片: skills 包导出 PipelineRaw() + 启动核验器(引擎阶段 vs 契约 stages 不一致即 fail-fast) — 同步性测试先行
+- 第二片: 引擎消费 stages 数组(门判定/快捷路径走 shortcuts), 硬编码降级为 fallback 并标记 deprecated
+### 回归
+- build/vet/test 全绿(本轮零变更, 纯侦察)
